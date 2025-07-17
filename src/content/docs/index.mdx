@@ -1,36 +1,48 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
+title: ContextVM Documentation
+description: A virtual machine for context-controlled computation using Nostr protocol
 template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
+  tagline: ContextVM - The context-controlled virtual machine built on Nostr
   image:
-    file: ../../assets/houston.webp
+    file: ../../assets/contextvm-logo.svg
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Get Started
+      link: /guides/getting-started/quick-overview/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
+    - text: View on GitHub
+      link: https://github.com/contextvm/sdk
       icon: external
       variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Core Concepts
 
 <CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
+	<Card title="Architecture" icon="document">
+		Learn the foundational concepts and architecture of ContextVM
 	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
+	<Card title="SDK Documentation" icon="code">
+		Explore our comprehensive API documentation and implementation examples
 	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
+	<Card title="Tutorials" icon="open-book">
+		Follow step-by-step guides to build context-controlled applications
 	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
+	<Card title="Integrations" icon="puzzle">
+		Discover how ContextVM integrates with Nostr and other protocols
 	</Card>
 </CardGrid>
+
+## Quick Start
+
+ContextVM provides a powerful framework for context-controlled computation on the Nostr network. Our SDK enables developers to:
+
+- **Create secure contexts** for identity and application management
+- **Build distributed applications** with trustless architecture
+- **Integrate with Nostr** seamlessly through our transport layers
+- **Manage cryptographic signing** with extensible signer interfaces
+- **Handle relay operations** through our relay handler implementations
+
+Ready to start building? Check out our [Quick Overview](/guides/getting-started/quick-overview/) to get up and running.
