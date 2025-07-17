@@ -127,7 +127,7 @@ yarn dlx @astrojs/upgrade
 </TabItem>
 </Tabs>
 
-See the [Starlight changelog](https://github.com/withastro/starlight/blob/main/packages/starlight/CHANGELOG.md) for a full list of the changes made in each release.
+See the [Starlight changelog](https://github.com/withastro/starlight/blob/main/packages/starlight/CHANGELOG) for a full list of the changes made in each release.
 
 ## Troubleshooting Starlight
 

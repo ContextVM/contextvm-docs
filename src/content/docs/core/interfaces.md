@@ -34,8 +34,8 @@ export interface NostrSigner {
 
 Any object that implements this interface can be used to sign events, allowing you to integrate with various key management systems, such as web, hardware wallets or remote signing services. The SDK provides a default implementation, `PrivateKeySigner`, which signs events using a raw private key.
 
--   **Learn more:** [`NostrSigner` Deep Dive](../signer/nostr-signer-interface.md)
--   **Default Implementation:** [`PrivateKeySigner`](../signer/private-key-signer.md)
+-   **Learn more:** [`NostrSigner` Deep Dive](/signer/nostr-signer-interface/)
+-   **Default Implementation:** [`PrivateKeySigner`](/signer/private-key-signer/)
 
 ## `RelayHandler`
 
@@ -59,8 +59,8 @@ export interface RelayHandler {
 
 By implementing this interface, you can create custom relay management logic, such as sophisticated relay selection strategies or custom reconnection policies. The SDK includes `SimpleRelayPool` as a default implementation.
 
--   **Learn more:** [`RelayHandler` Deep Dive](../relay/relay-handler-interface.md)
--   **Default Implementation:** [`SimpleRelayPool`](../relay/simple-relay-pool.md)
+-   **Learn more:** [`RelayHandler` Deep Dive](/relay/relay-handler-interface)
+-   **Default Implementation:** [`SimpleRelayPool`](/relay/simple-relay-pool)
 
 ## `EncryptionMode`
 
@@ -76,7 +76,7 @@ export enum EncryptionMode {
 
 This enum is used to configure the encryption behavior of the `NostrClientTransport` and `NostrServerTransport`.
 
--   **Learn more:** [Encryption](./encryption.md)
+-   **Learn more:** [Encryption](./encryption/)
 
 ## `AnnouncementMethods`
 

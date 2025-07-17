@@ -11,7 +11,7 @@ Starlight projects generally follow the same file and directory structure as oth
 
 - `astro.config.mjs` — The Astro configuration file; includes the Starlight integration and configuration.
 - `src/content.config.ts` — Content collections configuration file; adds Starlight’s frontmatter schemas to your project.
-- `src/content/docs/` — Content files. Starlight turns each `.md`, `.mdx` or `.mdoc` file in this directory into a page on your site.
+- `src/content/docs/` — Content files. Starlight turns each ``, `.mdx` or `.mdoc` file in this directory into a page on your site.
 - `src/content/i18n/` (optional) — Translation data to support [internationalization](/guides/i18n/).
 - `src/` — Other source code and files (components, styles, images, etc.) for your project.
 - `public/` — Static assets (fonts, favicon, PDFs, etc.) that will not be processed by Astro.
@@ -36,8 +36,8 @@ import { FileTree } from '@astrojs/starlight/components';
   - content/
     - docs/
       - guides/
-        - 01-getting-started.md
-        - 02-advanced.md
+        - 01-getting-started
+        - 02-advanced
       - index.mdx
   - content.config.ts
 - astro.config.mjs

@@ -118,7 +118,7 @@ This works particularly well for landing pages and you can see it in action on t
 
 ```md {5}
 ---
-# src/content/docs/index.md
+# src/content/docs/index
 
 title: My Landing Page
 template: splash
@@ -137,7 +137,7 @@ By default, `<h2>` and `<h3>` headings are included in the table of contents. Ch
 
 ```md {4-6}
 ---
-# src/content/docs/example.md
+# src/content/docs/example
 title: Page with only H2s in the table of contents
 tableOfContents:
   minHeadingLevel: 2
@@ -171,7 +171,7 @@ Disable the table of contents entirely by setting the `tableOfContents` option t
 
 ```md {4}
 ---
-# src/content/docs/example.md
+# src/content/docs/example
 title: Page without a table of contents
 tableOfContents: false
 ---
@@ -268,15 +268,15 @@ export default defineConfig({
 ## Custom 404 page
 
 Starlight sites display a simple 404 page by default.
-You can customize this by adding a `404.md` (or `404.mdx`) file to your `src/content/docs/` directory:
+You can customize this by adding a `404` (or `404.mdx`) file to your `src/content/docs/` directory:
 
 <FileTree>
 
 - src/
   - content/
     - docs/
-      - **404.md**
-      - index.md
+      - **404**
+      - index
 - astro.config.mjs
 
 </FileTree>
@@ -285,7 +285,7 @@ You can use all of Starlight’s page layout and customization techniques in you
 
 ```md {4,6-8}
 ---
-# src/content/docs/404.md
+# src/content/docs/404
 title: '404'
 template: splash
 editUrl: false

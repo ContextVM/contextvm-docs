@@ -19,7 +19,7 @@ This design offers several key benefits:
 
 ## Interface Definition
 
-The `NostrSigner` interface is defined in [`core/interfaces.ts`](../core/interfaces.md#nostrsigner).
+The `NostrSigner` interface is defined in [`core/interfaces.ts`](/core/interfaces#nostrsigner).
 
 ```typescript
 export interface NostrSigner {
@@ -51,10 +51,10 @@ Any class that implements this interface can be used as a signer throughout the 
 
 The SDK provides a default implementation for common use cases and allows for custom implementations for advanced scenarios.
 
--   **[PrivateKeySigner](./private-key-signer.md)**: The default implementation, which takes a raw private key string and performs signing operations locally.
--   **[Custom Signer Development](./custom-signer-development.md)**: A guide to creating your own signer by implementing the `NostrSigner` interface.
+-   **[PrivateKeySigner](./private-key-signer)**: The default implementation, which takes a raw private key string and performs signing operations locally.
+-   **[Custom Signer Development](./custom-signer-development)**: A guide to creating your own signer by implementing the `NostrSigner` interface.
 
 ## Next Steps
 
--   Learn about the default implementation: **[PrivateKeySigner](./private-key-signer.md)**
--   Learn how to create your own: **[Custom Signer Development](./custom-signer-development.md)**
+-   Learn about the default implementation: **[PrivateKeySigner](./private-key-signer)**
+-   Learn how to create your own: **[Custom Signer Development](./custom-signer-development)**

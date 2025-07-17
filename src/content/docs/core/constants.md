@@ -53,4 +53,4 @@ This object is used internally by the `NostrServerTransport` to construct announ
 
 ## Next Steps
 
-With a solid understanding of the core modules, you are now ready to explore the **[Transports](../transports/base-nostr-transport.md)**, which are responsible for all network communication in the SDK.
+With a solid understanding of the core modules, you are now ready to explore the **[Transports](/transports/base-nostr-transport)**, which are responsible for all network communication in the SDK.

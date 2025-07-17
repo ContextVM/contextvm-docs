@@ -17,7 +17,7 @@ No configuration is required to enable search. Build and deploy your site, then 
 
 To exclude a page from your search index, add [`pagefind: false`](/reference/frontmatter/#pagefind) to the page’s frontmatter:
 
-```md title="src/content/docs/not-indexed.md" ins={3}
+```md title="src/content/docs/not-indexed" ins={3}
 ---
 title: Content to hide from search
 pagefind: false
@@ -30,7 +30,7 @@ Pagefind will ignore content inside an element with the [`data-pagefind-ignore`]
 
 In the following example, the first paragraph will display in search results, but the contents of the `<div>` will not:
 
-```md title="src/content/docs/partially-indexed.md" ins="data-pagefind-ignore"
+```md title="src/content/docs/partially-indexed" ins="data-pagefind-ignore"
 ---
 title: Partially indexed page
 ---

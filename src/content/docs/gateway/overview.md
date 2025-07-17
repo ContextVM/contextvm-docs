@@ -11,7 +11,7 @@ The `NostrMCPGateway` is a server-side bridging component that exposes a traditi
 
 The gateway manages two transports simultaneously:
 
-1.  **Nostr Server Transport**: A [`NostrServerTransport`](../transports/nostr-server-transport.md) that listens for incoming connections from clients on the Nostr network.
+1.  **Nostr Server Transport**: A [`NostrServerTransport`](/transports/nostr-server-transport) that listens for incoming connections from clients on the Nostr network.
 2.  **MCP Server Transport**: A standard MCP client transport (like `StdioClientTransport`) that connects to a local or remote MCP server.
 
 The gateway's role is to forward requests from Nostr clients to the MCP server and relay the server's responses back to the appropriate client on Nostr.
@@ -80,4 +80,4 @@ console.log('Gateway is running, exposing the MCP server to Nostr.');
 
 This concludes the core components of the SDK. The final section provides practical examples of how to use these components together.
 
--   **[Tutorials](../tutorials/client-server-communication.md)**
+-   **[Tutorials](/tutorials/client-server-communication)**

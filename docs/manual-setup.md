@@ -84,12 +84,12 @@ This is useful if you have an existing Astro project and are unable to make any 
 
 Starlight is now configured and it’s time to add some content!
 
-Create a `src/content/docs/` directory and start by adding an `index.md` file.
+Create a `src/content/docs/` directory and start by adding an `index` file.
 This will be the homepage of your new site:
 
 ```md
 ---
-# src/content/docs/index.md
+# src/content/docs/index
 title: My docs
 description: Learn more about my project in this docs site built with Starlight.
 ---
@@ -118,8 +118,8 @@ import { FileTree } from '@astrojs/starlight/components';
   - content/
     - docs/
       - **guides/**
-        - guide.md
-        - index.md
+        - guide
+        - index
   - pages/
 - astro.config.mjs
 

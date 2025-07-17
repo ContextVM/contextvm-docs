@@ -85,4 +85,4 @@ console.log('Available tools:', tools);
 
 Next, we will look at the server-side counterpart to this transport:
 
--   **[Nostr Server Transport](./nostr-server-transport.md)**: For exposing MCP servers to the Nostr network.
+-   **[Nostr Server Transport](./nostr-server-transport)**: For exposing MCP servers to the Nostr network.
