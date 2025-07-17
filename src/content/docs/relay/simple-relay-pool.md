@@ -5,7 +5,7 @@ description: A default relay handler implementation for the @contextvm/sdk.
 
 # `SimpleRelayPool`
 
-The `SimpleRelayPool` is the default implementation of the [`RelayHandler`](./relay-handler-interface) interface provided by the `@contextvm/sdk`. It uses the `SimplePool` from the `nostr-tools` library to manage connections to a list of specified relays.
+The `SimpleRelayPool` is the default implementation of the [`RelayHandler`](/contextvm-docs/relay/relay-handler-interface) interface provided by the `@contextvm/sdk`. It uses the `SimplePool` from the `nostr-tools` library to manage connections to a list of specified relays.
 
 ## Overview
 
@@ -61,8 +61,8 @@ The `SimpleRelayPool` wraps the `SimplePool` from `nostr-tools` and implements t
 
 The `SimpleRelayPool` is designed for simplicity. It connects to all provided relays and does not include advanced features.
 
-For applications that require more sophisticated relay management, you may want to create a [Custom Relay Handler](./custom-relay-handler).
+For applications that require more sophisticated relay management, you may want to create a [Custom Relay Handler](/contextvm-docs/relay/custom-relay-handler).
 
 ## Next Steps
 
--   Learn how to build a custom relay handler: **[Custom Relay Handler](./custom-relay-handler)**
+-   Learn how to build a custom relay handler: **[Custom Relay Handler](/contextvm-docs/relay/custom-relay-handler)**

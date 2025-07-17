@@ -16,7 +16,7 @@ We will build two separate scripts:
 
 ## Prerequisites
 
--   You have completed the [Quick Overview](/getting-started/quick-overview/).
+-   You have completed the [Quick Overview](/contextvm-docs/getting-started/quick-overview/).
 -   You have two Nostr private keys (one for the server, one for the client). You can generate new keys using various tools, or by running `nostr-tools` commands.
 
 ---

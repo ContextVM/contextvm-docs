@@ -42,4 +42,4 @@ This documentation is structured to guide you from initial setup to advanced imp
 - **Proxy & Gateway**: Explains how to use the bridging components.
 - **Tutorials**: Provides practical, step-by-step examples.
 
-Let's begin by setting up your environment in the [Quick Overview](/getting-started/quick-overview/).
+Let's begin by setting up your environment in the [Quick Overview](getting-started/quick-overview/).

@@ -5,7 +5,7 @@ description: An abstract class that provides the core functionality for all Nost
 
 # Base Nostr Transport
 
-The `BaseNostrTransport` is an abstract class that provides the core functionality for all Nostr-based transports in the `@contextvm/sdk`. It serves as the foundation for the [`NostrClientTransport`](/transports/nostr-client-transport) and [`NostrServerTransport`](/transports/nostr-server-transport), handling the common logic for connecting to relays, managing subscriptions, and converting messages between the MCP and Nostr formats.
+The `BaseNostrTransport` is an abstract class that provides the core functionality for all Nostr-based transports in the `@contextvm/sdk`. It serves as the foundation for the [`NostrClientTransport`](/contextvm-docs/transports/nostr-client-transport) and [`NostrServerTransport`](/contextvm-docs/transports/nostr-server-transport), handling the common logic for connecting to relays, managing subscriptions, and converting messages between the MCP and Nostr formats.
 
 ## Core Responsibilities
 
@@ -52,5 +52,5 @@ The `BaseNostrTransport` encapsulates the shared logic of Nostr communication, a
 
 Now that you understand the foundation of the Nostr transports, let's explore the concrete implementations:
 
--   **[Nostr Client Transport](./nostr-client-transport)**: For building MCP clients that communicate over Nostr.
--   **[Nostr Server Transport](./nostr-server-transport)**: For exposing MCP servers to the Nostr network.
+-   **[Nostr Client Transport](/contextvm-docs/transports/nostr-client-transport)**: For building MCP clients that communicate over Nostr.
+-   **[Nostr Server Transport](/contextvm-docs/transports/nostr-server-transport)**: For exposing MCP servers to the Nostr network.

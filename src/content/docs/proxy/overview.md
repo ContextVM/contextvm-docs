@@ -12,7 +12,7 @@ The `NostrMCPProxy` is a powerful, client-side bridging component in the `@conte
 The proxy manages two transports simultaneously:
 
 1.  **MCP Host Transport**: This is a standard MCP transport (like `StdioServerTransport`) that communicates with a local MCP client application.
-2.  **Nostr Client Transport**: This is a [`NostrClientTransport`](/transports/nostr-client-transport) that communicates with the remote MCP server over the Nostr network.
+2.  **Nostr Client Transport**: This is a [`NostrClientTransport`](/contextvm-docs/transports/nostr-client-transport) that communicates with the remote MCP server over the Nostr network.
 
 The proxy sits in the middle, seamlessly forwarding messages between these two transports. When the local client sends a request, the proxy forwards it over Nostr. When the remote server sends a response, the proxy relays it back to the local client.
 
@@ -81,4 +81,4 @@ In this setup, a separate MCP client process could connect to this proxy's `Stdi
 
 Next, we'll look at the server-side equivalent of the proxy:
 
--   **[Gateway](/gateway/overview)**
+-   **[Gateway](/contextvm-docs/gateway/overview)**

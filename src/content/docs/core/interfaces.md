@@ -34,8 +34,8 @@ export interface NostrSigner {
 
 Any object that implements this interface can be used to sign events, allowing you to integrate with various key management systems, such as web, hardware wallets or remote signing services. The SDK provides a default implementation, `PrivateKeySigner`, which signs events using a raw private key.
 
--   **Learn more:** [`NostrSigner` Deep Dive](/signer/nostr-signer-interface/)
--   **Default Implementation:** [`PrivateKeySigner`](/signer/private-key-signer/)
+-   **Learn more:** [`NostrSigner` Deep Dive](/contextvm-docs/signer/nostr-signer-interface/)
+-   **Default Implementation:** [`PrivateKeySigner`](/contextvm-docs/signer/private-key-signer/)
 
 ## `RelayHandler`
 
@@ -59,8 +59,8 @@ export interface RelayHandler {
 
 By implementing this interface, you can create custom relay management logic, such as sophisticated relay selection strategies or custom reconnection policies. The SDK includes `SimpleRelayPool` as a default implementation.
 
--   **Learn more:** [`RelayHandler` Deep Dive](/relay/relay-handler-interface)
--   **Default Implementation:** [`SimpleRelayPool`](/relay/simple-relay-pool)
+-   **Learn more:** [`RelayHandler` Deep Dive](/contextvm-docs/relay/relay-handler-interface)
+-   **Default Implementation:** [`SimpleRelayPool`](/contextvm-docs/relay/simple-relay-pool)
 
 ## `EncryptionMode`
 
@@ -76,7 +76,7 @@ export enum EncryptionMode {
 
 This enum is used to configure the encryption behavior of the `NostrClientTransport` and `NostrServerTransport`.
 
--   **Learn more:** [Encryption](./encryption/)
+-   **Learn more:** [Encryption](/contextvm-docs/core/encryption)
 
 ## `AnnouncementMethods`
 

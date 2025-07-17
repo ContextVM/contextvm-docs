@@ -20,7 +20,7 @@ By depending on this interface, the SDK's transports can remain agnostic about t
 
 ## Interface Definition
 
-The `RelayHandler` interface is defined in [`core/interfaces.ts`](/core/interfaces#relayhandler) and includes several key methods:
+The `RelayHandler` interface is defined in [`core/interfaces.ts`](/contextvm-docs/core/interfaces#relayhandler) and includes several key methods:
 
 ```typescript
 export interface RelayHandler {
@@ -42,10 +42,10 @@ export interface RelayHandler {
 
 The SDK provides a default implementation for common use cases and allows for custom implementations for advanced scenarios.
 
--   **[SimpleRelayPool](./simple-relay-pool)**: The default implementation, which manages a simple pool of relays.
--   **[Custom Relay Handler](./custom-relay-handler)**: A guide to creating your own relay handler by implementing the `RelayHandler` interface.
+-   **[SimpleRelayPool](/contextvm-docs/relay/simple-relay-pool)**: The default implementation, which manages a pool of relays and handles connection and subscription logic.
+-   **[Custom Relay Handler](/contextvm-docs/relay/custom-relay-handler)**: For creating custom relay handlers that integrate with specific relay management systems, such as auth relays or custom caching.
 
 ## Next Steps
 
--   Learn about the default implementation: **[SimpleRelayPool](./simple-relay-pool)**
--   Learn how to create your own: **[Custom Relay Handler](./custom-relay-handler)**
+-   Learn about the default implementation: **[SimpleRelayPool](/contextvm-docs/relay/simple-relay-pool)**
+-   Learn how to create your own: **[Custom Relay Handler](/contextvm-docs/relay/custom-relay-handler)**
