@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://contextvm.github.io',
+	site: 'https://contextvm.github.io/contextvm-docs/',
 	base: '/',
 	integrations: [
 		starlight({
