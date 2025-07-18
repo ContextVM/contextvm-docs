@@ -20,9 +20,9 @@ The proxy sits in the middle, seamlessly forwarding messages between these two t
 
 The `NostrMCPProxy` is particularly useful in the following scenarios:
 
--   **Integrating with Existing Clients**: If you have an existing MCP client that does not have native Nostr support, you can use the proxy to enable it to communicate with Nostr-based MCP servers without modifying the client's code. The client simply connects to the proxy's local transport.
--   **Simplifying Client-Side Logic**: The proxy abstracts away all the complexities of Nostr communication (signing, relay management, encryption), allowing your main client application to remain simple and focused on its core tasks.
--   **Local Development and Testing**: The proxy can be a valuable tool for local development, allowing you to easily test a client against a remote Nostr server.
+- **Integrating with Existing Clients**: If you have an existing MCP client that does not have native Nostr support, you can use the proxy to enable it to communicate with Nostr-based MCP servers without modifying the client's code. The client simply connects to the proxy's local transport.
+- **Simplifying Client-Side Logic**: The proxy abstracts away all the complexities of Nostr communication (signing, relay management, encryption), allowing your main client application to remain simple and focused on its core tasks.
+- **Local Development and Testing**: The proxy can be a valuable tool for local development, allowing you to easily test a client against a remote Nostr server.
 
 ## `NostrMCPProxyOptions`
 
@@ -35,23 +35,23 @@ export interface NostrMCPProxyOptions {
 }
 ```
 
--   **`mcpHostTransport`**: An instance of a server-side MCP transport that the local client will connect to. For example, `new StdioServerTransport()`.
--   **`nostrTransportOptions`**: The full configuration object required by the `NostrClientTransport`. This includes the `signer`, `relayHandler`, and the remote `serverPubkey`.
+- **`mcpHostTransport`**: An instance of a server-side MCP transport that the local client will connect to. For example, `new StdioServerTransport()`.
+- **`nostrTransportOptions`**: The full configuration object required by the `NostrClientTransport`. This includes the `signer`, `relayHandler`, and the remote `serverPubkey`.
 
 ## Usage Example
 
 This example demonstrates how to create a proxy that listens for a local client over standard I/O and connects to a remote server over Nostr.
 
 ```typescript
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/stdio';
-import { NostrMCPProxy } from '@ctxvm/sdk/proxy';
-import { PrivateKeySigner } from '@ctxvm/sdk/signer';
-import { SimpleRelayPool } from '@ctxvm/sdk/relay';
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/stdio";
+import { NostrMCPProxy } from "@ctxvm/sdk/proxy";
+import { PrivateKeySigner } from "@ctxvm/sdk/signer";
+import { SimpleRelayPool } from "@ctxvm/sdk/relay";
 
 // 1. Configure the signer and relay handler for the Nostr connection
-const signer = new PrivateKeySigner('your-private-key');
-const relayPool = new SimpleRelayPool(['wss://relay.damus.io']);
-const REMOTE_SERVER_PUBKEY = 'remote-server-public-key';
+const signer = new PrivateKeySigner("your-private-key");
+const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
+const REMOTE_SERVER_PUBKEY = "remote-server-public-key";
 
 // 2. Configure the transport for the local client
 // In this case, a stdio transport that the local client can connect to
@@ -70,7 +70,7 @@ const proxy = new NostrMCPProxy({
 // 4. Start the proxy
 await proxy.start();
 
-console.log('Proxy is running. Connect your local MCP client.');
+console.log("Proxy is running. Connect your local MCP client.");
 
 // To stop the proxy: await proxy.stop();
 ```
@@ -81,4 +81,4 @@ In this setup, a separate MCP client process could connect to this proxy's `Stdi
 
 Next, we'll look at the server-side equivalent of the proxy:
 
--   **[Gateway](/contextvm-docs/gateway/overview)**
+- **[Gateway](/contextvm-docs/gateway/overview)**

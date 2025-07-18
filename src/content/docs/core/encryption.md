@@ -36,8 +36,8 @@ The standard implementation of NIP-17 is designed for persistent private message
 Encryption is configured at the transport level using the `EncryptionMode` enum. You can set the desired mode when creating a `NostrClientTransport` or `NostrServerTransport`.
 
 ```typescript
-import { NostrClientTransport } from '@ctxvm/sdk/transport';
-import { EncryptionMode } from '@ctxvm/sdk/core';
+import { NostrClientTransport } from "@ctxvm/sdk/transport";
+import { EncryptionMode } from "@ctxvm/sdk/core";
 
 const transport = new NostrClientTransport({
   // ... other options
@@ -47,9 +47,9 @@ const transport = new NostrClientTransport({
 
 ### `EncryptionMode`
 
--   **`REQUIRED`**: The transport will only communicate with peers that support encryption. If the other party does not support it, the connection will fail.
--   **`OPTIONAL`**: (Default) The transport will attempt to use encryption if the peer supports it. If not, it will fall back to unencrypted communication.
--   **`DISABLED`**: The transport will not use encryption, even if the peer supports it.
+- **`REQUIRED`**: The transport will only communicate with peers that support encryption. If the other party does not support it, the connection will fail.
+- **`OPTIONAL`**: (Default) The transport will attempt to use encryption if the peer supports it. If not, it will fall back to unencrypted communication.
+- **`DISABLED`**: The transport will not use encryption, even if the peer supports it.
 
 ## Encryption Support Discovery
 
@@ -62,8 +62,8 @@ Clients and servers can discover if a peer supports encryption in two ways:
 
 The core encryption functions are exposed in the `core` module:
 
--   `encryptMessage(message: string, recipientPublicKey: string): NostrEvent`
--   `decryptMessage(event: NostrEvent, signer: NostrSigner): Promise<string>`
+- `encryptMessage(message: string, recipientPublicKey: string): NostrEvent`
+- `decryptMessage(event: NostrEvent, signer: NostrSigner): Promise<string>`
 
 These functions handle the low-level details of gift wrapping and unwrapping, but in most cases, you will interact with encryption through the transport's `encryptionMode` setting.
 

@@ -11,11 +11,11 @@ The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandle
 
 You might want to create a custom `RelayHandler` for several reasons:
 
--   **Intelligent Relay Selection**: To dynamically select relays based on performance, reliability, or the specific type of data being requested. For example, you might use a different set of relays for fetching user metadata versus broadcasting messages.
--   **Auth Relays**: To integrate with auth relays that require authentication or specific connection logic.
--   **Dynamic Relay Discovery**: To discover and connect to new relays at runtime, rather than using a static list.
--   **Custom Caching**: To implement a custom caching layer to reduce redundant requests to relays.
--   **Resiliency and-failover**: To build more robust-failover logic, such as automatically retrying failed connections or switching to backup relays.
+- **Intelligent Relay Selection**: To dynamically select relays based on performance, reliability, or the specific type of data being requested. For example, you might use a different set of relays for fetching user metadata versus broadcasting messages.
+- **Auth Relays**: To integrate with auth relays that require authentication or specific connection logic.
+- **Dynamic Relay Discovery**: To discover and connect to new relays at runtime, rather than using a static list.
+- **Custom Caching**: To implement a custom caching layer to reduce redundant requests to relays.
+- **Resiliency and-failover**: To build more robust-failover logic, such as automatically retrying failed connections or switching to backup relays.
 
 ## Implementing the `RelayHandler` Interface
 
@@ -26,28 +26,30 @@ To create a custom relay handler, you need to create a class that implements the
 Here is a simple example of a custom `RelayHandler` that wraps the default `SimpleRelayPool` and adds logging to each operation. This illustrates how you can extend or compose existing handlers.
 
 ```typescript
-import { RelayHandler } from '@ctxvm/sdk/core';
-import { SimpleRelayPool } from '@ctxvm/sdk/relay';
-import { Filter, NostrEvent } from 'nostr-tools';
+import { RelayHandler } from "@ctxvm/sdk/core";
+import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { Filter, NostrEvent } from "nostr-tools";
 
 class LoggingRelayHandler implements RelayHandler {
   private readonly innerHandler: RelayHandler;
 
   constructor(relayUrls: string[]) {
     this.innerHandler = new SimpleRelayPool(relayUrls);
-    console.log(`[LoggingRelayHandler] Initialized with relays: ${relayUrls.join(', ')}`);
+    console.log(
+      `[LoggingRelayHandler] Initialized with relays: ${relayUrls.join(", ")}`,
+    );
   }
 
   async connect(): Promise<void> {
-    console.log('[LoggingRelayHandler] Attempting to connect...');
+    console.log("[LoggingRelayHandler] Attempting to connect...");
     await this.innerHandler.connect();
-    console.log('[LoggingRelayHandler] Connected successfully.');
+    console.log("[LoggingRelayHandler] Connected successfully.");
   }
 
   async disconnect(): Promise<void> {
-    console.log('[LoggingRelayHandler] Disconnecting...');
+    console.log("[LoggingRelayHandler] Disconnecting...");
     await this.innerHandler.disconnect();
-    console.log('[LoggingRelayHandler] Disconnected.');
+    console.log("[LoggingRelayHandler] Disconnected.");
   }
 
   publish(event: NostrEvent): void {
@@ -64,13 +66,13 @@ class LoggingRelayHandler implements RelayHandler {
   }
 
   unsubscribe(): void {
-    console.log('[LoggingRelayHandler] Unsubscribing from all.');
+    console.log("[LoggingRelayHandler] Unsubscribing from all.");
     this.innerHandler.unsubscribe();
   }
 }
 
 // Usage
-const loggingHandler = new LoggingRelayHandler(['wss://relay.damus.io']);
+const loggingHandler = new LoggingRelayHandler(["wss://relay.damus.io"]);
 
 const transport = new NostrClientTransport({
   relayHandler: loggingHandler,
@@ -88,5 +90,5 @@ Once your custom handler class is created, you can instantiate it and pass it to
 
 With the `Relay` component covered, we will now look at the high-level bridging components provided by the SDK.
 
--   **[Proxy](/contextvm-docs/proxy/overview)**
--   **[Gateway](/contextvm-docs/gateway/overview)**
+- **[Proxy](/contextvm-docs/proxy/overview)**
+- **[Gateway](/contextvm-docs/gateway/overview)**

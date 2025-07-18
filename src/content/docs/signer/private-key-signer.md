@@ -11,25 +11,25 @@ The `PrivateKeySigner` is the default implementation of the [`NostrSigner`](/con
 
 The `PrivateKeySigner` is designed for scenarios where the private key is readily available in the application's environment. It handles all the necessary cryptographic operations locally, including:
 
--   Deriving the corresponding public key.
--   Signing Nostr events.
--   Encrypting and decrypting messages using NIP-44.
+- Deriving the corresponding public key.
+- Signing Nostr events.
+- Encrypting and decrypting messages using NIP-44.
 
 ## `constructor(privateKey: string)`
 
 The constructor takes a single argument:
 
--   **`privateKey`**: A hexadecimal string representing the 32-byte Nostr private key.
+- **`privateKey`**: A hexadecimal string representing the 32-byte Nostr private key.
 
 When instantiated, the `PrivateKeySigner` will immediately convert the hex string into a `Uint8Array` and derive the public key, which is then cached for future calls to `getPublicKey()`.
 
 ## Usage Example
 
 ```typescript
-import { PrivateKeySigner } from '@ctxvm/sdk/signer';
+import { PrivateKeySigner } from "@ctxvm/sdk/signer";
 
 // Replace with a securely stored private key
-const privateKeyHex = 'your-32-byte-private-key-in-hex';
+const privateKeyHex = "your-32-byte-private-key-in-hex";
 
 const signer = new PrivateKeySigner(privateKeyHex);
 
@@ -56,8 +56,8 @@ Takes an unsigned Nostr event, signs it using the private key, and returns a pro
 
 The `PrivateKeySigner` also provides a `nip44` object that implements NIP-44 encryption and decryption. This is used internally by the transports when encryption is enabled, and it allows the `decryptMessage` function to work seamlessly with this signer.
 
--   `encrypt(pubkey, plaintext)`: Encrypts a plaintext message for a given recipient public key.
--   `decrypt(pubkey, ciphertext)`: Decrypts a ciphertext message received from a given sender public key.
+- `encrypt(pubkey, plaintext)`: Encrypts a plaintext message for a given recipient public key.
+- `decrypt(pubkey, ciphertext)`: Decrypts a ciphertext message received from a given sender public key.
 
 ## Security Considerations
 
@@ -67,4 +67,4 @@ For applications requiring a higher level of security, consider creating a custo
 
 ## Next Steps
 
--   Learn how to build a custom signer: **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**
+- Learn how to build a custom signer: **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**

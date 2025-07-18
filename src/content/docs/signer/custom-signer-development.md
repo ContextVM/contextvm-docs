@@ -11,9 +11,9 @@ One of the key design features of the `@contextvm/sdk` is its modularity, which 
 
 While the [`PrivateKeySigner`](/contextvm-docs/signer/private-key-signer) is a common choice for most applications, there are cases where you may need to use a different approach:
 
--   **Security is paramount**: You need to keep private keys isolated from the main application logic, for example, in a hardware security module (HSM) or a secure enclave.
--   **Interacting with external wallets**: Your application needs to request signatures from a user's wallet, such as a browser extension (e.g., Alby, Noster) or a mobile wallet.
--   **Complex key management**: Your application uses a more complex key management architecture that doesn't involve direct access to raw private keys.
+- **Security is paramount**: You need to keep private keys isolated from the main application logic, for example, in a hardware security module (HSM) or a secure enclave.
+- **Interacting with external wallets**: Your application needs to request signatures from a user's wallet, such as a browser extension (e.g., Alby, Noster) or a mobile wallet.
+- **Complex key management**: Your application uses a more complex key management architecture that doesn't involve direct access to raw private keys.
 
 ## Implementing the `NostrSigner` Interface
 
@@ -26,8 +26,8 @@ A common use case for a custom signer is in a web application that needs to inte
 Here is how you could implement a `NostrSigner` that wraps the `window.nostr` object:
 
 ```typescript
-import { NostrSigner } from '@ctxvm/sdk/core';
-import { UnsignedEvent, NostrEvent } from 'nostr-tools';
+import { NostrSigner } from "@ctxvm/sdk/core";
+import { UnsignedEvent, NostrEvent } from "nostr-tools";
 
 // Define the NIP-07 window.nostr interface for type-safety
 declare global {
@@ -46,31 +46,31 @@ declare global {
 class Nip07Signer implements NostrSigner {
   constructor() {
     if (!window.nostr) {
-      throw new Error('NIP-07 compatible browser extension not found.');
+      throw new Error("NIP-07 compatible browser extension not found.");
     }
   }
 
   async getPublicKey(): Promise<string> {
-    if (!window.nostr) throw new Error('window.nostr not found.');
+    if (!window.nostr) throw new Error("window.nostr not found.");
     return await window.nostr.getPublicKey();
   }
 
   async signEvent(event: UnsignedEvent): Promise<NostrEvent> {
-    if (!window.nostr) throw new Error('window.nostr not found.');
+    if (!window.nostr) throw new Error("window.nostr not found.");
     return await window.nostr.signEvent(event);
   }
 
   nip44 = {
     encrypt: async (pubkey: string, plaintext: string): Promise<string> => {
       if (!window.nostr?.nip44) {
-        throw new Error('The extension does not support NIP-44 encryption.');
+        throw new Error("The extension does not support NIP-44 encryption.");
       }
       return await window.nostr.nip44.encrypt(pubkey, plaintext);
     },
 
     decrypt: async (pubkey: string, ciphertext: string): Promise<string> => {
       if (!window.nostr?.nip44) {
-        throw new Error('The extension does not support NIP-44 decryption.');
+        throw new Error("The extension does not support NIP-44 decryption.");
       }
       return await window.nostr.nip44.decrypt(pubkey, ciphertext);
     },

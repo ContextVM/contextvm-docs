@@ -3,12 +3,11 @@ title: ContextVM Protocol Specification
 description: Technical specification for the ContextVM protocol
 ---
 
-**MCP Version:** `mcp:2025-03-26`
 **Status:** Draft
 
 ## Abstract
 
-The Context Vending Machine (ContextVM) specification defines how Nostr and Context Vending Machines can be used to expose Model Context Protocol (MCP) server capabilities, enabling standardized usage of these resources through a decentralized, cryptographically secure messaging system.
+The Context Vending Machine (ContextVM) specification defines how Nostr can be used to expose Model Context Protocol (MCP) server capabilities, enabling standardized usage of these resources through a decentralized, cryptographically secure messaging system.
 
 ## Table of Contents
 

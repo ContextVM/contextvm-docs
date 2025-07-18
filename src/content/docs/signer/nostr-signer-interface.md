@@ -13,9 +13,9 @@ The primary purpose of the `NostrSigner` is to abstract the process of event sig
 
 This design offers several key benefits:
 
--   **Security**: Private keys can be managed in secure environments (e.g., web extensions, hardware wallets, dedicated signing services) without exposing them to the application logic.
--   **Flexibility**: Developers can easily swap out the default signer with a custom implementation that meets their specific needs.
--   **Modularity**: The signing logic is decoupled from the communication logic, leading to a cleaner, more maintainable codebase.
+- **Security**: Private keys can be managed in secure environments (e.g., web extensions, hardware wallets, dedicated signing services) without exposing them to the application logic.
+- **Flexibility**: Developers can easily swap out the default signer with a custom implementation that meets their specific needs.
+- **Modularity**: The signing logic is decoupled from the communication logic, leading to a cleaner, more maintainable codebase.
 
 ## Interface Definition
 
@@ -40,10 +40,10 @@ export interface NostrSigner {
 }
 ```
 
--   `getPublicKey()`: Asynchronously returns the public key corresponding to the signer's private key.
--   `signEvent(event)`: Takes an unsigned Nostr event, signs it, and returns the signature.
--   `nip04`: (Deprecated) Provides NIP-04 encryption support.
--   `nip44`: Provides NIP-44 encryption support.
+- `getPublicKey()`: Asynchronously returns the public key corresponding to the signer's private key.
+- `signEvent(event)`: Takes an unsigned Nostr event, signs it, and returns the signature.
+- `nip04`: (Deprecated) Provides NIP-04 encryption support.
+- `nip44`: Provides NIP-44 encryption support.
 
 Any class that implements this interface can be used as a signer throughout the SDK.
 
@@ -51,10 +51,10 @@ Any class that implements this interface can be used as a signer throughout the 
 
 The SDK provides a default implementation for common use cases and allows for custom implementations for advanced scenarios.
 
--   **[PrivateKeySigner](/contextvm-docs/signer/private-key-signer)**: The default implementation, which takes a raw private key string and performs signing operations locally.
--   **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**: For creating custom signers that integrate with key management systems, such as hardware wallets or remote signing services.
+- **[PrivateKeySigner](/contextvm-docs/signer/private-key-signer)**: The default implementation, which takes a raw private key string and performs signing operations locally.
+- **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**: For creating custom signers that integrate with key management systems, such as hardware wallets or remote signing services.
 
 ## Next Steps
 
--   Learn about the default implementation: **[PrivateKeySigner](/contextvm-docs/signer/private-key-signer)**
--   Learn how to create your own: **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**
+- Learn about the default implementation: **[PrivateKeySigner](/contextvm-docs/signer/private-key-signer)**
+- Learn how to create your own: **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**
