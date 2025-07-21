@@ -5,7 +5,7 @@ description: A server-side component for exposing MCP servers over Nostr.
 
 # Nostr Server Transport
 
-The `NostrServerTransport` is the server-side counterpart to the [`NostrClientTransport`](/contextvm-docs/transports/nostr-client-transport). It allows an MCP server to expose its capabilities to the Nostr network, making them discoverable and usable by any Nostr-enabled client. Like the client transport, it implements the `Transport` interface from the `@modelcontextprotocol/sdk`.
+The `NostrServerTransport` is the server-side counterpart to the [`NostrClientTransport`](/transports/nostr-client-transport). It allows an MCP server to expose its capabilities to the Nostr network, making them discoverable and usable by any Nostr-enabled client. Like the client transport, it implements the `Transport` interface from the `@modelcontextprotocol/sdk`.
 
 ## Overview
 
@@ -95,4 +95,4 @@ The `NostrServerTransport` manages a session for each unique client public key. 
 
 ## Next Steps
 
-Now that you understand how the transports work, let's dive into the **[Signer](/contextvm-docs/signer/nostr-signer-interface)**, the component responsible for cryptographic signatures.
+Now that you understand how the transports work, let's dive into the **[Signer](/signer/nostr-signer-interface)**, the component responsible for cryptographic signatures.

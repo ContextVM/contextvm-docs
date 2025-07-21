@@ -5,7 +5,7 @@ description: A default signer implementation for the @contextvm/sdk.
 
 # `PrivateKeySigner`
 
-The `PrivateKeySigner` is the default implementation of the [`NostrSigner`](/contextvm-docs/signer/nostr-signer-interface) interface provided by the `@contextvm/sdk`. It is a straightforward and easy-to-use signer that operates directly on a raw private key provided as a hexadecimal string.
+The `PrivateKeySigner` is the default implementation of the [`NostrSigner`](/signer/nostr-signer-interface) interface provided by the `@contextvm/sdk`. It is a straightforward and easy-to-use signer that operates directly on a raw private key provided as a hexadecimal string.
 
 ## Overview
 
@@ -67,4 +67,4 @@ For applications requiring a higher level of security, consider creating a custo
 
 ## Next Steps
 
-- Learn how to build a custom signer: **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**
+- Learn how to build a custom signer: **[Custom Signer Development](/signer/custom-signer-development)**

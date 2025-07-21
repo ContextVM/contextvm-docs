@@ -5,11 +5,11 @@ description: Learn how to create a custom signer for the @contextvm/sdk.
 
 # Custom Signer Development
 
-One of the key design features of the `@contextvm/sdk` is its modularity, which is exemplified by the [`NostrSigner`](/contextvm-docs/signer/nostr-signer-interface) interface. By creating your own implementation of this interface, you can integrate the SDK with any key management system, such as a hardware wallet, a remote signing service (like an HSM), or a browser extension.
+One of the key design features of the `@contextvm/sdk` is its modularity, which is exemplified by the [`NostrSigner`](/signer/nostr-signer-interface) interface. By creating your own implementation of this interface, you can integrate the SDK with any key management system, such as a hardware wallet, a remote signing service (like an HSM), or a browser extension.
 
 ## Why Create a Custom Signer?
 
-While the [`PrivateKeySigner`](/contextvm-docs/signer/private-key-signer) is a common choice for most applications, there are cases where you may need to use a different approach:
+While the [`PrivateKeySigner`](/signer/private-key-signer) is a common choice for most applications, there are cases where you may need to use a different approach:
 
 - **Security is paramount**: You need to keep private keys isolated from the main application logic, for example, in a hardware security module (HSM) or a secure enclave.
 - **Interacting with external wallets**: Your application needs to request signatures from a user's wallet, such as a browser extension (e.g., Alby, Noster) or a mobile wallet.
@@ -90,4 +90,4 @@ Once your custom signer class is created, you can instantiate it and pass it to 
 
 ## Next Steps
 
-With the `Signer` component covered, let's move on to the **[Relay](/contextvm-docs/relay/simple-relay-pool)** component, which handles the connection and management of Nostr relays.
+With the `Signer` component covered, let's move on to the **[Relay](/relay/simple-relay-pool)** component, which handles the connection and management of Nostr relays.

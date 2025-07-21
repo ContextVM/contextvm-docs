@@ -69,4 +69,4 @@ These functions handle the low-level details of gift wrapping and unwrapping, bu
 
 ## Next Steps
 
-Now that you understand how encryption works, let's look at the [Constants](/contextvm-docs/core/constants) used throughout the SDK.
+Now that you understand how encryption works, let's look at the [Constants](/core/constants) used throughout the SDK.

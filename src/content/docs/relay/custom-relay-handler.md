@@ -5,7 +5,7 @@ description: Learn how to create a custom relay handler for the @contextvm/sdk.
 
 # Custom Relay Handler Development
 
-The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandler`](/contextvm-docs/relay/relay-handler-interface) interface, allows developers to implement custom logic for managing Nostr-relay connections. This is particularly useful for advanced use cases that require more sophisticated behavior than what the default [`SimpleRelayPool`](/contextvm-docs/relay/simple-relay-pool) provides.
+The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandler`](/relay/relay-handler-interface) interface, allows developers to implement custom logic for managing Nostr-relay connections. This is particularly useful for advanced use cases that require more sophisticated behavior than what the default [`SimpleRelayPool`](/relay/simple-relay-pool) provides.
 
 ## Why Create a Custom Relay Handler?
 
@@ -90,5 +90,5 @@ Once your custom handler class is created, you can instantiate it and pass it to
 
 With the `Relay` component covered, we will now look at the high-level bridging components provided by the SDK.
 
-- **[Proxy](/contextvm-docs/proxy/overview)**
-- **[Gateway](/contextvm-docs/gateway/overview)**
+- **[Proxy](/proxy/overview)**
+- **[Gateway](/gateway/overview)**
