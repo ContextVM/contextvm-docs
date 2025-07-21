@@ -37,6 +37,8 @@ export default defineConfig({
           items: [
             { label: "Constants", slug: "core/constants" },
             { label: "Interfaces", slug: "core/interfaces" },
+            { label: "Relay handler", slug: "relay/relay-handler-interface" },
+            { label: "Nostr signer", slug: "signer/nostr-signer-interface" },
             { label: "Encryption", slug: "core/encryption" },
           ],
         },
@@ -48,11 +50,11 @@ export default defineConfig({
               slug: "transports/base-nostr-transport",
             },
             {
-              label: "Nostr Client",
+              label: "Nostr Client Transport",
               slug: "transports/nostr-client-transport",
             },
             {
-              label: "Nostr Server",
+              label: "Nostr Server Transport",
               slug: "transports/nostr-server-transport",
             },
           ],
@@ -72,6 +74,14 @@ export default defineConfig({
             {
               label: "Client-Server Communication",
               slug: "tutorials/client-server-communication",
+            },
+            {
+              label: "Custom Signer Development",
+              slug: "signer/custom-signer-development",
+            },
+            {
+              label: "Custom Relay Handler Development",
+              slug: "relay/custom-relay-handler",
             },
           ],
         },
