@@ -14,6 +14,7 @@ export default defineConfig({
         dark: "./src/assets/contextvm-logo.svg",
         replacesTitle: false,
       },
+      favicon: "./src/assets/favicon.svg",
       social: [
         {
           icon: "github",
