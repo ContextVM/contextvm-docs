@@ -485,14 +485,50 @@ This indicates that using the `get_weather` tool costs 100 satoshis. Clients can
 
 #### Payment Handling
 
-When a capability has pricing information, clients and servers should handle payments. The lifecycle of request with payment follows these steps:
+When a capability has pricing information, clients and servers should handle payments following W3C Payment Method Identifiers standards. The lifecycle of a paid request follows these steps:
 
 1. **Request**: Client sends a capability request to the server
-2. **Invoice Generation**: Server sends a `notifications/payment_required` notification with a payment request (e.g., Lightning Network invoice, Cashu PaymentRequest, Payment gateway URL, etc.)
+2. **Invoice Generation**: Server sends a `notifications/payment_required` notification with:
+   - Payment request details (invoice, amount, currency)
+   - Payment method identifier (standardized string or URL)
 3. **Payment Verification**: Client pays and the server verifies the payment
-4. **Capability Access**: Once payment is verified, the server processes the capability request, and responds with the result
+4. **Capability Access**: Once payment is verified, the server processes the capability request
 
 Payment verification is handled by the server and can be implemented using Lightning Network zaps (NIP-57) or other payment methods.
+
+### Payment Method Specification
+
+- **payment_method**: A string identifying the payment method used.
+  - MUST be a [standardized PMI string](https://www.w3.org/TR/2022/REC-payment-method-id-20220908/), matching the pattern: `[a-z0-9-]+` (e.g., `bitcoin`, `bitcoin-lightning`, `basic-card`)
+
+### Payment Required Notification Example
+
+```json
+{
+  "kind": 25910,
+  "pubkey": "<provider-pubkey>",
+  "content": {
+    "method": "notifications/payment_required",
+    "params": {
+      "amount": 1000,
+      "currency": "sats",
+      "invoice": "lnbc...",
+      "description": "Payment for tool execution",
+      "payment_method": "bitcoin-lightning" // or URL for custom methods
+    }
+  },
+  "tags": [
+    ["p", "<client-pubkey>"],
+    ["e", "<request-event-id>"]
+  ]
+}
+```
+
+**Valid payment_method examples:**
+
+- `"bitcoin"` - Bitcoin on-chain
+- `"bitcoin-lightning"` - Bitcoin Lightning
+- `"bitcoin-lightning-bolt11"` - Specific Lightning variant
 
 ## Encryption
 
@@ -585,28 +621,6 @@ In contrast, ContextVM uses ephemeral events that are not intended to be stored 
 All notifications in ContextVM follow the standard MCP notification format and conventions, using the unified kind 25910 event type. This includes notifications for payment requests, progress updates, and all other server-to-client or client-to-server communications.
 
 Notifications are constructed according to the MCP notification template. The direction is determined by the `p` tag: client-to-server notifications are signed by the client's pubkey and use the server's pubkey as the `p` tag; server-to-client notifications are signed by the server's provider pubkey and use the client's pubkey as the `p` tag.
-
-### Payment Required Notification Example
-
-```json
-{
-  "kind": 25910,
-  "pubkey": "<provider-pubkey>",
-  "content": {
-    "method": "notifications/payment_required",
-    "params": {
-      "amount": 1000,
-      "currency": "sats",
-      "invoice": "lnbc...",
-      "description": "Payment for tool execution"
-    }
-  },
-  "tags": [
-    ["p", "<client-pubkey>"],
-    ["e", "<request-event-id>"]
-  ]
-}
-```
 
 For long-running jobs, servers should send progress notifications frequently to indicate the job is still processing and to prevent client timeout.
 
