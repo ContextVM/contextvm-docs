@@ -44,9 +44,9 @@ This example demonstrates how to create a proxy that listens for a local client 
 
 ```typescript
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/stdio";
-import { NostrMCPProxy } from "@ctxvm/sdk/proxy";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrMCPProxy } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay handler for the Nostr connection
 const signer = new PrivateKeySigner("your-private-key");
@@ -81,4 +81,4 @@ In this setup, a separate MCP client process could connect to this proxy's `Stdi
 
 Next, we'll look at the server-side equivalent of the proxy:
 
-- **[Gateway](/gateway/overview)**
+- **[Gateway](/overview)**

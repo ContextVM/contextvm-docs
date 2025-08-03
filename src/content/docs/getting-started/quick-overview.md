@@ -32,7 +32,7 @@ The SDK is organized into several modules, each providing a specific set of func
 - **[Signer](/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
 - **[Relay](/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
 - **[Proxy](/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
-- **[Gateway](/gateway/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
+- **[Gateway](/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
 
 ## Core Concepts
 
@@ -61,7 +61,7 @@ These transports handle the serialization of MCP messages into Nostr events and 
 To simplify integration with existing MCP applications, the SDK provides two high-level bridging components:
 
 - [`NostrMCPProxy`](/proxy/overview): A client-side bridge that allows an MCP client to communicate with a remote MCP server over Nostr without requiring native Nostr support in the client.
-- [`NostrMCPGateway`](/gateway/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
+- [`NostrMCPGateway`](/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
 
 These components abstract away the underlying transport complexities, making it easy to connect conventional MCP setups with the decentralized Nostr ecosystem.
 

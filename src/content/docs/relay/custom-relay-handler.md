@@ -26,8 +26,8 @@ To create a custom relay handler, you need to create a class that implements the
 Here is a simple example of a custom `RelayHandler` that wraps the default `SimpleRelayPool` and adds logging to each operation. This illustrates how you can extend or compose existing handlers.
 
 ```typescript
-import { RelayHandler } from "@ctxvm/sdk/core";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { RelayHandler } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 import { Filter, NostrEvent } from "nostr-tools";
 
 class LoggingRelayHandler implements RelayHandler {
@@ -91,4 +91,4 @@ Once your custom handler class is created, you can instantiate it and pass it to
 With the `Relay` component covered, we will now look at the high-level bridging components provided by the SDK.
 
 - **[Proxy](/proxy/overview)**
-- **[Gateway](/gateway/overview)**
+- **[Gateway](/overview)**

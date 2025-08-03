@@ -37,10 +37,10 @@ Here's how you can use the `NostrClientTransport` with an MCP client from the `@
 
 ```typescript
 import { Client } from "@modelcontextprotocol/sdk/client";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { EncryptionMode } from "@ctxvm/sdk/core";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrClientTransport } from "@contextvm/sdk";
+import { EncryptionMode } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay handler
 const signer = new PrivateKeySigner("your-private-key"); // Replace with your actual private key

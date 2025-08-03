@@ -44,9 +44,9 @@ This example shows how to create a gateway that connects to a local MCP server (
 
 ```typescript
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/stdio";
-import { NostrMCPGateway } from "@ctxvm/sdk/gateway";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrMCPGateway } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay handler for the Nostr transport
 const signer = new PrivateKeySigner("your-gateway-private-key");

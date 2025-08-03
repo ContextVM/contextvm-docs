@@ -29,9 +29,9 @@ Create a new file named `server.ts`:
 
 ```typescript
 import { McpServer, Tool } from "@modelcontextprotocol/sdk/server";
-import { NostrServerTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrServerTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 import { generateSecretKey, getPublicKey } from "nostr-tools/pure";
 
 // --- Configuration ---
@@ -112,9 +112,9 @@ Create a new file named `client.ts`:
 
 ```typescript
 import { Client } from "@modelcontextprotocol/sdk/client";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrClientTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // --- Configuration ---
 // IMPORTANT: Replace with the server's public key from the server output

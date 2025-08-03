@@ -12,7 +12,7 @@ The Context Vending Machine (ContextVM) protocol defines how [Nostr](https://nos
 
 ## SDK Overview
 
-The `@ctxvm/sdk` provides the necessary components to interact with the CTXVM Protocol:
+The `@contextvm/sdk` provides the necessary components to interact with the CTXVM Protocol:
 
 - **Core Module**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
 - **Transports**: Critical for communication, providing `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
@@ -670,8 +670,8 @@ The standard implementation of NIP-17 is designed for persistent private message
 Encryption is configured at the transport level using the `EncryptionMode` enum. You can set the desired mode when creating a `NostrClientTransport` or `NostrServerTransport`.
 
 ```typescript
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { EncryptionMode } from "@ctxvm/sdk/core";
+import { NostrClientTransport } from "@contextvm/sdk";
+import { EncryptionMode } from "@contextvm/sdk";
 
 const transport = new NostrClientTransport({
   // ... other options
@@ -843,9 +843,9 @@ This example shows how to create a gateway that connects to a local MCP server (
 
 ```typescript
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/stdio";
-import { NostrMCPGateway } from "@ctxvm/sdk/gateway";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrMCPGateway } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay handler for the Nostr transport
 const signer = new PrivateKeySigner("your-gateway-private-key");
@@ -909,7 +909,7 @@ The SDK is organized into several modules, each providing a specific set of func
 - **[Signer](/contextvm-docs/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
 - **[Relay](/contextvm-docs/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
 - **[Proxy](/contextvm-docs/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
-- **[Gateway](/contextvm-docs/gateway/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
+- **[Gateway](/contextvm-docs/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
 
 ### Core Concepts
 
@@ -938,7 +938,7 @@ These transports handle the serialization of MCP messages into Nostr events and 
 To simplify integration with existing MCP applications, the SDK provides two high-level bridging components:
 
 - [`NostrMCPProxy`](/contextvm-docs/proxy/overview): A client-side bridge that allows an MCP client to communicate with a remote MCP server over Nostr without requiring native Nostr support in the client.
-- [`NostrMCPGateway`](/contextvm-docs/gateway/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
+- [`NostrMCPGateway`](/contextvm-docs/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
 
 These components abstract away the underlying transport complexities, making it easy to connect conventional MCP setups with the decentralized Nostr ecosystem.
 
@@ -987,9 +987,9 @@ This example demonstrates how to create a proxy that listens for a local client 
 
 ```typescript
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/stdio";
-import { NostrMCPProxy } from "@ctxvm/sdk/proxy";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrMCPProxy } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay handler for the Nostr connection
 const signer = new PrivateKeySigner("your-private-key");
@@ -1046,8 +1046,8 @@ To create a custom relay handler, you need to create a class that implements the
 Here is a simple example of a custom `RelayHandler` that wraps the default `SimpleRelayPool` and adds logging to each operation. This illustrates how you can extend or compose existing handlers.
 
 ```typescript
-import { RelayHandler } from "@ctxvm/sdk/core";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { RelayHandler } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 import { Filter, NostrEvent } from "nostr-tools";
 
 class LoggingRelayHandler implements RelayHandler {
@@ -1180,8 +1180,8 @@ The constructor takes a single argument:
 ### Usage Example
 
 ```typescript
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
+import { SimpleRelayPool } from "@contextvm/sdk";
+import { NostrClientTransport } from "@contextvm/sdk";
 
 // 1. Define the list of relays you want to connect to
 const myRelays = [
@@ -1241,7 +1241,7 @@ A common use case for a custom signer is in a web application that needs to inte
 Here is how you could implement a `NostrSigner` that wraps the `window.nostr` object:
 
 ```typescript
-import { NostrSigner } from "@ctxvm/sdk/core";
+import { NostrSigner } from "@contextvm/sdk";
 import { UnsignedEvent, NostrEvent } from "nostr-tools";
 
 // Define the NIP-07 window.nostr interface for type-safety
@@ -1393,7 +1393,7 @@ When instantiated, the `PrivateKeySigner` will immediately convert the hex strin
 ## Usage Example
 
 ```typescript
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
+import { PrivateKeySigner } from "@contextvm/sdk";
 
 // Replace with a securely stored private key
 const privateKeyHex = "your-32-byte-private-key-in-hex";
@@ -1511,10 +1511,10 @@ Here's how you can use the `NostrClientTransport` with an MCP client from the `@
 
 ```typescript
 import { Client } from "@modelcontextprotocol/sdk/client";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { EncryptionMode } from "@ctxvm/sdk/core";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrClientTransport } from "@contextvm/sdk";
+import { EncryptionMode } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay handler
 const signer = new PrivateKeySigner("your-private-key"); // Replace with your actual private key
@@ -1591,9 +1591,9 @@ Here's how to use the `NostrServerTransport` with an `McpServer` from the `@mode
 
 ```typescript
 import { McpServer } from "@modelcontextprotocol/sdk/server";
-import { NostrServerTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrServerTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay pool
 const signer = new PrivateKeySigner("your-server-private-key");
@@ -1674,9 +1674,9 @@ Create a new file named `server.ts`:
 
 ```typescript
 import { McpServer, Tool } from "@modelcontextprotocol/sdk/server";
-import { NostrServerTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrServerTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 import { generateSecretKey, getPublicKey } from "nostr-tools/pure";
 
 // --- Configuration ---
@@ -1757,9 +1757,9 @@ Create a new file named `client.ts`:
 
 ```typescript
 import { Client } from "@modelcontextprotocol/sdk/client";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { NostrClientTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // --- Configuration ---
 // IMPORTANT: Replace with the server's public key from the server output
