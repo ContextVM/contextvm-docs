@@ -8,12 +8,16 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "gen-llmtxt": "repomix --quiet --style plain --compress --no-file-summary --no-directory-structure -o ./public/llms.txt src/content"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.35.0",
     "astro": "^5.6.1",
     "prettier": "^3.6.2",
     "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "repomix": "^1.3.0"
   }
 }

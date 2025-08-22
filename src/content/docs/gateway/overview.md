@@ -30,12 +30,12 @@ To create a `NostrMCPGateway`, you need to provide a configuration object that i
 
 ```typescript
 export interface NostrMCPGatewayOptions {
-  mcpServerTransport: Transport;
+  mcpClientTransport: Transport;
   nostrTransportOptions: NostrServerTransportOptions;
 }
 ```
 
-- **`mcpServerTransport`**: An instance of a client-side MCP transport that the gateway will use to connect to your existing MCP server. For example, `new StdioClientTransport(...)`.
+- **`mcpClientTransport`**: An instance of a client-side MCP transport that the gateway will use to connect to your existing MCP server. For example, `new StdioClientTransport(...)`.
 - **`nostrTransportOptions`**: The full configuration object required by the `NostrServerTransport`. This includes the `signer`, `relayHandler`, and options like `isPublicServer`.
 
 ## Usage Example
@@ -53,14 +53,14 @@ const signer = new PrivateKeySigner("your-gateway-private-key");
 const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
 
 // 2. Configure the transport to connect to your existing MCP server
-const serverTransport = new StdioClientTransport({
+const clientTransport = new StdioClientTransport({
   command: "bun",
   args: ["run", "path/to/your/mcp-server.ts"],
 });
 
 // 3. Create the gateway instance
 const gateway = new NostrMCPGateway({
-  mcpServerTransport: serverTransport,
+  mcpClientTransport: clientTransport,
   nostrTransportOptions: {
     signer,
     relayHandler: relayPool,

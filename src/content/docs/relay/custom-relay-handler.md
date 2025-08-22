@@ -17,70 +17,67 @@ You might want to create a custom `RelayHandler` for several reasons:
 - **Custom Caching**: To implement a custom caching layer to reduce redundant requests to relays.
 - **Resiliency and-failover**: To build more robust-failover logic, such as automatically retrying failed connections or switching to backup relays.
 
+## Non-Blocking Subscription Requirement
+
+A critical requirement for implementing the `RelayHandler` interface is that the `subscribe` method must be **non-blocking**. This design ensures that the transport layer can create multiple subscriptions concurrently without waiting for each one to complete.
+
+### Key Implementation Principles
+
+1. **Immediate Return**: The `subscribe` method should return immediately after initiating the subscription
+2. **Internal State Management**: Store active subscriptions internally for lifecycle management
+3. **Automatic Reconnection**: Handle resubscription when connections are reestablished
+
 ## Implementing the `RelayHandler` Interface
 
 To create a custom relay handler, you need to create a class that implements the `RelayHandler` interface. This involves implementing five methods: `connect`, `disconnect`, `publish`, `subscribe`, and `unsubscribe`.
 
-### Example: A Handler with logging
-
-Here is a simple example of a custom `RelayHandler` that wraps the default `SimpleRelayPool` and adds logging to each operation. This illustrates how you can extend or compose existing handlers.
+### Implementation Pattern For Non-Blocking Subscriptions
 
 ```typescript
-import { RelayHandler } from "@contextvm/sdk";
-import { SimpleRelayPool } from "@contextvm/sdk";
-import { Filter, NostrEvent } from "nostr-tools";
-
-class LoggingRelayHandler implements RelayHandler {
-  private readonly innerHandler: RelayHandler;
-
-  constructor(relayUrls: string[]) {
-    this.innerHandler = new SimpleRelayPool(relayUrls);
-    console.log(
-      `[LoggingRelayHandler] Initialized with relays: ${relayUrls.join(", ")}`,
-    );
-  }
+class MyRelayHandler implements RelayHandler {
+  private subscriptions: Array<{
+    filters: Filter[];
+    onEvent: (event: NostrEvent) => void;
+    onEose?: () => void;
+    closer?: SubCloser; // Or similar subscription management object
+  }> = [];
 
   async connect(): Promise<void> {
-    console.log("[LoggingRelayHandler] Attempting to connect...");
-    await this.innerHandler.connect();
-    console.log("[LoggingRelayHandler] Connected successfully.");
+    // Connect to the relays
   }
 
-  async disconnect(): Promise<void> {
-    console.log("[LoggingRelayHandler] Disconnecting...");
-    await this.innerHandler.disconnect();
-    console.log("[LoggingRelayHandler] Disconnected.");
+  async disconnect(relayUrls?: string[]): Promise<void> {
+    // Disconnect from the relays
   }
 
-  publish(event: NostrEvent): void {
-    console.log(`[LoggingRelayHandler] Publishing event kind ${event.kind}...`);
-    this.innerHandler.publish(event);
+  async publish(event: NostrEvent): Promise<void> {
+    // Publish the event to the relays
   }
 
-  subscribe(filters: Filter[], onEvent: (event: NostrEvent) => void): void {
-    console.log(`[LoggingRelayHandler] Subscribing with filters:`, filters);
-    this.innerHandler.subscribe(filters, (event) => {
-      console.log(`[LoggingRelayHandler] Received event kind ${event.kind}`);
-      onEvent(event);
+  async subscribe(
+    filters: Filter[],
+    onEvent: (event: NostrEvent) => void,
+    onEose?: () => void,
+  ): Promise<void> {
+    // Create the subscription (non-blocking)
+    const closer = this.pool.subscribeMany(relayUrls, filters, {
+      onevent: onEvent,
+      oneose: onEose,
     });
+
+    // Store the subscription for management
+    this.subscriptions.push({ filters, onEvent, onEose, closer });
   }
 
   unsubscribe(): void {
-    console.log("[LoggingRelayHandler] Unsubscribing from all.");
-    this.innerHandler.unsubscribe();
+    // Close all active subscriptions
+    this.subscriptions.forEach((sub) => sub.closer?.close());
+    this.subscriptions = [];
   }
 }
-
-// Usage
-const loggingHandler = new LoggingRelayHandler(["wss://relay.damus.io"]);
-
-const transport = new NostrClientTransport({
-  relayHandler: loggingHandler,
-  // ... other options
-});
 ```
 
-This example demonstrates the composition pattern. For a more advanced handler, you might use a different underlying relay management library or implement the connection logic from scratch using WebSockets.
+This pattern is used by both [`SimpleRelayPool`](/relay/simple-relay-pool) and [`ApplesauceRelayPool`](/relay/applesauce-relay-pool) implementations.
 
 ## Using Your Custom Relay Handler
 
