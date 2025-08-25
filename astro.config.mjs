@@ -32,7 +32,7 @@ export default defineConfig({
           label: "Specification",
           items: [
             { label: "Specification", slug: "ctxvm-draft-spec" },
-            { label: "CVMEP - Guidelines", slug: "cvmep-guidelines" },
+            { label: "CEP - Guidelines", slug: "cep-guidelines" },
           ],
         },
         {
