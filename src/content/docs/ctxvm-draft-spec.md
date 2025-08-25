@@ -38,7 +38,6 @@ The Context Vending Machine (ContextVM) specification defines how Nostr can be u
     - [Call Tool Request](#call-tool-request)
     - [Call Tool Response](#call-tool-response)
 - [Encryption](#encryption)
-  - [Overview](#overview-1)
   - [Encryption Support Discovery](#encryption-support-discovery)
   - [Message Encryption Flow](#message-encryption-flow)
     - [1. Content Preparation](#1-content-preparation)
@@ -50,13 +49,7 @@ The Context Vending Machine (ContextVM) specification defines how Nostr can be u
     - [Encrypted Response Structure](#encrypted-response-structure)
 - [Notifications](#notifications)
   - [Notification Template](#notification-template)
-  - [Payment Required Notification](#payment-required-notification)
-- [Error Handling](#error-handling)
-  - [Error Types](#error-types)
-  - [Error Response Template](#error-response-template)
-- [Implementation Requirements](#implementation-requirements)
 - [Complete Protocol Flow](#complete-protocol-flow)
-- [Subscription Management](#subscription-management)
 
 ## Introduction
 
@@ -98,7 +91,7 @@ The cryptographic properties enable secure authorization flows for paid services
 
 The protocol uses these key design principles for message handling:
 
-1. **Content Field Structure**: The `content` field of Nostr events contains stringified MCP messages. All MCP message structures, are preserved exactly as defined in the MCP specification
+1. **Content Field Structure**: The `content` field of Nostr events contains stringified JSON-RPC MCP messages. All MCP message structures, are preserved exactly as defined in the MCP specification
 
 2. **Nostr Metadata in Tags**: All Nostr-specific metadata uses event tags:
    - `p`: Public key for addressing providers or clients
@@ -140,7 +133,7 @@ This specification defines these event kinds:
 
 ## Server Discovery
 
-ContextVM provides two methods of server discovery, the main differences between these two methods being the visibility of the servers and the way they are advertised. Public servers can advertise themselves and their capabilities to improve discoverability. Private servers may not advertise themselves and their capabilities, but they can be discovered by clients that know the provider's public key.
+ContextVM provides two methods of server discovery, the main differences between these two methods being the visibility of the servers and the way they are advertised. Public servers can advertise themselves and their capabilities to improve discoverability. Private servers may not advertise themselves and their capabilities, but they can be discovered by clients that know the server's public key.
 
 ### Discovery via Server Announcements (Public Servers)
 
