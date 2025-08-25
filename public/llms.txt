@@ -1,33 +1,16 @@
+================================================================
+Files
+================================================================
 
-## What is ContextVM?
-
-The Context Vending Machine (ContextVM) protocol defines how [Nostr](https://nostr.com/) and Model Context Protocol can be used to expose MCP server capabilities. It enables standardized usage of these resources through a decentralized, cryptographically secure messaging system. By integrating MCP with Nostr, ContextVM offers:
-
-- **Discoverability**: MCP servers can be discovered through the Nostr network without centralized registries.
-- **Verifiability**: All messages are cryptographically signed using Nostr's public keys.
-- **Authorization**: No complex authorization logic required, just cryptography.
-- **Decentralization**: No single point of failure for service discovery or communication.
-- **Protocol Interoperability**: Both MCP and ContextVMs utilize JSON-RPC patterns, enabling seamless communication.
-
-
-## SDK Overview
-
-The `@ctxvm/sdk` provides the necessary components to interact with the CTXVM Protocol:
-
-- **Core Module**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
-- **Transports**: Critical for communication, providing `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
-- **Proxy**: A client-side MCP server that connects to other servers through Nostr, exposing server capabilities locally. Particularly useful for clients that don't natively support Nostr transport.
-- **Gateway**: Implements Nostr server transport, binding to another MCP server and exposing its capabilities through the Nostr network.
-- **Relay**: Functionality for managing Nostr relays, abstracting relay interactions.
-- **Signer**: Provides cryptographic signing capabilities required for Nostr events.
-
-Both the Proxy and Gateway leverage Nostr transports, allowing existing MCP servers to maintain their conventional transports while gaining Nostr interoperability.
+================
+File: docs/core/constants.md
+================
+---
+title: Constants
+description: A set of constants used throughout the @contextvm/sdk.
+---
 
 # Constants
-A set of constants used throughout the @contextvm/sdk.
-
-
-## Constants
 
 The `@contextvm/sdk` exports a set of constants that are used throughout the library for event kinds, tags, and other protocol-specific values. These constants ensure consistency and alignment with the ContextVM specification.
 
@@ -57,6 +40,7 @@ The SDK defines an object `NOSTR_TAGS` that contains constants for the various N
 | `NAME`               | `name`               | The human-readable name of a server in an announcement.                |
 | `WEBSITE`            | `website`            | The URL of a server's website in an announcement.                      |
 | `PICTURE`            | `picture`            | The URL of a server's icon in an announcement.                         |
+| `ABOUT`              | `about`              | A tag for providing a short description of a server.                   |
 | `SUPPORT_ENCRYPTION` | `support_encryption` | A tag indicating that a server supports end-to-end encryption.         |
 
 ## Announcement Methods
@@ -73,6 +57,1619 @@ export const announcementMethods = {
 } as const;
 ```
 
+This object is used internally by the `NostrServerTransport` to construct announcement events.
+
+## Next Steps
+
+With a solid understanding of the core modules, you are now ready to explore the **[Transports](/transports/base-nostr-transport)**, which are responsible for all network communication in the SDK.
+
+================
+File: docs/core/encryption.md
+================
+---
+title: Encryption
+description: An overview of the encryption mechanism in the @contextvm/sdk.
+---
+
+# Encryption
+
+The `@contextvm/sdk` supports optional end-to-end encryption for all communication, providing enhanced privacy and security. This section explains the encryption mechanism, how to enable it, and the underlying principles.
+
+## Overview
+
+ContextVM's encryption leverages a simplified version of [NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md) to ensure:
+
+1.  **Message Content Privacy**: All MCP message content is encrypted using NIP-44.
+2.  **Metadata Protection**: The gift wrap pattern conceals participant identities and other metadata.
+3.  **Selective Encryption**: Clients and servers can negotiate encryption on a per-session basis.
+
+When encryption is enabled, all ephemeral messages (kind 25910) are wrapped in a kind 1059 gift wrap event. Server announcements and capability lists remain unencrypted for public discoverability.
+
+## How It Works
+
+The encryption flow is designed to be secure and efficient:
+
+1.  **Content Preparation**: The original MCP message is serialized into a standard Nostr event.
+2.  **Gift Wrapping**: The entire event is then encrypted using `nip44.v2` and wrapped inside a "gift wrap" event (kind 1059). A new, random keypair is generated for each gift wrap.
+3.  **Transmission**: The encrypted gift wrap event is published to the Nostr network.
+
+The recipient then unwraps the gift using their private key to decrypt the original message.
+
+### Why a Simplified NIP-17/NIP-59 Pattern?
+
+The standard implementation of NIP-17 is designed for persistent private messages and includes a "rumor" and "seal" mechanism to prevent message leakage. Since ContextVM messages are ephemeral and not intended to be stored by relays, this complexity is unnecessary. The SDK uses a more direct gift-wrapping approach that provides strong encryption and metadata protection without the overhead of the full NIP-17 standard.
+
+## Enabling Encryption
+
+Encryption is configured at the transport level using the `EncryptionMode` enum. You can set the desired mode when creating a `NostrClientTransport` or `NostrServerTransport`.
+
+```typescript
+import { NostrClientTransport } from "@contextvm/sdk";
+import { EncryptionMode } from "@contextvm/sdk";
+
+const transport = new NostrClientTransport({
+  // ... other options
+  encryptionMode: EncryptionMode.OPTIONAL, // or REQUIRED, DISABLED
+});
+```
+
+### `EncryptionMode`
+
+- **`REQUIRED`**: The transport will only communicate with peers that support encryption. If the other party does not support it, the connection will fail.
+- **`OPTIONAL`**: (Default) The transport will attempt to use encryption if the peer supports it. If not, it will fall back to unencrypted communication.
+- **`DISABLED`**: The transport will not use encryption, even if the peer supports it.
+
+## Encryption Support Discovery
+
+Clients and servers can discover if a peer supports encryption in two ways:
+
+1.  **Server Announcements**: Public server announcements (kind 11316) include a `support_encryption` tag to indicate that the server is capable of encrypted communication.
+2.  **Initialization Handshake**: During the MCP initialization process, both the client and server can signal their support for encryption.
+
+## API Reference
+
+The core encryption functions are exposed in the `core` module:
+
+- `encryptMessage(message: string, recipientPublicKey: string): NostrEvent`
+- `decryptMessage(event: NostrEvent, signer: NostrSigner): Promise<string>`
+
+These functions handle the low-level details of gift wrapping and unwrapping, but in most cases, you will interact with encryption through the transport's `encryptionMode` setting.
+
+## Next Steps
+
+Now that you understand how encryption works, let's look at the [Constants](/core/constants) used throughout the SDK.
+
+================
+File: docs/core/interfaces.md
+================
+---
+title: Interfaces
+description: A deep dive into the core interfaces used in the @contextvm/sdk.
+---
+
+# Core Interfaces
+
+The `@contextvm/sdk` is designed with a modular and extensible architecture, centered around a set of core interfaces. These interfaces define the essential components for signing, relay management, and communication.
+
+## `NostrSigner`
+
+The `NostrSigner` interface is fundamental for cryptographic operations within the SDK. It abstracts the logic for signing Nostr events, ensuring that all communications are authenticated and verifiable.
+
+### Definition
+
+```typescript
+export interface NostrSigner {
+  getPublicKey(): Promise<string>;
+  signEvent(event: EventTemplate): Promise<NostrEvent>;
+
+  // Optional NIP-04 encryption support (deprecated)
+  nip04?: {
+    encrypt: (pubkey: string, plaintext: string) => Promise<string>;
+    decrypt: (pubkey: string, ciphertext: string) => Promise<string>;
+  };
+
+  // Optional NIP-44 encryption support
+  nip44?: {
+    encrypt: (pubkey: string, plaintext: string) => Promise<string>;
+    decrypt: (pubkey: string, ciphertext: string) => Promise<string>;
+  };
+}
+```
+
+Any object that implements this interface can be used to sign events, allowing you to integrate with various key management systems, such as web, hardware wallets or remote signing services. The SDK provides a default implementation, `PrivateKeySigner`, which signs events using a raw private key.
+
+- **Learn more:** [`NostrSigner` Deep Dive](/signer/nostr-signer-interface/)
+- **Default Implementation:** [`PrivateKeySigner`](/signer/private-key-signer/)
+
+## `RelayHandler`
+
+The `RelayHandler` interface manages interactions with Nostr relays. It is responsible for subscribing to events and publishing events to the Nostr network.
+
+### Definition
+
+```typescript
+export interface RelayHandler {
+  connect(): Promise<void>;
+  disconnect(relayUrls?: string[]): Promise<void>;
+  publish(event: NostrEvent): Promise<void>;
+  subscribe(
+    filters: Filter[],
+    onEvent: (event: NostrEvent) => void,
+    onEose?: () => void,
+  ): Promise<void>;
+  unsubscribe(): void;
+}
+```
+
+By implementing this interface, you can create custom relay management logic, such as sophisticated relay selection strategies or custom reconnection policies. The SDK includes `SimpleRelayPool` as a default implementation.
+
+- **Learn more:** [`RelayHandler` Deep Dive](/relay/relay-handler-interface)
+- **Default Implementation:** [`SimpleRelayPool`](/relay/simple-relay-pool)
+
+## `EncryptionMode`
+
+The `EncryptionMode` enum defines the encryption policy for a transport.
+
+```typescript
+export enum EncryptionMode {
+  OPTIONAL = "optional",
+  REQUIRED = "required",
+  DISABLED = "disabled",
+}
+```
+
+This enum is used to configure the encryption behavior of the `NostrClientTransport` and `NostrServerTransport`.
+
+- **Learn more:** [Encryption](/core/encryption)
+
+## `ServerInfo`
+
+The `ServerInfo` interface provides metadata about a server, used by the Nostr server transport to add metadata to server announcements.
+
+### Definition
+
+```typescript
+export interface ServerInfo {
+  name?: string;
+  picture?: string;
+  website?: string;
+  about?: string;
+}
+```
+
+This interface allows servers to include descriptive information in their announcements, making them more discoverable and providing users with context about the server's purpose and identity.
+
+- **name**: A human-readable name for the server
+- **picture**: URL to an image representing the server
+- **website**: The server's official website or repository
+- **about**: A description of the server's purpose or content
+
+================
+File: docs/gateway/overview.md
+================
+---
+title: Gateway Overview
+description: Understanding the NostrMCPGateway component for bridging MCP and Nostr
+---
+
+# Gateway
+
+The `NostrMCPGateway` is a server-side bridging component that exposes a traditional MCP server to the Nostr network. It acts as a gateway, translating communication between Nostr-based clients and a standard MCP server.
+
+## Purpose and Capabilities
+
+The gateway manages two transports simultaneously:
+
+1.  **Nostr Server Transport**: A [`NostrServerTransport`](/transports/nostr-server-transport) that listens for incoming connections from clients on the Nostr network.
+2.  **MCP Server Transport**: A standard MCP client transport (like `StdioClientTransport`) that connects to a local or remote MCP server.
+
+The gateway's role is to forward requests from Nostr clients to the MCP server and relay the server's responses back to the appropriate client on Nostr.
+
+## Integration Scenarios
+
+The `NostrMCPGateway` is ideal for:
+
+- **Exposing Existing Servers**: If you have an existing MCP server, you can use the gateway to make it accessible to Nostr clients without modifying the server's core logic. The server continues to operate with its standard transport, while the gateway handles all Nostr-related communication.
+- **Decoupling Services**: You can run your core MCP server in a secure environment and use the gateway as a public-facing entry point on the Nostr network. The gateway can be configured with its own security policies (like `allowedPublicKeys`).
+- **Adding Nostr Capabilities**: It allows you to add features like public server announcements and decentralized discovery to a conventional MCP server.
+
+## `NostrMCPGatewayOptions`
+
+To create a `NostrMCPGateway`, you need to provide a configuration object that implements the `NostrMCPGatewayOptions` interface:
+
+```typescript
+export interface NostrMCPGatewayOptions {
+  mcpClientTransport: Transport;
+  nostrTransportOptions: NostrServerTransportOptions;
+}
+```
+
+- **`mcpClientTransport`**: An instance of a client-side MCP transport that the gateway will use to connect to your existing MCP server. For example, `new StdioClientTransport(...)`.
+- **`nostrTransportOptions`**: The full configuration object required by the `NostrServerTransport`. This includes the `signer`, `relayHandler`, and options like `isPublicServer`.
+
+## Usage Example
+
+This example shows how to create a gateway that connects to a local MCP server (running in a separate process) and exposes it to the Nostr network.
+
+```typescript
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/stdio";
+import { NostrMCPGateway } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
+
+// 1. Configure the signer and relay handler for the Nostr transport
+const signer = new PrivateKeySigner("your-gateway-private-key");
+const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
+
+// 2. Configure the transport to connect to your existing MCP server
+const clientTransport = new StdioClientTransport({
+  command: "bun",
+  args: ["run", "path/to/your/mcp-server.ts"],
+});
+
+// 3. Create the gateway instance
+const gateway = new NostrMCPGateway({
+  mcpClientTransport: clientTransport,
+  nostrTransportOptions: {
+    signer,
+    relayHandler: relayPool,
+    isPublicServer: true, // Announce this gateway on Nostr
+  },
+});
+
+// 4. Start the gateway
+await gateway.start();
+
+console.log("Gateway is running, exposing the MCP server to Nostr.");
+
+// To stop the gateway: await gateway.stop();
+```
+
+## Next Steps
+
+This concludes the core components of the SDK. The final section provides practical examples of how to use these components together.
+
+- **[Tutorials](/tutorials/client-server-communication)**
+
+================
+File: docs/getting-started/quick-overview.md
+================
+---
+title: Quick Overview
+description: An overview of the @contextvm/sdk, including its modules and core concepts.
+---
+
+# SDK Quick Overview
+
+This overview introduces the essential modules and core concepts of the `@contextvm/sdk`. Understanding these fundamentals will help you leverage the full power of the ContextVM protocol.
+
+## Installation
+
+`@contextvm/sdk` is distributed as an NPM package, making it easy to integrate into your project.
+
+## Install the SDK
+
+Run the following command in your terminal:
+
+```bash
+npm install @contextvm/sdk
+```
+
+This will install the SDK and its dependencies into your project.
+
+**Note:** If you are using a different package manager than NPM, just replace `npm` with the appropriate command for your package manager.
+
+## Modules Introduction
+
+The SDK is organized into several modules, each providing a specific set of functionalities:
+
+- **[Core](/core/interfaces)**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
+- **[Transports](/transports/base-nostr-transport)**: Critical for communication, this module provides `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
+- **[Signer](/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
+- **[Relay](/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
+- **[Proxy](/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
+- **[Gateway](/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
+
+## Core Concepts
+
+The `@contextvm/sdk` is built around a few core concepts that enable the bridging of MCP and Nostr.
+
+### Signers and Relay Handlers
+
+At the heart of the SDK are two key interfaces:
+
+- **`NostrSigner`**: An interface for signing Nostr events. The SDK includes a default `PrivateKeySigner`, but you can create a custom implementation to integrate with other signing mechanisms (e.g., Window.nostr for web, remote signers, etc).
+- **`RelayHandler`**: An interface for managing connections to Nostr relays. The default `SimpleRelayPool` provides basic relay management, but you can implement your own logic for more sophisticated relay selection and management.
+
+These components are fundamental for creating and broadcasting Nostr events, which are the backbone of ContextVM communication.
+
+### Nostr Transports
+
+The SDK provides two specialized transports to send and receive MCP messages over the Nostr network:
+
+- [`NostrClientTransport`](/transports/nostr-client-transport): Used by MCP clients to connect to remote MCP servers exposed via Nostr.
+- [`NostrServerTransport`](/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr.
+
+These transports handle the serialization of MCP messages into Nostr events and manage the communication flow.
+
+### Bridging Components: Proxy and Gateway
+
+To simplify integration with existing MCP applications, the SDK provides two high-level bridging components:
+
+- [`NostrMCPProxy`](/proxy/overview): A client-side bridge that allows an MCP client to communicate with a remote MCP server over Nostr without requiring native Nostr support in the client.
+- [`NostrMCPGateway`](/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
+
+These components abstract away the underlying transport complexities, making it easy to connect conventional MCP setups with the decentralized Nostr ecosystem.
+
+## Next Steps
+
+Now that you have a basic understanding of the SDK's modules and concepts, you are ready to dive deeper. Explore the **Core Modules** section to learn about the fundamental interfaces and data structures.
+
+================
+File: docs/proxy/overview.md
+================
+---
+title: Proxy Overview
+description: A client-side bridging component for the @contextvm/sdk.
+---
+
+# Proxy
+
+The `NostrMCPProxy` is a powerful, client-side bridging component in the `@contextvm/sdk`. Its primary function is to act as a local proxy that translates communication between a standard MCP client and a remote, Nostr-based MCP server.
+
+## Functionality Overview
+
+The proxy manages two transports simultaneously:
+
+1.  **MCP Host Transport**: This is a standard MCP transport (like `StdioServerTransport`) that communicates with a local MCP client application.
+2.  **Nostr Client Transport**: This is a [`NostrClientTransport`](/transports/nostr-client-transport) that communicates with the remote MCP server over the Nostr network.
+
+The proxy sits in the middle, seamlessly forwarding messages between these two transports. When the local client sends a request, the proxy forwards it over Nostr. When the remote server sends a response, the proxy relays it back to the local client.
+
+## Use Cases and Capabilities
+
+The `NostrMCPProxy` is particularly useful in the following scenarios:
+
+- **Integrating with Existing Clients**: If you have an existing MCP client that does not have native Nostr support, you can use the proxy to enable it to communicate with Nostr-based MCP servers without modifying the client's code. The client simply connects to the proxy's local transport.
+- **Simplifying Client-Side Logic**: The proxy abstracts away all the complexities of Nostr communication (signing, relay management, encryption), allowing your main client application to remain simple and focused on its core tasks.
+- **Local Development and Testing**: The proxy can be a valuable tool for local development, allowing you to easily test a client against a remote Nostr server.
+
+## `NostrMCPProxyOptions`
+
+To create a `NostrMCPProxy`, you need to provide a configuration object that implements the `NostrMCPProxyOptions` interface:
+
+```typescript
+export interface NostrMCPProxyOptions {
+  mcpHostTransport: Transport;
+  nostrTransportOptions: NostrTransportOptions;
+}
+```
+
+- **`mcpHostTransport`**: An instance of a server-side MCP transport that the local client will connect to. For example, `new StdioServerTransport()`.
+- **`nostrTransportOptions`**: The full configuration object required by the `NostrClientTransport`. This includes the `signer`, `relayHandler`, and the remote `serverPubkey`.
+
+## Usage Example
+
+This example demonstrates how to create a proxy that listens for a local client over standard I/O and connects to a remote server over Nostr.
+
+```typescript
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/stdio";
+import { NostrMCPProxy } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
+
+// 1. Configure the signer and relay handler for the Nostr connection
+const signer = new PrivateKeySigner("your-private-key");
+const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
+const REMOTE_SERVER_PUBKEY = "remote-server-public-key";
+
+// 2. Configure the transport for the local client
+// In this case, a stdio transport that the local client can connect to
+const hostTransport = new StdioServerTransport();
+
+// 3. Create the proxy instance
+const proxy = new NostrMCPProxy({
+  mcpHostTransport: hostTransport,
+  nostrTransportOptions: {
+    signer,
+    relayHandler: relayPool,
+    serverPubkey: REMOTE_SERVER_PUBKEY,
+  },
+});
+
+// 4. Start the proxy
+await proxy.start();
+
+console.log("Proxy is running. Connect your local MCP client.");
+
+// To stop the proxy: await proxy.stop();
+```
+
+In this setup, a separate MCP client process could connect to this proxy's `StdioServerTransport` and it would be transparently communicating with the remote server on Nostr.
+
+## Next Steps
+
+Next, we'll look at the server-side equivalent of the proxy:
+
+- **[Gateway](/overview)**
+
+================
+File: docs/relay/applesauce-relay-pool.md
+================
+---
+title: ApplesauceRelayPool
+description: An advanced relay handler implementation using the applesauce-relay library for the @contextvm/sdk.
+---
+
+# `ApplesauceRelayPool`
+
+The `ApplesauceRelayPool` is an advanced implementation of the [`RelayHandler`](/relay/relay-handler-interface) interface that uses the `applesauce-relay` library. It provides sophisticated relay management with automatic reconnection, connection monitoring, and robust subscription handling.
+
+## Overview
+
+The `ApplesauceRelayPool` offers enhanced features compared to the basic [`SimpleRelayPool`](/relay/simple-relay-pool):
+
+- **Automatic Connection Management**: Uses `RelayPool` for efficient connection handling
+- **Connection Monitoring**: Monitors relay connections and automatically resubscribes when connections are lost
+- **Retry Logic**: Built-in retry mechanisms for failed operations
+- **Observable-based Architecture**: Leverages RxJS-style observables for event handling
+- **Advanced Subscription Management**: Persistent subscriptions with automatic reconnection
+
+This implementation is ideal for applications that require more sophisticated relay management and better resilience against network interruptions.
+
+## `constructor(relayUrls: string[])`
+
+The constructor takes a single argument:
+
+- **`relayUrls`**: An array of strings, where each string is the URL of a Nostr relay (e.g., `wss://relay.damus.io`).
+
+## Usage Example
+
+```typescript
+import { ApplesauceRelayPool } from "@contextvm/sdk";
+import { NostrClientTransport } from "@contextvm/sdk";
+
+// 1. Define the list of relays you want to connect to
+const myRelays = [
+  "wss://relay.damus.io",
+  "wss://relay.primal.net",
+  "wss://nos.lol",
+];
+
+// 2. Create an instance of the ApplesauceRelayPool
+const relayPool = new ApplesauceRelayPool(myRelays);
+
+// 3. Pass the instance to a transport
+const transport = new NostrClientTransport({
+  relayHandler: relayPool,
+  // ... other options
+});
+```
+
+## How It Works
+
+The `ApplesauceRelayPool` implements the `RelayHandler` interface using the `applesauce-relay` library:
+
+### Connection Management
+
+- **`connect()`**: Validates relay URLs and initializes the `RelayPool`. The pool automatically manages connections to relays as needed.
+- **`disconnect()`**: Closes all active subscriptions and clears internal state. Note that the underlying `RelayPool` manages connections automatically.
+
+### Event Publishing
+
+- **`publish(event)`**: Uses `relayGroup.publish()` which includes automatic retry logic. The method returns a Promise that resolves when the publish operation completes.
+
+### Subscription Management
+
+- **`subscribe(filters, onEvent, onEose)`**: Creates a persistent subscription using `relayGroup.subscription()` with automatic reconnection. Subscriptions are tracked internally for lifecycle management.
+- **`unsubscribe()`**: Closes all active subscriptions and clears the internal subscription tracking.
+
+### Advanced Features
+
+#### Connection Monitoring
+
+The pool automatically monitors relay connections and triggers resubscription when connections are lost:
+
+```typescript
+private setupConnectionMonitoring(): void {
+  this.pool.relays$.subscribe((relays) => {
+    relays.forEach((relay) => {
+      relay.connected$.subscribe((connected) => {
+        if (!connected) {
+          this.resubscribeAll();
+        }
+      });
+    });
+  });
+}
+```
+
+#### Automatic Resubscription
+
+When a relay connection is lost and reestablished, the pool automatically resubscribes to all active subscriptions:
+
+```typescript
+private resubscribeAll(): void {
+  this.subscriptions.forEach((sub) => {
+    if (sub.closer) sub.closer.unsubscribe();
+    sub.closer = this.createSubscription(
+      sub.filters,
+      sub.onEvent,
+      sub.onEose,
+    );
+  });
+}
+```
+
+#### Error Handling
+
+The implementation includes comprehensive error handling for both publishing and subscription operations:
+
+- **Publish Errors**: Logs warnings for failed publishes but doesn't reject the Promise unless there's a critical error
+- **Subscription Errors**: Removes failed subscriptions from tracking and logs the error
+
+## Key Differences from SimpleRelayPool
+
+| Feature                      | SimpleRelayPool                      | ApplesauceRelayPool                       |
+| ---------------------------- | ------------------------------------ | ----------------------------------------- |
+| **Library**                  | `nostr-tools`                        | `applesauce-relay`                        |
+| **Connection Management**    | Manual connection tracking           | Automatic connection management           |
+| **Reconnection**             | Manual reconnection logic            | Automatic reconnection with monitoring    |
+| **Retry Logic**              | Basic retry with exponential backoff | Built-in retry mechanisms                 |
+| **Subscription Persistence** | Manual resubscription                | Automatic resubscription on reconnect     |
+| **Error Handling**           | Basic error logging                  | Comprehensive error handling with cleanup |
+
+## When to Use ApplesauceRelayPool
+
+Consider using `ApplesauceRelayPool` when:
+
+- You need robust connection management and automatic reconnection
+- Your application requires high availability and resilience
+- You want advanced subscription management with automatic recovery
+- You're building a production application that needs to handle network interruptions gracefully
+
+For simpler use cases or when you want to minimize dependencies, the [`SimpleRelayPool`](/relay/simple-relay-pool) may be sufficient.
+
+## Next Steps
+
+- Learn how to build a custom relay handler: **[Custom Relay Handler](/relay/custom-relay-handler)**
+- Understand the relay handler interface: **[Relay Handler Interface](/relay/relay-handler-interface)**
+
+================
+File: docs/relay/custom-relay-handler.md
+================
+---
+title: Custom Relay Handler Development
+description: Learn how to create a custom relay handler for the @contextvm/sdk.
+---
+
+# Custom Relay Handler Development
+
+The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandler`](/relay/relay-handler-interface) interface, allows developers to implement custom logic for managing Nostr-relay connections. This is particularly useful for advanced use cases that require more sophisticated behavior than what the default [`SimpleRelayPool`](/relay/simple-relay-pool) provides.
+
+## Why Create a Custom Relay Handler?
+
+You might want to create a custom `RelayHandler` for several reasons:
+
+- **Intelligent Relay Selection**: To dynamically select relays based on performance, reliability, or the specific type of data being requested. For example, you might use a different set of relays for fetching user metadata versus broadcasting messages.
+- **Auth Relays**: To integrate with auth relays that require authentication or specific connection logic.
+- **Dynamic Relay Discovery**: To discover and connect to new relays at runtime, rather than using a static list.
+- **Custom Caching**: To implement a custom caching layer to reduce redundant requests to relays.
+- **Resiliency and-failover**: To build more robust-failover logic, such as automatically retrying failed connections or switching to backup relays.
+
+## Non-Blocking Subscription Requirement
+
+A critical requirement for implementing the `RelayHandler` interface is that the `subscribe` method must be **non-blocking**. This design ensures that the transport layer can create multiple subscriptions concurrently without waiting for each one to complete.
+
+### Key Implementation Principles
+
+1. **Immediate Return**: The `subscribe` method should return immediately after initiating the subscription
+2. **Internal State Management**: Store active subscriptions internally for lifecycle management
+3. **Automatic Reconnection**: Handle resubscription when connections are reestablished
+
+## Implementing the `RelayHandler` Interface
+
+To create a custom relay handler, you need to create a class that implements the `RelayHandler` interface. This involves implementing five methods: `connect`, `disconnect`, `publish`, `subscribe`, and `unsubscribe`.
+
+### Implementation Pattern For Non-Blocking Subscriptions
+
+```typescript
+class MyRelayHandler implements RelayHandler {
+  private subscriptions: Array<{
+    filters: Filter[];
+    onEvent: (event: NostrEvent) => void;
+    onEose?: () => void;
+    closer?: SubCloser; // Or similar subscription management object
+  }> = [];
+
+  async connect(): Promise<void> {
+    // Connect to the relays
+  }
+
+  async disconnect(relayUrls?: string[]): Promise<void> {
+    // Disconnect from the relays
+  }
+
+  async publish(event: NostrEvent): Promise<void> {
+    // Publish the event to the relays
+  }
+
+  async subscribe(
+    filters: Filter[],
+    onEvent: (event: NostrEvent) => void,
+    onEose?: () => void,
+  ): Promise<void> {
+    // Create the subscription (non-blocking)
+    const closer = this.pool.subscribeMany(relayUrls, filters, {
+      onevent: onEvent,
+      oneose: onEose,
+    });
+
+    // Store the subscription for management
+    this.subscriptions.push({ filters, onEvent, onEose, closer });
+  }
+
+  unsubscribe(): void {
+    // Close all active subscriptions
+    this.subscriptions.forEach((sub) => sub.closer?.close());
+    this.subscriptions = [];
+  }
+}
+```
+
+This pattern is used by both [`SimpleRelayPool`](/relay/simple-relay-pool) and [`ApplesauceRelayPool`](/relay/applesauce-relay-pool) implementations.
+
+## Using Your Custom Relay Handler
+
+Once your custom handler class is created, you can instantiate it and pass it to any component that requires a `RelayHandler`, such as the `NostrClientTransport` or `NostrServerTransport`. The SDK will then use your custom logic for all relay interactions.
+
+## Next Steps
+
+With the `Relay` component covered, we will now look at the high-level bridging components provided by the SDK.
+
+- **[Proxy](/proxy/overview)**
+- **[Gateway](/overview)**
+
+================
+File: docs/relay/relay-handler-interface.md
+================
+---
+title: RelayHandler Interface
+description: An interface for managing Nostr relay connections.
+---
+
+# `RelayHandler` Interface
+
+The `RelayHandler` interface is another crucial abstraction in the `@contextvm/sdk`. It defines the standard for managing connections to Nostr relays, which are the backbone of the Nostr network responsible for message propagation.
+
+## Purpose and Design
+
+The `RelayHandler`'s purpose is to abstract the complexities of relay management, including:
+
+- Connecting and disconnecting from a set of relays.
+- Subscribing to events with specific filters.
+- Publishing events to the network.
+- Handling relay-specific logic, such as connection retries, timeouts, and relay selection.
+
+By depending on this interface, the SDK's transports can remain agnostic about the specific relay management strategy being used. This allows developers to plug in different relay handlers to suit their needs.
+
+## Non-Blocking Subscription Model
+
+A critical aspect of the `RelayHandler` interface is that the `subscribe` method must be **non-blocking**. This design choice ensures that transports can create multiple subscriptions without waiting for each one to complete, allowing for efficient concurrent event handling.
+
+### Key Design Principles
+
+1. **Immediate Return**: The `subscribe` method should return immediately after initiating the subscription, without awaiting the subscription's completion.
+
+2. **Internal Subscription Management**: Relay handlers must maintain active subscriptions internally, typically using an array or similar data structure to track subscription state.
+
+3. **Automatic Reconnection**: Subscriptions should automatically resubscribe when connections are reestablished, ensuring continuous event delivery even during network interruptions.
+
+## Interface Definition
+
+The `RelayHandler` interface is defined in [`core/interfaces.ts`](/core/interfaces#relayhandler) and includes several key methods:
+
+```typescript
+export interface RelayHandler {
+  connect(): Promise<void>;
+  disconnect(relayUrls?: string[]): Promise<void>;
+  publish(event: NostrEvent): Promise<void>;
+  subscribe(
+    filters: Filter[],
+    onEvent: (event: NostrEvent) => void,
+    onEose?: () => void,
+  ): Promise<void>;
+  unsubscribe(): void;
+}
+```
+
+- `connect()`: Establishes connections to the configured relays.
+- `disconnect()`: Closes connections to all relays.
+- `subscribe(filters, onEvent)`: Creates a subscription on the connected relays, listening for events that match the provided filters and passing them to the `onEvent` callback, it also accepts an optional `onEose` callback that is called when the relay reach "end of stored events".
+- `unsubscribe()`: Closes all active subscriptions.
+- `publish(event)`: Publishes a Nostr event to the connected relays.
+
+## Implementations
+
+The SDK provides a default implementation for common use cases and allows for custom implementations for advanced scenarios.
+
+- **[SimpleRelayPool](/relay/simple-relay-pool)**: The default implementation, which manages a pool of relays and handles connection and subscription logic.
+- **[Custom Relay Handler](/relay/custom-relay-handler)**: For creating custom relay handlers that integrate with specific relay management systems, such as auth relays or custom caching.
+
+## Next Steps
+
+- Learn about the default implementation: **[SimpleRelayPool](/relay/simple-relay-pool)**
+- Learn how to create your own: **[Custom Relay Handler](/relay/custom-relay-handler)**
+
+================
+File: docs/relay/simple-relay-pool.md
+================
+---
+title: SimpleRelayPool
+description: A default relay handler implementation for the @contextvm/sdk.
+---
+
+# `SimpleRelayPool`
+
+The `SimpleRelayPool` is the default implementation of the [`RelayHandler`](/relay/relay-handler-interface) interface provided by the `@contextvm/sdk`. It uses the `SimplePool` from the `nostr-tools` library to manage connections to a list of specified relays.
+
+## Overview
+
+The `SimpleRelayPool` provides a straightforward way to manage relay connections for most common use cases. Its responsibilities include:
+
+- Connecting to a predefined list of Nostr relays.
+- Publishing events to all relays in the pool.
+- Subscribing to events from all relays in the pool.
+- Managing the lifecycle of connections and subscriptions.
+
+It is a simple but effective solution for applications that need to interact with a static set of relays.
+
+## `constructor(relayUrls: string[])`
+
+The constructor takes a single argument:
+
+- **`relayUrls`**: An array of strings, where each string is the URL of a Nostr relay (e.g., `wss://relay.damus.io`).
+
+## Usage Example
+
+```typescript
+import { SimpleRelayPool } from "@contextvm/sdk";
+import { NostrClientTransport } from "@contextvm/sdk";
+
+// 1. Define the list of relays you want to connect to
+const myRelays = [
+  "wss://relay.damus.io",
+  "wss://relay.primal.net",
+  "wss://nos.lol",
+];
+
+// 2. Create an instance of the SimpleRelayPool
+const relayPool = new SimpleRelayPool(myRelays);
+
+// 3. Pass the instance to a transport
+const transport = new NostrClientTransport({
+  relayHandler: relayPool,
+  // ... other options
+});
+```
+
+## How It Works
+
+The `SimpleRelayPool` wraps the `SimplePool` from `nostr-tools` and implements the methods of the `RelayHandler` interface:
+
+- **`connect()`**: Iterates through the provided `relayUrls` and calls `pool.ensureRelay()` for each one, which establishes a connection if one doesn't already exist.
+- **`disconnect()`**: Closes the connections to the specified relays.
+- **`publish(event)`**: Publishes the given event to all relays in the pool by calling `pool.publish()`.
+- **`subscribe(filters, onEvent)`**: Creates a subscription on all relays in the pool using `pool.subscribeMany()`. It tracks all active subscriptions so they can be closed later.
+- **`unsubscribe()`**: Closes all active subscriptions that were created through the `subscribe` method.
+
+## Limitations
+
+The `SimpleRelayPool` is designed for simplicity. It connects to all provided relays and does not include advanced features.
+
+For applications that require more sophisticated relay management, you may want to create a [Custom Relay Handler](/relay/custom-relay-handler).
+
+## Next Steps
+
+- Learn how to build a custom relay handler: **[Custom Relay Handler](/relay/custom-relay-handler)**
+
+================
+File: docs/signer/custom-signer-development.md
+================
+---
+title: Custom Signer Development
+description: Learn how to create a custom signer for the @contextvm/sdk.
+---
+
+# Custom Signer Development
+
+One of the key design features of the `@contextvm/sdk` is its modularity, which is exemplified by the [`NostrSigner`](/signer/nostr-signer-interface) interface. By creating your own implementation of this interface, you can integrate the SDK with any key management system, such as a hardware wallet, a remote signing service (like an HSM), or a browser extension.
+
+## Why Create a Custom Signer?
+
+While the [`PrivateKeySigner`](/signer/private-key-signer) is a common choice for most applications, there are cases where you may need to use a different approach:
+
+- **Security is paramount**: You need to keep private keys isolated from the main application logic, for example, in a hardware security module (HSM) or a secure enclave.
+- **Interacting with external wallets**: Your application needs to request signatures from a user's wallet, such as a browser extension (e.g., Alby, Noster) or a mobile wallet.
+- **Complex key management**: Your application uses a more complex key management architecture that doesn't involve direct access to raw private keys.
+
+## Implementing the `NostrSigner` Interface
+
+To create a custom signer, you need to create a class that implements the `NostrSigner` interface. This involves implementing two main methods: `getPublicKey()` and `signEvent()`, as well as an optional `nip44` object for encryption.
+
+### Example: A NIP-07 Browser Signer (window.nostr)
+
+A common use case for a custom signer is in a web application that needs to interact with a Nostr browser extension (like Alby, nos2x, or Blockcore) that exposes the `window.nostr` object according to [NIP-07](https://github.com/nostr-protocol/nips/blob/master/07.md). This allows the application to request signatures and encryption from the user's wallet without ever handling private keys directly.
+
+Here is how you could implement a `NostrSigner` that wraps the `window.nostr` object:
+
+```typescript
+import { NostrSigner } from "@contextvm/sdk";
+import { UnsignedEvent, NostrEvent } from "nostr-tools";
+
+// Define the NIP-07 window.nostr interface for type-safety
+declare global {
+  interface Window {
+    nostr?: {
+      getPublicKey(): Promise<string>;
+      signEvent(event: UnsignedEvent): Promise<NostrEvent>;
+      nip44?: {
+        encrypt(pubkey: string, plaintext: string): Promise<string>;
+        decrypt(pubkey: string, ciphertext: string): Promise<string>;
+      };
+    };
+  }
+}
+
+class Nip07Signer implements NostrSigner {
+  constructor() {
+    if (!window.nostr) {
+      throw new Error("NIP-07 compatible browser extension not found.");
+    }
+  }
+
+  async getPublicKey(): Promise<string> {
+    if (!window.nostr) throw new Error("window.nostr not found.");
+    return await window.nostr.getPublicKey();
+  }
+
+  async signEvent(event: UnsignedEvent): Promise<NostrEvent> {
+    if (!window.nostr) throw new Error("window.nostr not found.");
+    return await window.nostr.signEvent(event);
+  }
+
+  nip44 = {
+    encrypt: async (pubkey: string, plaintext: string): Promise<string> => {
+      if (!window.nostr?.nip44) {
+        throw new Error("The extension does not support NIP-44 encryption.");
+      }
+      return await window.nostr.nip44.encrypt(pubkey, plaintext);
+    },
+
+    decrypt: async (pubkey: string, ciphertext: string): Promise<string> => {
+      if (!window.nostr?.nip44) {
+        throw new Error("The extension does not support NIP-44 decryption.");
+      }
+      return await window.nostr.nip44.decrypt(pubkey, ciphertext);
+    },
+  };
+}
+```
+
+### Implementing `nip44` for Decryption
+
+When using a NIP-07 signer, the `nip44` implementation is straightforward, as you can see in the example above. You simply delegate the calls to the `window.nostr.nip44` object.
+
+It's important to include checks to ensure that the user's browser extension supports `nip44`, as it is an optional part of the NIP-07 specification. If the extension does not support it, you should throw an error to prevent unexpected behavior.
+
+## Using Your Custom Signer
+
+Once your custom signer class is created, you can instantiate it and pass it to any component that requires a `NostrSigner`, such as the `NostrClientTransport` or `NostrServerTransport`. The rest of the SDK will use your custom implementation seamlessly.
+
+## Next Steps
+
+With the `Signer` component covered, let's move on to the **[Relay](/relay/simple-relay-pool)** component, which handles the connection and management of Nostr relays.
+
+================
+File: docs/signer/nostr-signer-interface.md
+================
+---
+title: NostrSigner Interface
+description: An interface for signing Nostr events.
+---
+
+# `NostrSigner` Interface
+
+The `NostrSigner` interface is a central component of the `@contextvm/sdk`, defining the standard for cryptographic signing operations. Every Nostr event must be signed by a private key to be considered valid, and this interface provides a consistent, pluggable way to handle this requirement.
+
+## Purpose and Design
+
+The primary purpose of the `NostrSigner` is to abstract the process of event signing. By depending on this interface rather than a concrete implementation, the SDK's transports and other components can remain agnostic about how and where private keys are stored and used.
+
+This design offers several key benefits:
+
+- **Security**: Private keys can be managed in secure environments (e.g., web extensions, hardware wallets, dedicated signing services) without exposing them to the application logic.
+- **Flexibility**: Developers can easily swap out the default signer with a custom implementation that meets their specific needs.
+- **Modularity**: The signing logic is decoupled from the communication logic, leading to a cleaner, more maintainable codebase.
+
+## Interface Definition
+
+The `NostrSigner` interface is defined in [`core/interfaces.ts`](/core/interfaces#nostrsigner).
+
+```typescript
+export interface NostrSigner {
+  getPublicKey(): Promise<string>;
+  signEvent(event: EventTemplate): Promise<NostrEvent>;
+
+  // Optional NIP-04 encryption support (deprecated)
+  nip04?: {
+    encrypt: (pubkey: string, plaintext: string) => Promise<string>;
+    decrypt: (pubkey: string, ciphertext: string) => Promise<string>;
+  };
+
+  // Optional NIP-44 encryption support
+  nip44?: {
+    encrypt: (pubkey: string, plaintext: string) => Promise<string>;
+    decrypt: (pubkey: string, ciphertext: string) => Promise<string>;
+  };
+}
+```
+
+- `getPublicKey()`: Asynchronously returns the public key corresponding to the signer's private key.
+- `signEvent(event)`: Takes an unsigned Nostr event, signs it, and returns the signature.
+- `nip04`: (Deprecated) Provides NIP-04 encryption support.
+- `nip44`: Provides NIP-44 encryption support.
+
+Any class that implements this interface can be used as a signer throughout the SDK.
+
+## Implementations
+
+The SDK provides a default implementation for common use cases and allows for custom implementations for advanced scenarios.
+
+- **[PrivateKeySigner](/signer/private-key-signer)**: The default implementation, which takes a raw private key string and performs signing operations locally.
+- **[Custom Signer Development](/signer/custom-signer-development)**: For creating custom signers that integrate with key management systems, such as hardware wallets or remote signing services.
+
+## Next Steps
+
+- Learn about the default implementation: **[PrivateKeySigner](/signer/private-key-signer)**
+- Learn how to create your own: **[Custom Signer Development](/signer/custom-signer-development)**
+
+================
+File: docs/signer/private-key-signer.md
+================
+---
+title: PrivateKeySigner
+description: A default signer implementation for the @contextvm/sdk.
+---
+
+# `PrivateKeySigner`
+
+The `PrivateKeySigner` is the default implementation of the [`NostrSigner`](/signer/nostr-signer-interface) interface provided by the `@contextvm/sdk`. It is a straightforward and easy-to-use signer that operates directly on a raw private key provided as a hexadecimal string.
+
+## Overview
+
+The `PrivateKeySigner` is designed for scenarios where the private key is readily available in the application's environment. It handles all the necessary cryptographic operations locally, including:
+
+- Deriving the corresponding public key.
+- Signing Nostr events.
+- Encrypting and decrypting messages using NIP-44.
+
+## `constructor(privateKey: string)`
+
+The constructor takes a single argument:
+
+- **`privateKey`**: A hexadecimal string representing the 32-byte Nostr private key.
+
+When instantiated, the `PrivateKeySigner` will immediately convert the hex string into a `Uint8Array` and derive the public key, which is then cached for future calls to `getPublicKey()`.
+
+## Usage Example
+
+```typescript
+import { PrivateKeySigner } from "@contextvm/sdk";
+
+// Replace with a securely stored private key
+const privateKeyHex = "your-32-byte-private-key-in-hex";
+
+const signer = new PrivateKeySigner(privateKeyHex);
+
+// You can now pass this signer instance to a transport
+const transportOptions = {
+  signer: signer,
+  // ... other options
+};
+```
+
+## Key Methods
+
+The `PrivateKeySigner` implements all the methods required by the `NostrSigner` interface.
+
+### `async getPublicKey(): Promise<string>`
+
+Returns a promise that resolves with the public key corresponding to the private key provided in the constructor.
+
+### `async signEvent(event: UnsignedEvent): Promise<NostrEvent>`
+
+Takes an unsigned Nostr event, signs it using the private key, and returns a promise that resolves with the finalized, signed `NostrEvent`.
+
+### `nip44`
+
+The `PrivateKeySigner` also provides a `nip44` object that implements NIP-44 encryption and decryption. This is used internally by the transports when encryption is enabled, and it allows the `decryptMessage` function to work seamlessly with this signer.
+
+- `encrypt(pubkey, plaintext)`: Encrypts a plaintext message for a given recipient public key.
+- `decrypt(pubkey, ciphertext)`: Decrypts a ciphertext message received from a given sender public key.
+
+## Security Considerations
+
+While the `PrivateKeySigner` is convenient, it requires you to handle a raw private key directly in your application code. **It is crucial to manage this key securely.** Avoid hard-coding private keys in your source code. Instead, use environment variables or a secure secret management system to load the key at runtime.
+
+For applications requiring a higher level of security, consider creating a custom signer that interacts with a hardware wallet or a remote signing service.
+
+## Next Steps
+
+- Learn how to build a custom signer: **[Custom Signer Development](/signer/custom-signer-development)**
+
+================
+File: docs/transports/base-nostr-transport.md
+================
+---
+title: Base Nostr Transport
+description: An abstract class that provides the core functionality for all Nostr-based transports in the @contextvm/sdk.
+---
+
+# Base Nostr Transport
+
+The `BaseNostrTransport` is an abstract class that provides the core functionality for all Nostr-based transports in the `@contextvm/sdk`. It serves as the foundation for the [`NostrClientTransport`](/transports/nostr-client-transport) and [`NostrServerTransport`](/transports/nostr-server-transport), handling the common logic for connecting to relays, managing subscriptions, and converting messages between the MCP and Nostr formats.
+
+## Core Responsibilities
+
+The `BaseNostrTransport` is responsible for:
+
+- **Connection Management**: Establishing and terminating connections to the Nostr relay network via a `RelayHandler`.
+- **Event Serialization**: Converting MCP JSON-RPC messages into Nostr events and vice-versa.
+- **Cryptographic Operations**: Signing Nostr events using a `NostrSigner`.
+- **Message Publishing**: Publishing events to the Nostr network.
+- **Subscription Management**: Creating and managing subscriptions to listen for relevant events.
+- **Encryption Handling**: Managing the encryption and decryption of messages based on the configured `EncryptionMode`.
+
+## `BaseNostrTransportOptions`
+
+When creating a transport that extends `BaseNostrTransport`, you must provide a configuration object that implements the `BaseNostrTransportOptions` interface:
+
+```typescript
+export interface BaseNostrTransportOptions {
+  signer: NostrSigner;
+  relayHandler: RelayHandler;
+  encryptionMode?: EncryptionMode;
+}
+```
+
+- **`signer`**: An instance of a `NostrSigner` for signing events. This is a required parameter.
+- **`relayHandler`**: An instance of a `RelayHandler` for managing relay connections. This is a required parameter.
+- **`encryptionMode`**: An optional `EncryptionMode` enum that determines the encryption policy for the transport. Defaults to `OPTIONAL`.
+
+## Key Methods
+
+The `BaseNostrTransport` provides several protected methods that are used by its subclasses to implement their specific logic:
+
+- `connect()`: Connects to the configured Nostr relays.
+- `disconnect()`: Disconnects from the relays and clears subscriptions.
+- `subscribe(filters, onEvent)`: Subscribes to Nostr events that match the given filters.
+- `sendMcpMessage(...)`: Converts an MCP message to a Nostr event, signs it, optionally encrypts it, and publishes it to the network.
+- `createSubscriptionFilters(...)`: A helper method to create standard filters for listening to messages directed at a specific public key.
+
+## How It Fits Together
+
+The `BaseNostrTransport` encapsulates the shared logic of Nostr communication, allowing the `NostrClientTransport` and `NostrServerTransport` to focus on their specific roles in the client-server interaction model. By building on this common base, the SDK ensures consistent behavior and a unified approach to handling MCP over Nostr.
+
+## Next Steps
+
+Now that you understand the foundation of the Nostr transports, let's explore the concrete implementations:
+
+- **[Nostr Client Transport](/transports/nostr-client-transport)**: For building MCP clients that communicate over Nostr.
+- **[Nostr Server Transport](/transports/nostr-server-transport)**: For exposing MCP servers to the Nostr network.
+
+================
+File: docs/transports/nostr-client-transport.md
+================
+---
+title: Nostr Client Transport
+description: A client-side component for communicating with MCP servers over Nostr.
+---
+
+# Nostr Client Transport
+
+The `NostrClientTransport` is a key component of the `@contextvm/sdk`, enabling MCP clients to communicate with remote MCP servers over the Nostr network. It implements the `Transport` interface from the `@modelcontextprotocol/sdk`, making it a plug-and-play solution for any MCP client.
+
+## Overview
+
+The `NostrClientTransport` handles all the complexities of Nostr-based communication, including:
+
+- Connecting to Nostr relays.
+- Subscribing to events from a specific server.
+- Sending MCP requests as Nostr events.
+- Receiving and processing responses and notifications.
+- Handling encryption and decryption of messages.
+
+By using this transport, an MCP client can interact with a Nostr-enabled MCP server without needing to implement any Nostr-specific logic itself.
+
+## `NostrTransportOptions`
+
+To create an instance of `NostrClientTransport`, you must provide a configuration object that implements the `NostrTransportOptions` interface:
+
+```typescript
+export interface NostrTransportOptions extends BaseNostrTransportOptions {
+  serverPubkey: string;
+}
+```
+
+- **`serverPubkey`**: The public key of the target MCP server. The transport will only listen for events from this public key.
+
+## Usage Example
+
+Here's how you can use the `NostrClientTransport` with an MCP client from the `@modelcontextprotocol/sdk`:
+
+```typescript
+import { Client } from "@modelcontextprotocol/sdk/client";
+import { NostrClientTransport } from "@contextvm/sdk";
+import { EncryptionMode } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
+
+// 1. Configure the signer and relay handler
+const signer = new PrivateKeySigner("your-private-key"); // Replace with your actual private key
+const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
+
+// 2. Set the public key of the target server
+const REMOTE_SERVER_PUBKEY = "remote-server-public-key";
+
+// 3. Create the transport instance
+const clientNostrTransport = new NostrClientTransport({
+  signer,
+  relayHandler: relayPool,
+  serverPubkey: REMOTE_SERVER_PUBKEY,
+  encryptionMode: EncryptionMode.OPTIONAL,
+});
+
+// 4. Create and connect the MCP client
+const mcpClient = new Client();
+await mcpClient.connect(clientNostrTransport);
+
+// 5. Use the client to interact with the server
+const tools = await mcpClient.listTools();
+console.log("Available tools:", tools);
+
+// 6. Close the connection when done
+// await mcpClient.close();
+```
+
+## How It Works
+
+1.  **`start()`**: When `mcpClient.connect()` is called, it internally calls the transport's `start()` method. This method connects to the relays and subscribes to events targeting the client's public key.
+2.  **`send(message)`**: When you call an MCP method like `mcpClient.listTools()`, the client creates a JSON-RPC request and passes it to the transport's `send()` method. The transport then:
+    - Wraps the message in a Nostr event.
+    - Signs the event.
+    - Optionally encrypts it.
+    - Publishes it to the relays, targeting the `serverPubkey`.
+3.  **Event Processing**: The transport listens for incoming events. When an event is received, it is decrypted (if necessary) and converted back into a JSON-RPC message.
+    - If the message is a **response** (correlated by the original event ID), it is passed to the MCP client to resolve the pending request.
+    - If the message is a **notification**, it is emitted through the `onmessage` handler.
+
+## Next Steps
+
+Next, we will look at the server-side counterpart to this transport:
+
+- **[Nostr Server Transport](/transports/nostr-server-transport)**: For exposing MCP servers to the Nostr network.
+
+================
+File: docs/transports/nostr-server-transport.md
+================
+---
+title: Nostr Server Transport
+description: A server-side component for exposing MCP servers over Nostr.
+---
+
+# Nostr Server Transport
+
+The `NostrServerTransport` is the server-side counterpart to the [`NostrClientTransport`](/transports/nostr-client-transport). It allows an MCP server to expose its capabilities to the Nostr network, making them discoverable and usable by any Nostr-enabled client. Like the client transport, it implements the `Transport` interface from the `@modelcontextprotocol/sdk`.
+
+## Overview
+
+The `NostrServerTransport` is responsible for:
+
+- Listening for incoming MCP requests from Nostr clients.
+- Managing individual client sessions and their state (e.g., initialization, encryption).
+- Handling request/response correlation to ensure responses are sent to the correct client.
+- Sending responses and notifications back to clients over Nostr.
+- Optionally announcing the server and its capabilities to the network for public discovery.
+
+## `NostrServerTransportOptions`
+
+The transport is configured via the `NostrServerTransportOptions` interface:
+
+```typescript
+export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
+  serverInfo?: ServerInfo;
+  isPublicServer?: boolean;
+  allowedPublicKeys?: string[];
+}
+```
+
+- **`serverInfo`**: (Optional) Information about the server (`name`, `picture`, `website`) to be used in public announcements.
+- **`isPublicServer`**: (Optional) If `true`, the transport will automatically announce the server's capabilities on the Nostr network. Defaults to `false`.
+- **`allowedPublicKeys`**: (Optional) A list of client public keys that are allowed to connect. If not provided, any client can connect.
+
+## Usage Example
+
+Here's how to use the `NostrServerTransport` with an `McpServer` from the `@modelcontextprotocol/sdk`:
+
+```typescript
+import { McpServer } from "@modelcontextprotocol/sdk";
+import { NostrServerTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
+
+// 1. Configure the signer and relay pool
+const signer = new PrivateKeySigner("your-server-private-key");
+const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
+
+// 2. Create the McpServer instance
+const mcpServer = new McpServer({
+  name: "demo-server",
+  version: "1.0.0",
+});
+
+// Register your server's tools, resources, etc.
+// mcpServer.tool(...);
+
+// 3. Create the NostrServerTransport instance
+const serverNostrTransport = new NostrServerTransport({
+  signer: signer,
+  relayHandler: relayPool,
+  isPublicServer: true, // Announce the server publicly
+  serverInfo: {
+    name: "My Awesome MCP Server",
+    website: "https://example.com",
+  },
+});
+
+// 4. Connect the server
+await mcpServer.connect(serverNostrTransport);
+
+console.log("MCP server is running and available on Nostr.");
+
+// Keep the process running...
+// To shut down: await mcpServer.close();
+```
+
+## How It Works
+
+1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isPublicServer` is `true`, it also initiates the announcement process.
+2.  **Incoming Events**: The transport listens for events from clients. For each client, it maintains a `ClientSession`.
+3.  **Request Handling**: When a valid request is received from an authorized client, the transport forwards it to the `McpServer`'s internal logic via the `onmessage` handler. It replaces the request's original ID with the unique Nostr event ID to prevent ID collisions between different clients.
+4.  **Response Handling**: When the `McpServer` sends a response, the transport's `send()` method is called. The transport looks up the original request details from the client's session, restores the original request ID, and sends the response back to the correct client, referencing the original event ID.
+5.  **Announcements**: If `isPublicServer` is true, the transport sends requests to its own `McpServer` for `initialize`, `tools/list`, etc. It then formats the responses into the appropriate replaceable Nostr events (kinds 11316-11320) and publishes them.
+
+## Session Management
+
+The `NostrServerTransport` manages a session for each unique client public key. Each session tracks:
+
+- If the client has completed the MCP initialization handshake.
+- Whether the session is encrypted.
+- A map of pending requests to correlate responses.
+- The timestamp of the last activity, used for cleaning up inactive sessions.
+
+## Next Steps
+
+Now that you understand how the transports work, let's dive into the **[Signer](/signer/nostr-signer-interface)**, the component responsible for cryptographic signatures.
+
+================
+File: docs/tutorials/client-server-communication.md
+================
+---
+title: Tutorial Client-Server Communication
+description: A step-by-step guide to setting up a basic MCP client and server that communicate directly over the Nostr network using the @contextvm/sdk.
+---
+
+# Tutorial: Client-Server Communication
+
+This tutorial provides a complete, step-by-step guide to setting up a basic MCP client and server that communicate directly over the Nostr network using the `@contextvm/sdk`.
+
+## Objective
+
+We will build two separate scripts:
+
+1.  `server.ts`: An MCP server that exposes a simple "echo" tool.
+2.  `client.ts`: An MCP client that connects to the server, lists the available tools, and calls the "echo" tool.
+
+## Prerequisites
+
+- You have completed the [Quick Overview](/getting-started/quick-overview/).
+- You have two Nostr private keys (one for the server, one for the client). You can generate new keys using various tools, or by running `nostr-tools` commands.
+
+---
+
+## 1. The Server (`server.ts`)
+
+First, let's create the MCP server. This server will use the `NostrServerTransport` to listen for requests on the Nostr network.
+
+Create a new file named `server.ts`:
+
+```typescript
+import { McpServer, Tool } from "@modelcontextprotocol/sdk/server";
+import { NostrServerTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
+import { generateSecretKey, getPublicKey } from "nostr-tools/pure";
+
+// --- Configuration ---
+// IMPORTANT: Replace with your own private key
+const SERVER_PRIVATE_KEY_HEX =
+  process.env.SERVER_PRIVATE_KEY || "your-32-byte-server-private-key-in-hex";
+const RELAYS = ["wss://relay.damus.io", "wss://nos.lol"];
+
+// --- Main Server Logic ---
+async function main() {
+  // 1. Setup Signer and Relay Pool
+  const signer = new PrivateKeySigner(SERVER_PRIVATE_KEY_HEX);
+  const relayPool = new SimpleRelayPool(RELAYS);
+  const serverPubkey = await signer.getPublicKey();
+
+  console.log(`Server Public Key: ${serverPubkey}`);
+  console.log("Connecting to relays...");
+
+  // 2. Create and Configure the MCP Server
+  const mcpServer = new McpServer({
+    name: "nostr-echo-server",
+    version: "1.0.0",
+  });
+
+  // 3. Define a simple "echo" tool
+  server.registerTool(
+    "echo",
+    {
+      title: "Echo Tool",
+      description: "Echoes back the provided message",
+      inputSchema: { message: z.string() },
+    },
+    async ({ message }) => ({
+      content: [{ type: "text", text: `Tool echo: ${message}` }],
+    }),
+  );
+
+  // 4. Configure the Nostr Server Transport
+  const serverTransport = new NostrServerTransport({
+    signer,
+    relayHandler: relayPool,
+    isPublicServer: true, // Announce this server on the Nostr network
+    serverInfo: {
+      name: "CTXVM Echo Server",
+    },
+  });
+
+  // 5. Connect the server
+  await mcpServer.connect(serverTransport);
+
+  console.log("Server is running and listening for requests on Nostr...");
+  console.log("Press Ctrl+C to exit.");
+}
+
+main().catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+});
+```
+
+### Running the Server
+
+To run the server, execute the following command in your terminal. Be sure to replace the placeholder private key or set the `SERVER_PRIVATE_KEY` environment variable.
+
+```bash
+bun run server.ts
+```
+
+The server will start, print its public key, and wait for incoming client connections.
+
+---
+
+## 2. The Client (`client.ts`)
+
+Next, let's create the client that will connect to our server.
+
+Create a new file named `client.ts`:
+
+```typescript
+import { Client } from "@modelcontextprotocol/sdk/client";
+import { NostrClientTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
+
+// --- Configuration ---
+// IMPORTANT: Replace with the server's public key from the server output
+const SERVER_PUBKEY = "the-public-key-printed-by-server.ts";
+
+// IMPORTANT: Replace with your own private key
+const CLIENT_PRIVATE_KEY_HEX =
+  process.env.CLIENT_PRIVATE_KEY || "your-32-byte-client-private-key-in-hex";
+const RELAYS = ["wss://relay.damus.io", "wss://nos.lol"];
+
+// --- Main Client Logic ---
+async function main() {
+  // 1. Setup Signer and Relay Pool
+  const signer = new PrivateKeySigner(CLIENT_PRIVATE_KEY_HEX);
+  const relayPool = new SimpleRelayPool(RELAYS);
+
+  console.log("Connecting to relays...");
+
+  // 2. Configure the Nostr Client Transport
+  const clientTransport = new NostrClientTransport({
+    signer,
+    relayHandler: relayPool,
+    serverPubkey: SERVER_PUBKEY,
+  });
+
+  // 3. Create and connect the MCP Client
+  const mcpClient = new Client();
+  await mcpClient.connect(clientTransport);
+
+  console.log("Connected to server!");
+
+  // 4. List the available tools
+  console.log("\nListing available tools...");
+  const tools = await mcpClient.listTools();
+  console.log("Tools:", tools);
+
+  // 5. Call the "echo" tool
+  console.log('\nCalling the "echo" tool...');
+  const echoResult = await mcpClient.callTool({
+    name: "echo",
+    arguments: { message: "Hello, Nostr!" },
+  });
+  console.log("Echo result:", echoResult);
+
+  // 6. Close the connection
+  await mcpClient.close();
+  console.log("\nConnection closed.");
+}
+
+main().catch((error) => {
+  console.error("Client failed:", error);
+  process.exit(1);
+});
+```
+
+### Running the Client
+
+Open a **new terminal window** (leave the server running in the first one). Before running the client, make sure to update the `SERVER_PUBKEY` variable with the public key that your `server.ts` script printed to the console.
+
+Then, run the client:
+
+```bash
+bun run client.ts
+```
+
+## Expected Output
+
+If everything is configured correctly, you should see the following output in the client's terminal:
+
+```
+Connecting to relays...
+Connected to server!
+
+Listing available tools...
+Tools: {
+  tools: [
+    {
+      name: 'echo',
+      description: 'Replies with the input it received.',
+      inputSchema: { ... }
+    }
+  ]
+}
+
+Calling the "echo" tool...
+Echo result: You said: Hello, Nostr!
+
+Connection closed.
+```
+
+And that's it! You've successfully created an MCP client and server that communicate securely and decentrally over the Nostr network.
+
+================
+File: docs/ctxvm-draft-spec.md
+================
+---
+title: ContextVM Protocol Specification
+description: Technical specification for the ContextVM protocol
+---
+
+**Status:** Draft
+
+## Abstract
+
+The Context Vending Machine (ContextVM) specification defines how Nostr can be used to expose Model Context Protocol (MCP) server capabilities, enabling standardized usage of these resources through a decentralized, cryptographically secure messaging system.
+
+## Table of Contents
+
+- [Introduction](#introduction)
+  - [Public Key Cryptography](#public-key-cryptography)
+- [Protocol Overview](#protocol-overview)
+  - [Main Actors](#main-actors)
+- [Event Kinds](#event-kinds)
+- [Server Discovery](#server-discovery)
+  - [Discovery via Server Announcements (Public Servers)](#discovery-via-server-announcements-public-servers)
+    - [Server Announcement Event](#server-announcement-event)
+    - [Tools List Event](#tools-list-event)
+    - [Resources List Event](#resources-list-event)
+    - [Prompts List Event](#prompts-list-event)
+  - [Capability Pricing](#capability-pricing)
+    - [Pricing Tag Format](#pricing-tag-format)
+    - [Example](#example)
+    - [Payment Handling](#payment-handling)
+  - [Direct Discovery (Private Servers)](#direct-discovery-private-servers)
+    - [Client Initialization Request](#client-initialization-request)
+    - [Server Initialization Response](#server-initialization-response)
+    - [Client Initialized Notification](#client-initialized-notification)
+- [Capability Operations](#capability-operations)
+  - [List Operations](#list-operations)
+    - [List Request Template](#list-request-template)
+    - [List Response Template](#list-response-template)
+  - [Capability-Specific Item Examples](#capability-specific-item-examples)
+    - [Call Tool Request](#call-tool-request)
+    - [Call Tool Response](#call-tool-response)
+- [Encryption](#encryption)
+  - [Overview](#overview-1)
+  - [Encryption Support Discovery](#encryption-support-discovery)
+  - [Message Encryption Flow](#message-encryption-flow)
+    - [1. Content Preparation](#1-content-preparation)
+    - [2. Seal Creation (NIP-17)](#2-seal-creation-nip-17)
+    - [3. Gift Wrapping (NIP-59)](#3-gift-wrapping-nip-59)
+  - [Encrypted Event Structure](#encrypted-event-structure)
+    - [Original ContextVM Request](#original-ContextVM-request)
+    - [Encrypted ContextVM Request](#encrypted-ContextVM-request)
+    - [Encrypted Response Structure](#encrypted-response-structure)
+- [Notifications](#notifications)
+  - [Notification Template](#notification-template)
+  - [Payment Required Notification](#payment-required-notification)
+- [Error Handling](#error-handling)
+  - [Error Types](#error-types)
+  - [Error Response Template](#error-response-template)
+- [Implementation Requirements](#implementation-requirements)
+- [Complete Protocol Flow](#complete-protocol-flow)
+- [Subscription Management](#subscription-management)
+
+## Introduction
+
+The [Model Context Protocol](https://modelcontextprotocol.io/introduction) provides a protocol specification to create servers exposing capabilities and clients consuming them. Meanwhile, the Nostr network and Context Vending Machines offer a decentralized way to announce and consume computational services. This specification defines how to bridge these protocols, allowing MCP servers to advertise and provide their services through the Nostr network.
+
+This specification aims to:
+
+1. Enable discovery of MCP servers and their capabilities through the Nostr network
+2. Provide a consistent experience for clients accessing capabilities, and servers exposing their capabilities
+3. Maintain compatibility with both protocols while preserving their security models
+
+By integrating these protocols, ContextVM combines the standardized capability framework of MCP with the decentralized, cryptographically secure messaging of Nostr. This integration enables several key advantages:
+
+- **Discoverability**: MCP servers can be discovered through the Nostr network without centralized registries
+- **Verifiability**: All messages are cryptographically signed using Nostr's public keys
+- **Decentralization**: No single point of failure for service discovery or communication
+- **Protocol Interoperability**: Both MCP and ContextVMs utilize JSON-RPC patterns, enabling seamless communication between the protocols
+
+The integration preserves the security model of both protocols while enabling new patterns of interaction.
+
+### Public Key Cryptography
+
+ContextVM leverages Nostr's public key cryptography to ensure message authenticity and integrity:
+
+1. **Message Verification**: Every message is cryptographically signed by the sender's private key and can be verified using their public key, ensuring that:
+   - Server announcements come from legitimate providers
+   - Client requests are from authorized users
+   - Responses are from the expected servers
+
+2. **Identity Management**: Public keys serve as persistent identifiers for all actors in the system:
+   - Providers can maintain consistent identities across relays
+   - Clients can be uniquely identified for authorization purposes
+
+The cryptographic properties enable secure authorization flows for paid services and private capabilities without requiring centralized authentication services.
 
 ## Protocol Overview
 
@@ -635,1220 +2232,95 @@ sequenceDiagram
     Relay-->>Client: Forwards tools/call response
 ```
 
-
-
-# Encryption
-
-The `@contextvm/sdk` supports optional end-to-end encryption for all communication, providing enhanced privacy and security. This section explains the encryption mechanism, how to enable it, and the underlying principles.
-
-## Overview
-
-ContextVM's encryption leverages a simplified version of [NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md) to ensure:
-
-1.  **Message Content Privacy**: All MCP message content is encrypted using NIP-44.
-2.  **Metadata Protection**: The gift wrap pattern conceals participant identities and other metadata.
-3.  **Selective Encryption**: Clients and servers can negotiate encryption on a per-session basis.
-
-When encryption is enabled, all ephemeral messages (kind 25910) are wrapped in a kind 1059 gift wrap event. Server announcements and capability lists remain unencrypted for public discoverability.
-
-## How It Works
-
-The encryption flow is designed to be secure and efficient:
-
-1.  **Content Preparation**: The original MCP message is serialized into a standard Nostr event.
-2.  **Gift Wrapping**: The entire event is then encrypted using `nip44.v2` and wrapped inside a "gift wrap" event (kind 1059). A new, random keypair is generated for each gift wrap.
-3.  **Transmission**: The encrypted gift wrap event is published to the Nostr network.
-
-The recipient then unwraps the gift using their private key to decrypt the original message.
-
-### Why a Simplified NIP-17/NIP-59 Pattern?
-
-The standard implementation of NIP-17 is designed for persistent private messages and includes a "rumor" and "seal" mechanism to prevent message leakage. Since ContextVM messages are ephemeral and not intended to be stored by relays, this complexity is unnecessary. The SDK uses a more direct gift-wrapping approach that provides strong encryption and metadata protection without the overhead of the full NIP-17 standard.
-
-## Enabling Encryption
-
-Encryption is configured at the transport level using the `EncryptionMode` enum. You can set the desired mode when creating a `NostrClientTransport` or `NostrServerTransport`.
-
-```typescript
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { EncryptionMode } from "@ctxvm/sdk/core";
-
-const transport = new NostrClientTransport({
-  // ... other options
-  encryptionMode: EncryptionMode.OPTIONAL, // or REQUIRED, DISABLED
-});
-```
-
-### `EncryptionMode`
-
-- **`REQUIRED`**: The transport will only communicate with peers that support encryption. If the other party does not support it, the connection will fail.
-- **`OPTIONAL`**: (Default) The transport will attempt to use encryption if the peer supports it. If not, it will fall back to unencrypted communication.
-- **`DISABLED`**: The transport will not use encryption, even if the peer supports it.
-
-## Encryption Support Discovery
-
-Clients and servers can discover if a peer supports encryption in two ways:
-
-1.  **Server Announcements**: Public server announcements (kind 11316) include a `support_encryption` tag to indicate that the server is capable of encrypted communication.
-2.  **Initialization Handshake**: During the MCP initialization process, both the client and server can signal their support for encryption.
-
-## API Reference
-
-The core encryption functions are exposed in the `core` module:
-
-- `encryptMessage(message: string, recipientPublicKey: string): NostrEvent`
-- `decryptMessage(event: NostrEvent, signer: NostrSigner): Promise<string>`
-
-These functions handle the low-level details of gift wrapping and unwrapping, but in most cases, you will interact with encryption through the transport's `encryptionMode` setting.
-
-
-
-# Core Interfaces
-
-The `@contextvm/sdk` is designed with a modular and extensible architecture, centered around a set of core interfaces. These interfaces define the essential components for signing, relay management, and communication.
-
-## `NostrSigner`
-
-The `NostrSigner` interface is fundamental for cryptographic operations within the SDK. It abstracts the logic for signing Nostr events, ensuring that all communications are authenticated and verifiable.
-
-### Definition
-
-```typescript
-export interface NostrSigner {
-  getPublicKey(): Promise<string>;
-  signEvent(event: EventTemplate): Promise<NostrEvent>;
-
-  // Optional NIP-04 encryption support (deprecated)
-  nip04?: {
-    encrypt: (pubkey: string, plaintext: string) => Promise<string>;
-    decrypt: (pubkey: string, ciphertext: string) => Promise<string>;
-  };
-
-  // Optional NIP-44 encryption support
-  nip44?: {
-    encrypt: (pubkey: string, plaintext: string) => Promise<string>;
-    decrypt: (pubkey: string, ciphertext: string) => Promise<string>;
-  };
-}
-```
-
-Any object that implements this interface can be used to sign events, allowing you to integrate with various key management systems, such as web, hardware wallets or remote signing services. The SDK provides a default implementation, `PrivateKeySigner`, which signs events using a raw private key.
-
-- **Learn more:** [`NostrSigner` Deep Dive](/contextvm-docs/signer/nostr-signer-interface/)
-- **Default Implementation:** [`PrivateKeySigner`](/contextvm-docs/signer/private-key-signer/)
-
-## `RelayHandler`
-
-The `RelayHandler` interface manages interactions with Nostr relays. It is responsible for subscribing to events and publishing events to the Nostr network.
-
-### Definition
-
-```typescript
-export interface RelayHandler {
-  connect(): Promise<void>;
-  disconnect(relayUrls?: string[]): Promise<void>;
-  publish(event: NostrEvent): Promise<void>;
-  subscribe(
-    filters: Filter[],
-    onEvent: (event: NostrEvent) => void,
-    onEose?: () => void,
-  ): Promise<void>;
-  unsubscribe(): void;
-}
-```
-
-By implementing this interface, you can create custom relay management logic, such as sophisticated relay selection strategies or custom reconnection policies. The SDK includes `SimpleRelayPool` as a default implementation.
-
-- **Learn more:** [`RelayHandler` Deep Dive](/contextvm-docs/relay/relay-handler-interface)
-- **Default Implementation:** [`SimpleRelayPool`](/contextvm-docs/relay/simple-relay-pool)
-
-## `EncryptionMode`
-
-The `EncryptionMode` enum defines the encryption policy for a transport.
-
-```typescript
-export enum EncryptionMode {
-  OPTIONAL = "optional",
-  REQUIRED = "required",
-  DISABLED = "disabled",
-}
-```
-
-This enum is used to configure the encryption behavior of the `NostrClientTransport` and `NostrServerTransport`.
-
-- **Learn more:** [Encryption](/contextvm-docs/core/encryption)
-
-## `AnnouncementMethods`
-
-The `AnnouncementMethods` interface defines methods for announcing server capabilities on the Nostr network.
-
-```typescript
-export interface AnnouncementMethods {
-  server: InitializeRequest["method"];
-  tools: ListToolsRequest["method"];
-  resources: ListResourcesRequest["method"];
-  resourceTemplates: ListResourceTemplatesRequest["method"];
-  prompts: ListPromptsRequest["method"];
-}
-```
-
-This interface is used by the `NostrServerTransport` to publish server announcements.
-
-
-
-
-
-# Gateway Overview
-description: Understanding the NostrMCPGateway component for bridging MCP and Nostr
-
-
-## Gateway
-
-The `NostrMCPGateway` is a server-side bridging component that exposes a traditional MCP server to the Nostr network. It acts as a gateway, translating communication between Nostr-based clients and a standard MCP server.
-
-### Purpose and Capabilities
-
-The gateway manages two transports simultaneously:
-
-1.  **Nostr Server Transport**: A [`NostrServerTransport`](/contextvm-docs/transports/nostr-server-transport) that listens for incoming connections from clients on the Nostr network.
-2.  **MCP Server Transport**: A standard MCP client transport (like `StdioClientTransport`) that connects to a local or remote MCP server.
-
-The gateway's role is to forward requests from Nostr clients to the MCP server and relay the server's responses back to the appropriate client on Nostr.
-
-### Integration Scenarios
-
-The `NostrMCPGateway` is ideal for:
-
-- **Exposing Existing Servers**: If you have an existing MCP server, you can use the gateway to make it accessible to Nostr clients without modifying the server's core logic. The server continues to operate with its standard transport, while the gateway handles all Nostr-related communication.
-- **Decoupling Services**: You can run your core MCP server in a secure environment and use the gateway as a public-facing entry point on the Nostr network. The gateway can be configured with its own security policies (like `allowedPublicKeys`).
-- **Adding Nostr Capabilities**: It allows you to add features like public server announcements and decentralized discovery to a conventional MCP server.
-
-### `NostrMCPGatewayOptions`
-
-To create a `NostrMCPGateway`, you need to provide a configuration object that implements the `NostrMCPGatewayOptions` interface:
-
-```typescript
-export interface NostrMCPGatewayOptions {
-  mcpServerTransport: Transport;
-  nostrTransportOptions: NostrServerTransportOptions;
-}
-```
-
-- **`mcpServerTransport`**: An instance of a client-side MCP transport that the gateway will use to connect to your existing MCP server. For example, `new StdioClientTransport(...)`.
-- **`nostrTransportOptions`**: The full configuration object required by the `NostrServerTransport`. This includes the `signer`, `relayHandler`, and options like `isPublicServer`.
-
-## Usage Example
-
-This example shows how to create a gateway that connects to a local MCP server (running in a separate process) and exposes it to the Nostr network.
-
-```typescript
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/stdio";
-import { NostrMCPGateway } from "@ctxvm/sdk/gateway";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-
-// 1. Configure the signer and relay handler for the Nostr transport
-const signer = new PrivateKeySigner("your-gateway-private-key");
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
-
-// 2. Configure the transport to connect to your existing MCP server
-const serverTransport = new StdioClientTransport({
-  command: "bun",
-  args: ["run", "path/to/your/mcp-server.ts"],
-});
-
-// 3. Create the gateway instance
-const gateway = new NostrMCPGateway({
-  mcpServerTransport: serverTransport,
-  nostrTransportOptions: {
-    signer,
-    relayHandler: relayPool,
-    isPublicServer: true, // Announce this gateway on Nostr
-  },
-});
-
-// 4. Start the gateway
-await gateway.start();
-
-console.log("Gateway is running, exposing the MCP server to Nostr.");
-
-// To stop the gateway: await gateway.stop();
-```
-
-
-
-## Quick Overview
-description: An overview of the @contextvm/sdk, including its modules and core concepts.
-
-### SDK Quick Overview
-
-This overview introduces the essential modules and core concepts of the `@contextvm/sdk`. Understanding these fundamentals will help you leverage the full power of the ContextVM protocol.
-
-### Installation
-
-`@contextvm/sdk` is distributed as an NPM package, making it easy to integrate into your project.
-
-### Install the SDK
-
-Run the following command in your terminal:
-
-```bash
-npm install @contextvm/sdk
-```
-
-This will install the SDK and its dependencies into your project.
-
-**Note:** If you are using a different package manager than NPM, just replace `npm` with the appropriate command for your package manager.
-
-#### Modules Introduction
-
-The SDK is organized into several modules, each providing a specific set of functionalities:
-
-- **[Core](/contextvm-docs/core/interfaces)**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
-- **[Transports](/contextvm-docs/transports/base-nostr-transport)**: Critical for communication, this module provides `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
-- **[Signer](/contextvm-docs/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
-- **[Relay](/contextvm-docs/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
-- **[Proxy](/contextvm-docs/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
-- **[Gateway](/contextvm-docs/gateway/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
-
-### Core Concepts
-
-The `@contextvm/sdk` is built around a few core concepts that enable the bridging of MCP and Nostr.
-
-### Signers and Relay Handlers
-
-At the heart of the SDK are two key interfaces:
-
-- **`NostrSigner`**: An interface for signing Nostr events. The SDK includes a default `PrivateKeySigner`, but you can create a custom implementation to integrate with other signing mechanisms (e.g., Window.nostr for web, remote signers, etc).
-- **`RelayHandler`**: An interface for managing connections to Nostr relays. The default `SimpleRelayPool` provides basic relay management, but you can implement your own logic for more sophisticated relay selection and management.
-
-These components are fundamental for creating and broadcasting Nostr events, which are the backbone of ContextVM communication.
-
-### Nostr Transports
-
-The SDK provides two specialized transports to send and receive MCP messages over the Nostr network:
-
-- [`NostrClientTransport`](/contextvm-docs/transports/nostr-client-transport): Used by MCP clients to connect to remote MCP servers exposed via Nostr.
-- [`NostrServerTransport`](/contextvm-docs/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr.
-
-These transports handle the serialization of MCP messages into Nostr events and manage the communication flow.
-
-### Bridging Components: Proxy and Gateway
-
-To simplify integration with existing MCP applications, the SDK provides two high-level bridging components:
-
-- [`NostrMCPProxy`](/contextvm-docs/proxy/overview): A client-side bridge that allows an MCP client to communicate with a remote MCP server over Nostr without requiring native Nostr support in the client.
-- [`NostrMCPGateway`](/contextvm-docs/gateway/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
-
-These components abstract away the underlying transport complexities, making it easy to connect conventional MCP setups with the decentralized Nostr ecosystem.
-
-# Proxy Overview
-description: A client-side bridging component for the @contextvm/sdk.
-
-
-## Proxy
-
-The `NostrMCPProxy` is a powerful, client-side bridging component in the `@contextvm/sdk`. Its primary function is to act as a local proxy that translates communication between a standard MCP client and a remote, Nostr-based MCP server.
-
-### Functionality Overview
-
-The proxy manages two transports simultaneously:
-
-1.  **MCP Host Transport**: This is a standard MCP transport (like `StdioServerTransport`) that communicates with a local MCP client application.
-2.  **Nostr Client Transport**: This is a [`NostrClientTransport`](/contextvm-docs/transports/nostr-client-transport) that communicates with the remote MCP server over the Nostr network.
-
-The proxy sits in the middle, seamlessly forwarding messages between these two transports. When the local client sends a request, the proxy forwards it over Nostr. When the remote server sends a response, the proxy relays it back to the local client.
-
-### Use Cases and Capabilities
-
-The `NostrMCPProxy` is particularly useful in the following scenarios:
-
-- **Integrating with Existing Clients**: If you have an existing MCP client that does not have native Nostr support, you can use the proxy to enable it to communicate with Nostr-based MCP servers without modifying the client's code. The client simply connects to the proxy's local transport.
-- **Simplifying Client-Side Logic**: The proxy abstracts away all the complexities of Nostr communication (signing, relay management, encryption), allowing your main client application to remain simple and focused on its core tasks.
-- **Local Development and Testing**: The proxy can be a valuable tool for local development, allowing you to easily test a client against a remote Nostr server.
-
-### `NostrMCPProxyOptions`
-
-To create a `NostrMCPProxy`, you need to provide a configuration object that implements the `NostrMCPProxyOptions` interface:
-
-```typescript
-export interface NostrMCPProxyOptions {
-  mcpHostTransport: Transport;
-  nostrTransportOptions: NostrTransportOptions;
-}
-```
-
-- **`mcpHostTransport`**: An instance of a server-side MCP transport that the local client will connect to. For example, `new StdioServerTransport()`.
-- **`nostrTransportOptions`**: The full configuration object required by the `NostrClientTransport`. This includes the `signer`, `relayHandler`, and the remote `serverPubkey`.
-
-### Usage Example
-
-This example demonstrates how to create a proxy that listens for a local client over standard I/O and connects to a remote server over Nostr.
-
-```typescript
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/stdio";
-import { NostrMCPProxy } from "@ctxvm/sdk/proxy";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-
-// 1. Configure the signer and relay handler for the Nostr connection
-const signer = new PrivateKeySigner("your-private-key");
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
-const REMOTE_SERVER_PUBKEY = "remote-server-public-key";
-
-// 2. Configure the transport for the local client
-// In this case, a stdio transport that the local client can connect to
-const hostTransport = new StdioServerTransport();
-
-// 3. Create the proxy instance
-const proxy = new NostrMCPProxy({
-  mcpHostTransport: hostTransport,
-  nostrTransportOptions: {
-    signer,
-    relayHandler: relayPool,
-    serverPubkey: REMOTE_SERVER_PUBKEY,
-  },
-});
-
-// 4. Start the proxy
-await proxy.start();
-
-console.log("Proxy is running. Connect your local MCP client.");
-
-// To stop the proxy: await proxy.stop();
-```
-
-In this setup, a separate MCP client process could connect to this proxy's `StdioServerTransport` and it would be transparently communicating with the remote server on Nostr.
-
-# Custom Relay Handler Development
-description: Learn how to create a custom relay handler for the @contextvm/sdk.
-
-## Custom Relay Handler Development
-
-The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandler`](/contextvm-docs/relay/relay-handler-interface) interface, allows developers to implement custom logic for managing Nostr-relay connections. This is particularly useful for advanced use cases that require more sophisticated behavior than what the default [`SimpleRelayPool`](/contextvm-docs/relay/simple-relay-pool) provides.
-
-### Why Create a Custom Relay Handler?
-
-You might want to create a custom `RelayHandler` for several reasons:
-
-- **Intelligent Relay Selection**: To dynamically select relays based on performance, reliability, or the specific type of data being requested. For example, you might use a different set of relays for fetching user metadata versus broadcasting messages.
-- **Auth Relays**: To integrate with auth relays that require authentication or specific connection logic.
-- **Dynamic Relay Discovery**: To discover and connect to new relays at runtime, rather than using a static list.
-- **Custom Caching**: To implement a custom caching layer to reduce redundant requests to relays.
-- **Resiliency and-failover**: To build more robust-failover logic, such as automatically retrying failed connections or switching to backup relays.
-
-### Implementing the `RelayHandler` Interface
-
-To create a custom relay handler, you need to create a class that implements the `RelayHandler` interface. This involves implementing five methods: `connect`, `disconnect`, `publish`, `subscribe`, and `unsubscribe`.
-
-#### Example: A Handler with logging
-
-Here is a simple example of a custom `RelayHandler` that wraps the default `SimpleRelayPool` and adds logging to each operation. This illustrates how you can extend or compose existing handlers.
-
-```typescript
-import { RelayHandler } from "@ctxvm/sdk/core";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-import { Filter, NostrEvent } from "nostr-tools";
-
-class LoggingRelayHandler implements RelayHandler {
-  private readonly innerHandler: RelayHandler;
-
-  constructor(relayUrls: string[]) {
-    this.innerHandler = new SimpleRelayPool(relayUrls);
-    console.log(
-      `[LoggingRelayHandler] Initialized with relays: ${relayUrls.join(", ")}`,
-    );
-  }
-
-  async connect(): Promise<void> {
-    console.log("[LoggingRelayHandler] Attempting to connect...");
-    await this.innerHandler.connect();
-    console.log("[LoggingRelayHandler] Connected successfully.");
-  }
-
-  async disconnect(): Promise<void> {
-    console.log("[LoggingRelayHandler] Disconnecting...");
-    await this.innerHandler.disconnect();
-    console.log("[LoggingRelayHandler] Disconnected.");
-  }
-
-  publish(event: NostrEvent): void {
-    console.log(`[LoggingRelayHandler] Publishing event kind ${event.kind}...`);
-    this.innerHandler.publish(event);
-  }
-
-  subscribe(filters: Filter[], onEvent: (event: NostrEvent) => void): void {
-    console.log(`[LoggingRelayHandler] Subscribing with filters:`, filters);
-    this.innerHandler.subscribe(filters, (event) => {
-      console.log(`[LoggingRelayHandler] Received event kind ${event.kind}`);
-      onEvent(event);
-    });
-  }
-
-  unsubscribe(): void {
-    console.log("[LoggingRelayHandler] Unsubscribing from all.");
-    this.innerHandler.unsubscribe();
-  }
-}
-
-// Usage
-const loggingHandler = new LoggingRelayHandler(["wss://relay.damus.io"]);
-
-const transport = new NostrClientTransport({
-  relayHandler: loggingHandler,
-  // ... other options
-});
-```
-
-This example demonstrates the composition pattern. For a more advanced handler, you might use a different underlying relay management library or implement the connection logic from scratch using WebSockets.
-
-### Using Your Custom Relay Handler
-
-Once your custom handler class is created, you can instantiate it and pass it to any component that requires a `RelayHandler`, such as the `NostrClientTransport` or `NostrServerTransport`. The SDK will then use your custom logic for all relay interactions.
-
-
-# RelayHandler Interface
- An interface for managing Nostr relay connections.
-
-## `RelayHandler` Interface
-
-The `RelayHandler` interface is another crucial abstraction in the `@contextvm/sdk`. It defines the standard for managing connections to Nostr relays, which are the backbone of the Nostr network responsible for message propagation.
-
-### Purpose and Design
-
-The `RelayHandler`'s purpose is to abstract the complexities of relay management, including:
-
-- Connecting and disconnecting from a set of relays.
-- Subscribing to events with specific filters.
-- Publishing events to the network.
-- Handling relay-specific logic, such as connection retries, timeouts, and relay selection.
-
-By depending on this interface, the SDK's transports can remain agnostic about the specific relay management strategy being used. This allows developers to plug in different relay handlers to suit their needs.
-
-### Interface Definition
-
-The `RelayHandler` interface is defined in [`core/interfaces.ts`](/contextvm-docs/core/interfaces#relayhandler) and includes several key methods:
-
-```typescript
-export interface RelayHandler {
-  connect(): Promise<void>;
-  disconnect(): Promise<void>;
-  subscribe(filters: Filter[], onEvent: (event: NostrEvent) => void): void;
-  unsubscribe(): void;
-  publish(event: NostrEvent): void;
-}
-```
-
-- `connect()`: Establishes connections to the configured relays.
-- `disconnect()`: Closes connections to all relays.
-- `subscribe(filters, onEvent)`: Creates a subscription on the connected relays, listening for events that match the provided filters and passing them to the `onEvent` callback.
-- `unsubscribe()`: Closes all active subscriptions.
-- `publish(event)`: Publishes a Nostr event to the connected relays.
-
-### Implementations
-
-The SDK provides a default implementation for common use cases and allows for custom implementations for advanced scenarios.
-
-- **[SimpleRelayPool](/contextvm-docs/relay/simple-relay-pool)**: The default implementation, which manages a pool of relays and handles connection and subscription logic.
-- **[Custom Relay Handler](/contextvm-docs/relay/custom-relay-handler)**: For creating custom relay handlers that integrate with specific relay management systems, such as auth relays or custom caching.
-
-
-# SimpleRelayPool
-A default relay handler implementation for the @contextvm/sdk.
-
-## `SimpleRelayPool`
-
-The `SimpleRelayPool` is the default implementation of the [`RelayHandler`](/contextvm-docs/relay/relay-handler-interface) interface provided by the `@contextvm/sdk`. It uses the `SimplePool` from the `nostr-tools` library to manage connections to a list of specified relays.
-
-### Overview
-
-The `SimpleRelayPool` provides a straightforward way to manage relay connections for most common use cases. Its responsibilities include:
-
-- Connecting to a predefined list of Nostr relays.
-- Publishing events to all relays in the pool.
-- Subscribing to events from all relays in the pool.
-- Managing the lifecycle of connections and subscriptions.
-
-It is a simple but effective solution for applications that need to interact with a static set of relays.
-
-### `constructor(relayUrls: string[])`
-
-The constructor takes a single argument:
-
-- **`relayUrls`**: An array of strings, where each string is the URL of a Nostr relay (e.g., `wss://relay.damus.io`).
-
-### Usage Example
-
-```typescript
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-
-// 1. Define the list of relays you want to connect to
-const myRelays = [
-  "wss://relay.damus.io",
-  "wss://relay.primal.net",
-  "wss://nos.lol",
-];
-
-// 2. Create an instance of the SimpleRelayPool
-const relayPool = new SimpleRelayPool(myRelays);
-
-// 3. Pass the instance to a transport
-const transport = new NostrClientTransport({
-  relayHandler: relayPool,
-  // ... other options
-});
-```
-
-### How It Works
-
-The `SimpleRelayPool` wraps the `SimplePool` from `nostr-tools` and implements the methods of the `RelayHandler` interface:
-
-- **`connect()`**: Iterates through the provided `relayUrls` and calls `pool.ensureRelay()` for each one, which establishes a connection if one doesn't already exist.
-- **`disconnect()`**: Closes the connections to the specified relays.
-- **`publish(event)`**: Publishes the given event to all relays in the pool by calling `pool.publish()`.
-- **`subscribe(filters, onEvent)`**: Creates a subscription on all relays in the pool using `pool.subscribeMany()`. It tracks all active subscriptions so they can be closed later.
-- **`unsubscribe()`**: Closes all active subscriptions that were created through the `subscribe` method.
-
-### Limitations
-
-The `SimpleRelayPool` is designed for simplicity. It connects to all provided relays and does not include advanced features.
-
-For applications that require more sophisticated relay management, you may want to create a [Custom Relay Handler](/contextvm-docs/relay/custom-relay-handler).
-
-# Custom Signer Development
-Learn how to create a custom signer for the @contextvm/sdk.
-## Custom Signer Development
-
-One of the key design features of the `@contextvm/sdk` is its modularity, which is exemplified by the [`NostrSigner`](/contextvm-docs/signer/nostr-signer-interface) interface. By creating your own implementation of this interface, you can integrate the SDK with any key management system, such as a hardware wallet, a remote signing service (like an HSM), or a browser extension.
-
-### Why Create a Custom Signer?
-
-While the [`PrivateKeySigner`](/contextvm-docs/signer/private-key-signer) is a common choice for most applications, there are cases where you may need to use a different approach:
-
-- **Security is paramount**: You need to keep private keys isolated from the main application logic, for example, in a hardware security module (HSM) or a secure enclave.
-- **Interacting with external wallets**: Your application needs to request signatures from a user's wallet, such as a browser extension (e.g., Alby, Noster) or a mobile wallet.
-- **Complex key management**: Your application uses a more complex key management architecture that doesn't involve direct access to raw private keys.
-
-### Implementing the `NostrSigner` Interface
-
-To create a custom signer, you need to create a class that implements the `NostrSigner` interface. This involves implementing two main methods: `getPublicKey()` and `signEvent()`, as well as an optional `nip44` object for encryption.
-
-#### Example: A NIP-07 Browser Signer (window.nostr)
-
-A common use case for a custom signer is in a web application that needs to interact with a Nostr browser extension (like Alby, nos2x, or Blockcore) that exposes the `window.nostr` object according to [NIP-07](https://github.com/nostr-protocol/nips/blob/master/07.md). This allows the application to request signatures and encryption from the user's wallet without ever handling private keys directly.
-
-Here is how you could implement a `NostrSigner` that wraps the `window.nostr` object:
-
-```typescript
-import { NostrSigner } from "@ctxvm/sdk/core";
-import { UnsignedEvent, NostrEvent } from "nostr-tools";
-
-// Define the NIP-07 window.nostr interface for type-safety
-declare global {
-  interface Window {
-    nostr?: {
-      getPublicKey(): Promise<string>;
-      signEvent(event: UnsignedEvent): Promise<NostrEvent>;
-      nip44?: {
-        encrypt(pubkey: string, plaintext: string): Promise<string>;
-        decrypt(pubkey: string, ciphertext: string): Promise<string>;
-      };
-    };
-  }
-}
-
-class Nip07Signer implements NostrSigner {
-  constructor() {
-    if (!window.nostr) {
-      throw new Error("NIP-07 compatible browser extension not found.");
-    }
-  }
-
-  async getPublicKey(): Promise<string> {
-    if (!window.nostr) throw new Error("window.nostr not found.");
-    return await window.nostr.getPublicKey();
-  }
-
-  async signEvent(event: UnsignedEvent): Promise<NostrEvent> {
-    if (!window.nostr) throw new Error("window.nostr not found.");
-    return await window.nostr.signEvent(event);
-  }
-
-  nip44 = {
-    encrypt: async (pubkey: string, plaintext: string): Promise<string> => {
-      if (!window.nostr?.nip44) {
-        throw new Error("The extension does not support NIP-44 encryption.");
-      }
-      return await window.nostr.nip44.encrypt(pubkey, plaintext);
-    },
-
-    decrypt: async (pubkey: string, ciphertext: string): Promise<string> => {
-      if (!window.nostr?.nip44) {
-        throw new Error("The extension does not support NIP-44 decryption.");
-      }
-      return await window.nostr.nip44.decrypt(pubkey, ciphertext);
-    },
-  };
-}
-```
-
-#### Implementing `nip44` for Decryption
-
-When using a NIP-07 signer, the `nip44` implementation is straightforward, as you can see in the example above. You simply delegate the calls to the `window.nostr.nip44` object.
-
-It's important to include checks to ensure that the user's browser extension supports `nip44`, as it is an optional part of the NIP-07 specification. If the extension does not support it, you should throw an error to prevent unexpected behavior.
-
-### Using Your Custom Signer
-
-Once your custom signer class is created, you can instantiate it and pass it to any component that requires a `NostrSigner`, such as the `NostrClientTransport` or `NostrServerTransport`. The rest of the SDK will use your custom implementation seamlessly.
-
-## Next Steps
-
-With the `Signer` component covered, let's move on to the **[Relay](/contextvm-docs/relay/simple-relay-pool)** component, which handles the connection and management of Nostr relays.
-
-# NostrSigner Interface
-An interface for signing Nostr events.
-
-## `NostrSigner` Interface
-
-The `NostrSigner` interface is a central component of the `@contextvm/sdk`, defining the standard for cryptographic signing operations. Every Nostr event must be signed by a private key to be considered valid, and this interface provides a consistent, pluggable way to handle this requirement.
-
-### Purpose and Design
-
-The primary purpose of the `NostrSigner` is to abstract the process of event signing. By depending on this interface rather than a concrete implementation, the SDK's transports and other components can remain agnostic about how and where private keys are stored and used.
-
-This design offers several key benefits:
-
-- **Security**: Private keys can be managed in secure environments (e.g., web extensions, hardware wallets, dedicated signing services) without exposing them to the application logic.
-- **Flexibility**: Developers can easily swap out the default signer with a custom implementation that meets their specific needs.
-- **Modularity**: The signing logic is decoupled from the communication logic, leading to a cleaner, more maintainable codebase.
-
-### Interface Definition
-
-The `NostrSigner` interface is defined in [`core/interfaces.ts`](/contextvm-docs/core/interfaces#nostrsigner).
-
-```typescript
-export interface NostrSigner {
-  getPublicKey(): Promise<string>;
-  signEvent(event: EventTemplate): Promise<NostrEvent>;
-
-  // Optional NIP-04 encryption support (deprecated)
-  nip04?: {
-    encrypt: (pubkey: string, plaintext: string) => Promise<string>;
-    decrypt: (pubkey: string, ciphertext: string) => Promise<string>;
-  };
-
-  // Optional NIP-44 encryption support
-  nip44?: {
-    encrypt: (pubkey: string, plaintext: string) => Promise<string>;
-    decrypt: (pubkey: string, ciphertext: string) => Promise<string>;
-  };
-}
-```
-
-- `getPublicKey()`: Asynchronously returns the public key corresponding to the signer's private key.
-- `signEvent(event)`: Takes an unsigned Nostr event, signs it, and returns the signature.
-- `nip04`: (Deprecated) Provides NIP-04 encryption support.
-- `nip44`: Provides NIP-44 encryption support.
-
-Any class that implements this interface can be used as a signer throughout the SDK.
-
-### Implementations
-
-The SDK provides a default implementation for common use cases and allows for custom implementations for advanced scenarios.
-
-- **[PrivateKeySigner](/contextvm-docs/signer/private-key-signer)**: The default implementation, which takes a raw private key string and performs signing operations locally.
-- **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**: For creating custom signers that integrate with key management systems, such as hardware wallets or remote signing services.
-
-### Next Steps
-
-- Learn about the default implementation: **[PrivateKeySigner](/contextvm-docs/signer/private-key-signer)**
-- Learn how to create your own: **[Custom Signer Development](/contextvm-docs/signer/custom-signer-development)**
-
-# PrivateKeySigner
-description: A default signer implementation for the @contextvm/sdk.
+================
+File: docs/index.md
+================
+---
+title: ContextVM SDK Documentation
+description: A comprehensive guide to the ContextVM SDK
 ---
 
-# `PrivateKeySigner`
-
-The `PrivateKeySigner` is the default implementation of the [`NostrSigner`](/contextvm-docs/signer/nostr-signer-interface) interface provided by the `@contextvm/sdk`. It is a straightforward and easy-to-use signer that operates directly on a raw private key provided as a hexadecimal string.
-
-## Overview
-
-The `PrivateKeySigner` is designed for scenarios where the private key is readily available in the application's environment. It handles all the necessary cryptographic operations locally, including:
-
-- Deriving the corresponding public key.
-- Signing Nostr events.
-- Encrypting and decrypting messages using NIP-44.
-
-## `constructor(privateKey: string)`
-
-The constructor takes a single argument:
-
-- **`privateKey`**: A hexadecimal string representing the 32-byte Nostr private key.
-
-When instantiated, the `PrivateKeySigner` will immediately convert the hex string into a `Uint8Array` and derive the public key, which is then cached for future calls to `getPublicKey()`.
-
-## Usage Example
-
-```typescript
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-
-// Replace with a securely stored private key
-const privateKeyHex = "your-32-byte-private-key-in-hex";
-
-const signer = new PrivateKeySigner(privateKeyHex);
-
-// You can now pass this signer instance to a transport
-const transportOptions = {
-  signer: signer,
-  // ... other options
-};
-```
-
-## Key Methods
-
-The `PrivateKeySigner` implements all the methods required by the `NostrSigner` interface.
-
-### `async getPublicKey(): Promise<string>`
-
-Returns a promise that resolves with the public key corresponding to the private key provided in the constructor.
-
-### `async signEvent(event: UnsignedEvent): Promise<NostrEvent>`
-
-Takes an unsigned Nostr event, signs it using the private key, and returns a promise that resolves with the finalized, signed `NostrEvent`.
-
-### `nip44`
-
-The `PrivateKeySigner` also provides a `nip44` object that implements NIP-44 encryption and decryption. This is used internally by the transports when encryption is enabled, and it allows the `decryptMessage` function to work seamlessly with this signer.
-
-- `encrypt(pubkey, plaintext)`: Encrypts a plaintext message for a given recipient public key.
-- `decrypt(pubkey, ciphertext)`: Decrypts a ciphertext message received from a given sender public key.
-
-## Security Considerations
-
-While the `PrivateKeySigner` is convenient, it requires you to handle a raw private key directly in your application code. **It is crucial to manage this key securely.** Avoid hard-coding private keys in your source code. Instead, use environment variables or a secure secret management system to load the key at runtime.
-
-
-# Base Nostr Transport
-
-The `BaseNostrTransport` is an abstract class that provides the core functionality for all Nostr-based transports in the `@contextvm/sdk`. It serves as the foundation for the [`NostrClientTransport`](/contextvm-docs/transports/nostr-client-transport) and [`NostrServerTransport`](/contextvm-docs/transports/nostr-server-transport), handling the common logic for connecting to relays, managing subscriptions, and converting messages between the MCP and Nostr formats.
-
-## Core Responsibilities
-
-The `BaseNostrTransport` is responsible for:
-
-- **Connection Management**: Establishing and terminating connections to the Nostr relay network via a `RelayHandler`.
-- **Event Serialization**: Converting MCP JSON-RPC messages into Nostr events and vice-versa.
-- **Cryptographic Operations**: Signing Nostr events using a `NostrSigner`.
-- **Message Publishing**: Publishing events to the Nostr network.
-- **Subscription Management**: Creating and managing subscriptions to listen for relevant events.
-- **Encryption Handling**: Managing the encryption and decryption of messages based on the configured `EncryptionMode`.
-
-## `BaseNostrTransportOptions`
-
-When creating a transport that extends `BaseNostrTransport`, you must provide a configuration object that implements the `BaseNostrTransportOptions` interface:
-
-```typescript
-export interface BaseNostrTransportOptions {
-  signer: NostrSigner;
-  relayHandler: RelayHandler;
-  encryptionMode?: EncryptionMode;
-}
-```
-
-- **`signer`**: An instance of a `NostrSigner` for signing events. This is a required parameter.
-- **`relayHandler`**: An instance of a `RelayHandler` for managing relay connections. This is a required parameter.
-- **`encryptionMode`**: An optional `EncryptionMode` enum that determines the encryption policy for the transport. Defaults to `OPTIONAL`.
-
-## Key Methods
-
-The `BaseNostrTransport` provides several protected methods that are used by its subclasses to implement their specific logic:
-
-- `connect()`: Connects to the configured Nostr relays.
-- `disconnect()`: Disconnects from the relays and clears subscriptions.
-- `subscribe(filters, onEvent)`: Subscribes to Nostr events that match the given filters.
-- `sendMcpMessage(...)`: Converts an MCP message to a Nostr event, signs it, optionally encrypts it, and publishes it to the network.
-- `createSubscriptionFilters(...)`: A helper method to create standard filters for listening to messages directed at a specific public key.
-
-## How It Fits Together
-
-The `BaseNostrTransport` encapsulates the shared logic of Nostr communication, allowing the `NostrClientTransport` and `NostrServerTransport` to focus on their specific roles in the client-server interaction model. By building on this common base, the SDK ensures consistent behavior and a unified approach to handling MCP over Nostr.
-
-
-# Nostr Client Transport
-
-The `NostrClientTransport` is a key component of the `@contextvm/sdk`, enabling MCP clients to communicate with remote MCP servers over the Nostr network. It implements the `Transport` interface from the `@modelcontextprotocol/sdk`, making it a plug-and-play solution for any MCP client.
-
-## Overview
-
-The `NostrClientTransport` handles all the complexities of Nostr-based communication, including:
-
-- Connecting to Nostr relays.
-- Subscribing to events from a specific server.
-- Sending MCP requests as Nostr events.
-- Receiving and processing responses and notifications.
-- Handling encryption and decryption of messages.
-
-By using this transport, an MCP client can interact with a Nostr-enabled MCP server without needing to implement any Nostr-specific logic itself.
-
-## `NostrTransportOptions`
-
-To create an instance of `NostrClientTransport`, you must provide a configuration object that implements the `NostrTransportOptions` interface:
-
-```typescript
-export interface NostrTransportOptions extends BaseNostrTransportOptions {
-  serverPubkey: string;
-}
-```
-
-- **`serverPubkey`**: The public key of the target MCP server. The transport will only listen for events from this public key.
-
-## Usage Example
-
-Here's how you can use the `NostrClientTransport` with an MCP client from the `@modelcontextprotocol/sdk`:
-
-```typescript
-import { Client } from "@modelcontextprotocol/sdk/client";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { EncryptionMode } from "@ctxvm/sdk/core";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-
-// 1. Configure the signer and relay handler
-const signer = new PrivateKeySigner("your-private-key"); // Replace with your actual private key
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
-
-// 2. Set the public key of the target server
-const REMOTE_SERVER_PUBKEY = "remote-server-public-key";
-
-// 3. Create the transport instance
-const clientNostrTransport = new NostrClientTransport({
-  signer,
-  relayHandler: relayPool,
-  serverPubkey: REMOTE_SERVER_PUBKEY,
-  encryptionMode: EncryptionMode.OPTIONAL,
-});
-
-// 4. Create and connect the MCP client
-const mcpClient = new Client();
-await mcpClient.connect(clientNostrTransport);
-
-// 5. Use the client to interact with the server
-const tools = await mcpClient.listTools();
-console.log("Available tools:", tools);
-
-// 6. Close the connection when done
-// await mcpClient.close();
-```
-
-## How It Works
-
-1.  **`start()`**: When `mcpClient.connect()` is called, it internally calls the transport's `start()` method. This method connects to the relays and subscribes to events targeting the client's public key.
-2.  **`send(message)`**: When you call an MCP method like `mcpClient.listTools()`, the client creates a JSON-RPC request and passes it to the transport's `send()` method. The transport then:
-    - Wraps the message in a Nostr event.
-    - Signs the event.
-    - Optionally encrypts it.
-    - Publishes it to the relays, targeting the `serverPubkey`.
-3.  **Event Processing**: The transport listens for incoming events. When an event is received, it is decrypted (if necessary) and converted back into a JSON-RPC message.
-    - If the message is a **response** (correlated by the original event ID), it is passed to the MCP client to resolve the pending request.
-    - If the message is a **notification**, it is emitted through the `onmessage` handler.
-
-# Nostr Server Transport
-
-The `NostrServerTransport` is the server-side counterpart to the [`NostrClientTransport`](/contextvm-docs/transports/nostr-client-transport). It allows an MCP server to expose its capabilities to the Nostr network, making them discoverable and usable by any Nostr-enabled client. Like the client transport, it implements the `Transport` interface from the `@modelcontextprotocol/sdk`.
-
-## Overview
-
-The `NostrServerTransport` is responsible for:
-
-- Listening for incoming MCP requests from Nostr clients.
-- Managing individual client sessions and their state (e.g., initialization, encryption).
-- Handling request/response correlation to ensure responses are sent to the correct client.
-- Sending responses and notifications back to clients over Nostr.
-- Optionally announcing the server and its capabilities to the network for public discovery.
-
-## `NostrServerTransportOptions`
-
-The transport is configured via the `NostrServerTransportOptions` interface:
-
-```typescript
-export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
-  serverInfo?: ServerInfo;
-  isPublicServer?: boolean;
-  allowedPublicKeys?: string[];
-}
-```
-
-- **`serverInfo`**: (Optional) Information about the server (`name`, `picture`, `website`) to be used in public announcements.
-- **`isPublicServer`**: (Optional) If `true`, the transport will automatically announce the server's capabilities on the Nostr network. Defaults to `false`.
-- **`allowedPublicKeys`**: (Optional) A list of client public keys that are allowed to connect. If not provided, any client can connect.
-
-## Usage Example
-
-Here's how to use the `NostrServerTransport` with an `McpServer` from the `@modelcontextprotocol/sdk`:
-
-```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server";
-import { NostrServerTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-
-// 1. Configure the signer and relay pool
-const signer = new PrivateKeySigner("your-server-private-key");
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
-
-// 2. Create the McpServer instance
-const mcpServer = new McpServer({
-  name: "demo-server",
-  version: "1.0.0",
-});
-
-// Register your server's tools, resources, etc.
-// mcpServer.tool(...);
-
-// 3. Create the NostrServerTransport instance
-const serverNostrTransport = new NostrServerTransport({
-  signer: signer,
-  relayHandler: relayPool,
-  isPublicServer: true, // Announce the server publicly
-  serverInfo: {
-    name: "My Awesome MCP Server",
-    website: "https://example.com",
-  },
-});
-
-// 4. Connect the server
-await mcpServer.connect(serverNostrTransport);
-
-console.log("MCP server is running and available on Nostr.");
-
-// Keep the process running...
-// To shut down: await mcpServer.close();
-```
-
-## How It Works
-
-1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isPublicServer` is `true`, it also initiates the announcement process.
-2.  **Incoming Events**: The transport listens for events from clients. For each client, it maintains a `ClientSession`.
-3.  **Request Handling**: When a valid request is received from an authorized client, the transport forwards it to the `McpServer`'s internal logic via the `onmessage` handler. It replaces the request's original ID with the unique Nostr event ID to prevent ID collisions between different clients.
-4.  **Response Handling**: When the `McpServer` sends a response, the transport's `send()` method is called. The transport looks up the original request details from the client's session, restores the original request ID, and sends the response back to the correct client, referencing the original event ID.
-5.  **Announcements**: If `isPublicServer` is true, the transport sends requests to its own `McpServer` for `initialize`, `tools/list`, etc. It then formats the responses into the appropriate replaceable Nostr events (kinds 11316-11320) and publishes them.
-
-## Session Management
-
-The `NostrServerTransport` manages a session for each unique client public key. Each session tracks:
-
-- If the client has completed the MCP initialization handshake.
-- Whether the session is encrypted.
-- A map of pending requests to correlate responses.
-- The timestamp of the last activity, used for cleaning up inactive sessions.
-
-## Next Steps
-
-Now that you understand how the transports work, let's dive into the **[Signer](/contextvm-docs/signer/nostr-signer-interface)**, the component responsible for cryptographic signatures.
-
-
-
-# Tutorial Client-Server Communication
-A step-by-step guide to setting up a basic MCP client and server that communicate directly over the Nostr network using the @contextvm/sdk.
-
-# Tutorial: Client-Server Communication
-
-This tutorial provides a complete, step-by-step guide to setting up a basic MCP client and server that communicate directly over the Nostr network using the `@contextvm/sdk`.
-
-## Objective
-
-We will build two separate scripts:
-
-1.  `server.ts`: An MCP server that exposes a simple "echo" tool.
-2.  `client.ts`: An MCP client that connects to the server, lists the available tools, and calls the "echo" tool.
-
-
-## 1. The Server (`server.ts`)
-
-First, let's create the MCP server. This server will use the `NostrServerTransport` to listen for requests on the Nostr network.
-
-Create a new file named `server.ts`:
-
-```typescript
-import { McpServer, Tool } from "@modelcontextprotocol/sdk/server";
-import { NostrServerTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-import { generateSecretKey, getPublicKey } from "nostr-tools/pure";
-
-// --- Configuration ---
-// IMPORTANT: Replace with your own private key
-const SERVER_PRIVATE_KEY_HEX =
-  process.env.SERVER_PRIVATE_KEY || "your-32-byte-server-private-key-in-hex";
-const RELAYS = ["wss://relay.damus.io", "wss://nos.lol"];
-
-// --- Main Server Logic ---
-async function main() {
-  // 1. Setup Signer and Relay Pool
-  const signer = new PrivateKeySigner(SERVER_PRIVATE_KEY_HEX);
-  const relayPool = new SimpleRelayPool(RELAYS);
-  const serverPubkey = await signer.getPublicKey();
-
-  console.log(`Server Public Key: ${serverPubkey}`);
-  console.log("Connecting to relays...");
-
-  // 2. Create and Configure the MCP Server
-  const mcpServer = new McpServer({
-    name: "nostr-echo-server",
-    version: "1.0.0",
-  });
-
-  // 3. Define a simple "echo" tool
-  server.registerTool(
-    "echo",
-    {
-      title: "Echo Tool",
-      description: "Echoes back the provided message",
-      inputSchema: { message: z.string() },
-    },
-    async ({ message }) => ({
-      content: [{ type: "text", text: `Tool echo: ${message}` }],
-    }),
-  );
-
-  // 4. Configure the Nostr Server Transport
-  const serverTransport = new NostrServerTransport({
-    signer,
-    relayHandler: relayPool,
-    isPublicServer: true, // Announce this server on the Nostr network
-    serverInfo: {
-      name: "CTXVM Echo Server",
-    },
-  });
-
-  // 5. Connect the server
-  await mcpServer.connect(serverTransport);
-
-  console.log("Server is running and listening for requests on Nostr...");
-  console.log("Press Ctrl+C to exit.");
-}
-
-main().catch((error) => {
-  console.error("Failed to start server:", error);
-  process.exit(1);
-});
-```
-
-### Running the Server
-
-To run the server, execute the following command in your terminal. Be sure to replace the placeholder private key or set the `SERVER_PRIVATE_KEY` environment variable.
-
-```bash
-bun run server.ts
-```
-
-The server will start, print its public key, and wait for incoming client connections.
-
+# @contextvm/sdk: The Official SDK for the ContextVM Protocol
+
+Welcome to the official documentation for the **@contextvm/sdk**, a JavaScript/TypeScript library for the Context Vending Machine (ContextVM) Protocol. This SDK provides the tools to bridge Nostr and the Model Context Protocol (MCP), enabling decentralized discovery, access and exposure of computational services.
+
+## What is ContextVM?
+
+The Context Vending Machine (ContextVM) protocol defines how [Nostr](https://nostr.com/) and Model Context Protocol can be used to expose MCP server capabilities. It enables standardized usage of these resources through a decentralized, cryptographically secure messaging system. By integrating MCP with Nostr, ContextVM offers:
+
+- **Discoverability**: MCP servers can be discovered through the Nostr network without centralized registries.
+- **Verifiability**: All messages are cryptographically signed using Nostr's public keys.
+- **Authorization**: No complex authorization logic required, just cryptography.
+- **Decentralization**: No single point of failure for service discovery or communication.
+- **Protocol Interoperability**: Both MCP and ContextVMs utilize JSON-RPC patterns, enabling seamless communication.
+
+This documentation serves as the primary entry point for developers and individuals interested in learning more about ContextVM and its SDK.
+
+## SDK Overview
+
+The `@contextvm/sdk` provides the necessary components to interact with the CTXVM Protocol:
+
+- **Core Module**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
+- **Transports**: Critical for communication, providing `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
+- **Proxy**: A client-side MCP server that connects to other servers through Nostr, exposing server capabilities locally. Particularly useful for clients that don't natively support Nostr transport.
+- **Gateway**: Implements Nostr server transport, binding to another MCP server and exposing its capabilities through the Nostr network.
+- **Relay**: Functionality for managing Nostr relays, abstracting relay interactions.
+- **Signer**: Provides cryptographic signing capabilities required for Nostr events.
+
+Both the Proxy and Gateway leverage Nostr transports, allowing existing MCP servers to maintain their conventional transports while gaining Nostr interoperability.
+
+## How to Use These Docs
+
+This documentation is structured to guide you from initial setup to advanced implementation. We recommend starting with the "Getting Started" section and then exploring the modules most relevant to your use case.
+
+- **Getting Started**: Covers installation and a high-level overview of the SDK.
+- **Core Modules**: Details the fundamental interfaces, encryption methods, and constants.
+- **Transports, Signer, Relay**: Deep dives into the key components for communication and security.
+- **Proxy & Gateway**: Explains how to use the bridging components.
+- **Tutorials**: Provides practical, step-by-step examples.
+
+Let's begin by setting up your environment in the [Quick Overview](getting-started/quick-overview/).
+
+================
+File: docs/index.mdx
+================
+---
+title: ContextVM
+description: The intersection of Nostr and MCP
+template: splash
+hero:
+  tagline: The intersection of Nostr and MCP
+  image:
+    file: ../../assets/contextvm-logo.svg
+  actions:
+    - text: Get Started
+      link: getting-started/quick-overview/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/contextvm/ts-sdk
+      icon: external
+      variant: minimal
 ---
 
-## 2. The Client (`client.ts`)
+import { Card, CardGrid } from "@astrojs/starlight/components";
 
-Next, let's create the client that will connect to our server.
+## Core Concepts
 
-Create a new file named `client.ts`:
-
-```typescript
-import { Client } from "@modelcontextprotocol/sdk/client";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-
-// --- Configuration ---
-// IMPORTANT: Replace with the server's public key from the server output
-const SERVER_PUBKEY = "the-public-key-printed-by-server.ts";
-
-// IMPORTANT: Replace with your own private key
-const CLIENT_PRIVATE_KEY_HEX =
-  process.env.CLIENT_PRIVATE_KEY || "your-32-byte-client-private-key-in-hex";
-const RELAYS = ["wss://relay.damus.io", "wss://nos.lol"];
-
-// --- Main Client Logic ---
-async function main() {
-  // 1. Setup Signer and Relay Pool
-  const signer = new PrivateKeySigner(CLIENT_PRIVATE_KEY_HEX);
-  const relayPool = new SimpleRelayPool(RELAYS);
-
-  console.log("Connecting to relays...");
-
-  // 2. Configure the Nostr Client Transport
-  const clientTransport = new NostrClientTransport({
-    signer,
-    relayHandler: relayPool,
-    serverPubkey: SERVER_PUBKEY,
-  });
-
-  // 3. Create and connect the MCP Client
-  const mcpClient = new Client();
-  await mcpClient.connect(clientTransport);
-
-  console.log("Connected to server!");
-
-  // 4. List the available tools
-  console.log("\nListing available tools...");
-  const tools = await mcpClient.listTools();
-  console.log("Tools:", tools);
-
-  // 5. Call the "echo" tool
-  console.log('\nCalling the "echo" tool...');
-  const echoResult = await mcpClient.callTool({
-    name: "echo",
-    arguments: { message: "Hello, Nostr!" },
-  });
-  console.log("Echo result:", echoResult);
-
-  // 6. Close the connection
-  await mcpClient.close();
-  console.log("\nConnection closed.");
-}
-
-main().catch((error) => {
-  console.error("Client failed:", error);
-  process.exit(1);
-});
-```
-
-### Running the Client
-
-Open a **new terminal window** (leave the server running in the first one). Before running the client, make sure to update the `SERVER_PUBKEY` variable with the public key that your `server.ts` script printed to the console.
-
-Then, run the client:
-
-```bash
-bun run client.ts
-```
-
-## Expected Output
-
-If everything is configured correctly, you should see the following output in the client's terminal:
-
-```
-Connecting to relays...
-Connected to server!
-
-Listing available tools...
-Tools: {
-  tools: [
-    {
-      name: 'echo',
-      description: 'Replies with the input it received.',
-      inputSchema: { ... }
-    }
-  ]
-}
-
-Calling the "echo" tool...
-Echo result: You said: Hello, Nostr!
-
-Connection closed.
-```
+<CardGrid stagger>
+  <Card title="Architecture" icon="rocket">
+    Learn the foundational concepts and architecture of ContextVM
+  </Card>
+  <Card title="SDK Documentation" icon="add-document">
+    Explore our comprehensive documentation and implementation examples
+  </Card>
+  <Card title="Integrations" icon="puzzle">
+    Discover how ContextVM integrates MCP with Nostr
+  </Card>
+</CardGrid>
 
 
 
+
+================================================================
+End of Codebase
+================================================================

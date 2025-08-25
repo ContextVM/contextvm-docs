@@ -78,18 +78,24 @@ This enum is used to configure the encryption behavior of the `NostrClientTransp
 
 - **Learn more:** [Encryption](/core/encryption)
 
-## `AnnouncementMethods`
+## `ServerInfo`
 
-The `AnnouncementMethods` interface defines methods for announcing server capabilities on the Nostr network.
+The `ServerInfo` interface provides metadata about a server, used by the Nostr server transport to add metadata to server announcements.
+
+### Definition
 
 ```typescript
-export interface AnnouncementMethods {
-  server: InitializeRequest["method"];
-  tools: ListToolsRequest["method"];
-  resources: ListResourcesRequest["method"];
-  resourceTemplates: ListResourceTemplatesRequest["method"];
-  prompts: ListPromptsRequest["method"];
+export interface ServerInfo {
+  name?: string;
+  picture?: string;
+  website?: string;
+  about?: string;
 }
 ```
 
-This interface is used by the `NostrServerTransport` to publish server announcements.
+This interface allows servers to include descriptive information in their announcements, making them more discoverable and providing users with context about the server's purpose and identity.
+
+- **name**: A human-readable name for the server
+- **picture**: URL to an image representing the server
+- **website**: The server's official website or repository
+- **about**: A description of the server's purpose or content

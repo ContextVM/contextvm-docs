@@ -33,6 +33,7 @@ The SDK defines an object `NOSTR_TAGS` that contains constants for the various N
 | `NAME`               | `name`               | The human-readable name of a server in an announcement.                |
 | `WEBSITE`            | `website`            | The URL of a server's website in an announcement.                      |
 | `PICTURE`            | `picture`            | The URL of a server's icon in an announcement.                         |
+| `ABOUT`              | `about`              | A tag for providing a short description of a server.                   |
 | `SUPPORT_ENCRYPTION` | `support_encryption` | A tag indicating that a server supports end-to-end encryption.         |
 
 ## Announcement Methods

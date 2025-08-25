@@ -38,10 +38,10 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
 Here's how to use the `NostrServerTransport` with an `McpServer` from the `@modelcontextprotocol/sdk`:
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server";
-import { NostrServerTransport } from "@ctxvm/sdk/transport";
-import { PrivateKeySigner } from "@ctxvm/sdk/signer";
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
+import { McpServer } from "@modelcontextprotocol/sdk";
+import { NostrServerTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { SimpleRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay pool
 const signer = new PrivateKeySigner("your-server-private-key");

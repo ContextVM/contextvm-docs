@@ -64,8 +64,33 @@ export default defineConfig({
           label: "Components",
           items: [
             { label: "Gateway", slug: "gateway/overview" },
-            { label: "Relay", slug: "relay/simple-relay-pool" },
-            { label: "Signer", slug: "signer/private-key-signer" },
+            {
+              label: "Relay Handlers",
+              items: [
+                { label: "Simple Relay Pool", slug: "relay/simple-relay-pool" },
+                {
+                  label: "Applesauce Relay Pool",
+                  slug: "relay/applesauce-relay-pool",
+                },
+                {
+                  label: "Custom Relay Handler Development",
+                  slug: "relay/custom-relay-handler",
+                },
+              ],
+            },
+            {
+              label: "Signers",
+              items: [
+                {
+                  label: "Private Key Signer",
+                  slug: "signer/private-key-signer",
+                },
+                {
+                  label: "Custom Signer Development",
+                  slug: "signer/custom-signer-development",
+                },
+              ],
+            },
             { label: "Proxy", slug: "proxy/overview" },
           ],
         },
@@ -75,14 +100,6 @@ export default defineConfig({
             {
               label: "Client-Server Communication",
               slug: "tutorials/client-server-communication",
-            },
-            {
-              label: "Custom Signer Development",
-              slug: "signer/custom-signer-development",
-            },
-            {
-              label: "Custom Relay Handler Development",
-              slug: "relay/custom-relay-handler",
             },
           ],
         },

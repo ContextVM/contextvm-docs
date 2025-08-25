@@ -26,7 +26,7 @@ A common use case for a custom signer is in a web application that needs to inte
 Here is how you could implement a `NostrSigner` that wraps the `window.nostr` object:
 
 ```typescript
-import { NostrSigner } from "@ctxvm/sdk/core";
+import { NostrSigner } from "@contextvm/sdk";
 import { UnsignedEvent, NostrEvent } from "nostr-tools";
 
 // Define the NIP-07 window.nostr interface for type-safety

@@ -21,7 +21,7 @@ This documentation serves as the primary entry point for developers and individu
 
 ## SDK Overview
 
-The `@ctxvm/sdk` provides the necessary components to interact with the CTXVM Protocol:
+The `@contextvm/sdk` provides the necessary components to interact with the CTXVM Protocol:
 
 - **Core Module**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
 - **Transports**: Critical for communication, providing `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.

@@ -36,8 +36,8 @@ The standard implementation of NIP-17 is designed for persistent private message
 Encryption is configured at the transport level using the `EncryptionMode` enum. You can set the desired mode when creating a `NostrClientTransport` or `NostrServerTransport`.
 
 ```typescript
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
-import { EncryptionMode } from "@ctxvm/sdk/core";
+import { NostrClientTransport } from "@contextvm/sdk";
+import { EncryptionMode } from "@contextvm/sdk";
 
 const transport = new NostrClientTransport({
   // ... other options

@@ -27,8 +27,8 @@ The constructor takes a single argument:
 ## Usage Example
 
 ```typescript
-import { SimpleRelayPool } from "@ctxvm/sdk/relay";
-import { NostrClientTransport } from "@ctxvm/sdk/transport";
+import { SimpleRelayPool } from "@contextvm/sdk";
+import { NostrClientTransport } from "@contextvm/sdk";
 
 // 1. Define the list of relays you want to connect to
 const myRelays = [
