@@ -30,75 +30,93 @@ export default defineConfig({
         },
         {
           label: "Specification",
-          items: [{ label: "Specification", slug: "ctxvm-draft-spec" }],
-        },
-        {
-          label: "Core Concepts",
           items: [
-            { label: "Constants", slug: "core/constants" },
-            { label: "Interfaces", slug: "core/interfaces" },
-            { label: "Relay handler", slug: "relay/relay-handler-interface" },
-            { label: "Nostr signer", slug: "signer/nostr-signer-interface" },
-            { label: "Encryption", slug: "core/encryption" },
+            { label: "Specification", slug: "spec/ctxvm-draft-spec" },
+            { label: "CEP - Guidelines", slug: "spec/cep-guidelines" },
           ],
         },
         {
-          label: "Transports",
+          label: "ts-SDK",
           items: [
+            { label: "Quick Overview", slug: "ts-sdk/quick-overview" },
             {
-              label: "Base Nostr Transport",
-              slug: "transports/base-nostr-transport",
-            },
-            {
-              label: "Nostr Client Transport",
-              slug: "transports/nostr-client-transport",
-            },
-            {
-              label: "Nostr Server Transport",
-              slug: "transports/nostr-server-transport",
-            },
-          ],
-        },
-        {
-          label: "Components",
-          items: [
-            { label: "Gateway", slug: "gateway/overview" },
-            {
-              label: "Relay Handlers",
+              label: "Core Concepts",
               items: [
-                { label: "Simple Relay Pool", slug: "relay/simple-relay-pool" },
+                { label: "Constants", slug: "ts-sdk/core/constants" },
+                { label: "Interfaces", slug: "ts-sdk/core/interfaces" },
                 {
-                  label: "Applesauce Relay Pool",
-                  slug: "relay/applesauce-relay-pool",
+                  label: "Relay handler",
+                  slug: "ts-sdk/relay/relay-handler-interface",
                 },
                 {
-                  label: "Custom Relay Handler Development",
-                  slug: "relay/custom-relay-handler",
+                  label: "Nostr signer",
+                  slug: "ts-sdk/signer/nostr-signer-interface",
+                },
+                { label: "Encryption", slug: "ts-sdk/core/encryption" },
+              ],
+            },
+            {
+              label: "Transports",
+              items: [
+                {
+                  label: "Base Nostr Transport",
+                  slug: "ts-sdk/transports/base-nostr-transport",
+                },
+                {
+                  label: "Nostr Client Transport",
+                  slug: "ts-sdk/transports/nostr-client-transport",
+                },
+                {
+                  label: "Nostr Server Transport",
+                  slug: "ts-sdk/transports/nostr-server-transport",
                 },
               ],
             },
             {
-              label: "Signers",
+              label: "Components",
               items: [
                 {
-                  label: "Private Key Signer",
-                  slug: "signer/private-key-signer",
+                  label: "Relay Handlers",
+                  items: [
+                    {
+                      label: "Simple Relay Pool",
+                      slug: "ts-sdk/relay/simple-relay-pool",
+                    },
+                    {
+                      label: "Applesauce Relay Pool",
+                      slug: "ts-sdk/relay/applesauce-relay-pool",
+                    },
+                    {
+                      label: "Custom Relay Handler Development",
+                      slug: "ts-sdk/relay/custom-relay-handler",
+                    },
+                  ],
                 },
                 {
-                  label: "Custom Signer Development",
-                  slug: "signer/custom-signer-development",
+                  label: "Signers",
+                  items: [
+                    {
+                      label: "Private Key Signer",
+                      slug: "ts-sdk/signer/private-key-signer",
+                    },
+                    {
+                      label: "Custom Signer Development",
+                      slug: "ts-sdk/signer/custom-signer-development",
+                    },
+                  ],
                 },
+                { label: "Gateway", slug: "ts-sdk/gateway/overview" },
+                { label: "Proxy", slug: "ts-sdk/proxy/overview" },
               ],
             },
-            { label: "Proxy", slug: "proxy/overview" },
-          ],
-        },
-        {
-          label: "Tutorials",
-          items: [
             {
-              label: "Client-Server Communication",
-              slug: "tutorials/client-server-communication",
+              label: "Tutorials",
+              items: [
+                {
+                  label: "Client-Server Communication",
+                  slug: "ts-sdk/tutorials/client-server-communication",
+                },
+              ],
             },
           ],
         },

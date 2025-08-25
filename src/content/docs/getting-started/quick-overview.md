@@ -1,70 +1,57 @@
 ---
 title: Quick Overview
-description: An overview of the @contextvm/sdk, including its modules and core concepts.
+description: An overview of the ContextVM documentation, including the specification and SDK documentation.
 ---
 
-# SDK Quick Overview
+# Quick Overview
 
-This overview introduces the essential modules and core concepts of the `@contextvm/sdk`. Understanding these fundamentals will help you leverage the full power of the ContextVM protocol.
+Welcome to the ContextVM documentation! This guide provides a brief overview of what you'll find in our documentation to help you get started with ContextVM.
 
-## Installation
+## Documentation Structure
 
-`@contextvm/sdk` is distributed as an NPM package, making it easy to integrate into your project.
+Our documentation is organized into several main sections:
 
-## Install the SDK
+### 🚀 Getting Started
 
-Run the following command in your terminal:
+- **Quick Overview**: This page - a brief introduction to what ContextVM offers
 
-```bash
-npm install @contextvm/sdk
-```
+### 📋 Specification
 
-This will install the SDK and its dependencies into your project.
+- **[Specification](/spec/ctxvm-draft-spec)**: The official ContextVM draft specification detailing the protocol
+- **[CEP - Guidelines](/spec/cep-guidelines)**: ContextVM Enhancement Proposal guidelines for contributing to the protocol
 
-**Note:** If you are using a different package manager than NPM, just replace `npm` with the appropriate command for your package manager.
+### 🛠️ ts-SDK
 
-## Modules Introduction
+The TypeScript SDK provides tools and libraries for building applications with ContextVM:
 
-The SDK is organized into several modules, each providing a specific set of functionalities:
+- **[SDK Quick Overview](/ts-sdk/quick-overview)**: A comprehensive overview of the SDK's modules and core concepts
+- **Core Concepts**: Fundamental definitions, constants, interfaces, and utilities
+- **Transports**: Communication modules for MCP over Nostr
+- **Components**: Gateway, Relay Handlers, Signers, and Proxy implementations
+- **Tutorials**: Practical examples and guides
 
-- **[Core](/core/interfaces)**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
-- **[Transports](/transports/base-nostr-transport)**: Critical for communication, this module provides `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
-- **[Signer](/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
-- **[Relay](/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
-- **[Proxy](/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
-- **[Gateway](/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
+## What is ContextVM?
 
-## Core Concepts
+ContextVM is a protocol that bridges the Model Context Protocol (MCP) with the Nostr network, enabling decentralized communication. It allows MCP servers and clients to communicate over the Nostr protocol, leveraging its decentralized infrastructure for secure and private interactions.
 
-The `@contextvm/sdk` is built around a few core concepts that enable the bridging of MCP and Nostr.
+## Key Features
 
-### Signers and Relay Handlers
+- **Decentralized Communication**: Use Nostr's decentralized network for MCP communication
+- **Security First**: Leveraging Nostr's cryptographic primitives for verification, authorization, and additional features
+- **Easy Integration**: Typescript SDK to work with ContextVM
 
-At the heart of the SDK are two key interfaces:
+## Getting Started
 
-- **`NostrSigner`**: An interface for signing Nostr events. The SDK includes a default `PrivateKeySigner`, but you can create a custom implementation to integrate with other signing mechanisms (e.g., Window.nostr for web, remote signers, etc).
-- **`RelayHandler`**: An interface for managing connections to Nostr relays. The default `SimpleRelayPool` provides basic relay management, but you can implement your own logic for more sophisticated relay selection and management.
-
-These components are fundamental for creating and broadcasting Nostr events, which are the backbone of ContextVM communication.
-
-### Nostr Transports
-
-The SDK provides two specialized transports to send and receive MCP messages over the Nostr network:
-
-- [`NostrClientTransport`](/transports/nostr-client-transport): Used by MCP clients to connect to remote MCP servers exposed via Nostr.
-- [`NostrServerTransport`](/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr.
-
-These transports handle the serialization of MCP messages into Nostr events and manage the communication flow.
-
-### Bridging Components: Proxy and Gateway
-
-To simplify integration with existing MCP applications, the SDK provides two high-level bridging components:
-
-- [`NostrMCPProxy`](/proxy/overview): A client-side bridge that allows an MCP client to communicate with a remote MCP server over Nostr without requiring native Nostr support in the client.
-- [`NostrMCPGateway`](/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
-
-These components abstract away the underlying transport complexities, making it easy to connect conventional MCP setups with the decentralized Nostr ecosystem.
+1. **Read the Specification**: Start with the [ContextVM specification](/spec/ctxvm-draft-spec) to understand the protocol
+2. **Explore the SDK**: Check out the [SDK Quick Overview](/ts-sdk/quick-overview) for development guidance
+3. **Follow Tutorials**: Work through practical examples to see ContextVM in action
 
 ## Next Steps
 
-Now that you have a basic understanding of the SDK's modules and concepts, you are ready to dive deeper. Explore the **Core Modules** section to learn about the fundamental interfaces and data structures.
+Choose your path based on your interests:
+
+- **Protocol Development**: Dive into the [Specification](/spec/ctxvm-draft-spec) to understand the protocol details
+- **SDK Development**: Start with the [SDK Quick Overview](/ts-sdk/quick-overview) to begin building with ContextVM
+- **Contributing**: Learn about contributing to the protocol with [CEP Guidelines](/spec/cep-guidelines)
+
+For the latest updates and community discussions, visit our [GitHub repository](https://github.com/contextvm/).
