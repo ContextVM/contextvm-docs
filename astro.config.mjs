@@ -31,8 +31,8 @@ export default defineConfig({
         {
           label: "Specification",
           items: [
-            { label: "Specification", slug: "ctxvm-draft-spec" },
-            { label: "CEP - Guidelines", slug: "cep-guidelines" },
+            { label: "Specification", slug: "spec/ctxvm-draft-spec" },
+            { label: "CEP - Guidelines", slug: "spec/cep-guidelines" },
           ],
         },
         {

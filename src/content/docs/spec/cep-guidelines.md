@@ -13,7 +13,7 @@ CEP stands for ContextVM Enhancement Proposal. A CEP is a design document provid
 
 We intend CEPs to be the primary mechanisms for proposing major new features, for collecting community input on an issue, and for documenting the design decisions that have gone into ContextVM. The CEP author is responsible for building consensus within the community and documenting dissenting opinions.
 
-Because the CEPs are maintained as text files in a versioned repository (GitHub Issues), their revision history is the historical record of the feature proposal.
+Because the CEPs are maintained as text files in a versioned repository, their revision history is the historical record of the feature proposal.
 
 ## What qualifies a CEP?
 
@@ -48,7 +48,7 @@ Each CEP must have an **CEP author** -- someone who writes the CEP using the sty
 
 CEPs should be submitted as a GitHub Issue in the [ContextVM-docs repository](https://github.com/ContextVM/contextvm-docs). The standard CEP workflow is:
 
-1. You, the CEP author, create a [well-formatted](#cep-format) GitHub Issue with the `CEP` and `proposal` tags. The CEP number is the same as the GitHub Issue number, the two can be used interchangably.
+1. You, the CEP author, create a [well-formatted](#cep-format) GitHub Issue with the `CEP` and `proposal` tags. The CEP number is the same as the GitHub Issue number, the two can be used interchangeably. The issue should be complemented by a Pull Request that adds a markdown document in the `ceps` directory if the CEP is a **Standards Track** CEP.
 2. Find a Maintainer to sponsor your proposal. Maintainers will regularly go over the list of open proposals to determine which proposals to sponsor. You can tag relevant maintainers in your proposal.
 3. Once a sponsor is found, the GitHub Issue is assigned to the sponsor. The sponsor will add the `draft` tag, ensure the CEP number is in the title, and assign a milestone.
 4. The sponsor will informally review the proposal and may request changes based on community feedback. When ready for formal review, the sponsor will add the `in-review` tag.
@@ -84,7 +84,7 @@ CEPs can be one one of the following states:
 
 ### CEP Review & Resolution
 
-CEPs are reviewed by the ContextVM Maintainers team on a regular basis.
+CEPs are reviewed by the ContextVM Maintainers on a regular basis.
 
 For a CEP to be accepted it must meet certain minimum criteria:
 
