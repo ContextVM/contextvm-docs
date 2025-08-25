@@ -12,11 +12,12 @@ The Context Vending Machine (ContextVM) specification defines how the Nostr prot
 ## Table of Contents
 
 - [Introduction](#introduction)
-  - [Public Key Cryptography](#public-key-cryptography)
   - [ContextVM as MCP Transport](#contextvm-as-mcp-transport)
+  - [Public Key Cryptography](#public-key-cryptography)
 - [Protocol Overview](#protocol-overview)
   - [Main Actors](#main-actors)
   - [Transport Layer Architecture](#transport-layer-architecture)
+  - [Message Structure](#message-structure)
 - [Event Kinds](#event-kinds)
 - [Server Discovery](#server-discovery)
   - [Direct Discovery](#direct-discovery)
@@ -31,7 +32,6 @@ The Context Vending Machine (ContextVM) specification defines how the Nostr prot
     - [Call Tool Request](#call-tool-request)
     - [Call Tool Response](#call-tool-response)
 - [Notifications](#notifications)
-- [Error Handling](#error-handling)
 - [Implementation Requirements](#implementation-requirements)
 - [Complete Protocol Flow](#complete-protocol-flow)
 
@@ -49,14 +49,6 @@ ContextVM operates at the **transport layer** of MCP, providing a Nostr-based im
 - **Enables decentralized service discovery** and communication without centralized infrastructure
 
 This approach allows MCP servers and clients to communicate through Nostr while maintaining full compatibility with the MCP specification and gaining the benefits of Nostr's cryptographic security model.
-
-### Transport Layer Security Benefits
-
-- **Decentralized routing**: No single point of failure for message delivery
-- **Relay independence**: Messages can be delivered through multiple relays for redundancy
-- **Authorization**: Public keys serve as natural identifiers for access control
-
-These cryptographic and metadata features are provided by the ContextVM transport layer without requiring changes to the core MCP protocol, making it a drop-in replacement for traditional MCP transports.
 
 ### Public Key Cryptography
 
