@@ -64,42 +64,32 @@ Choose your path based on your interests:
 For the latest updates and community discussions, visit our [GitHub repository](https://github.com/contextvm/).
 
 ================
-File: docs/spec/ceps/cep-0001.md
+File: docs/spec/ceps/cep-4.md
 ================
 ---
-title: CEP-0001 Encryption Support
+title: CEP-4 Encryption Support
 description: End-to-end encryption for ContextVM messages using NIP-17 and NIP-59
 ---
 
-# ContextVM Enhancement Proposal (CEP) 0001: Encryption Support
+# Encryption Support
 
-**Status:** Draft  
-**Author:** ContextVM Team
-**Created:** 2025-08-25
+**Status:** Proposal
+**Author:** @Gzuuus
 **Type:** Standards Track
 
 ## Abstract
 
 This CEP proposes optional end-to-end encryption for ContextVM messages to enhance privacy and security. The encryption mechanism leverages a simplified version of NIP-17 (Private Direct Messages) for secure message encryption and NIP-59 (Gift Wrap) pattern with no 'rumor' with NIP-59 gift wrapping for metadata protection, ensuring message content privacy and metadata protection while maintaining full compatibility with the standard protocol.
 
-## Motivation
-
-ContextVM currently operates with unencrypted messages, which exposes both content and metadata to potential eavesdroppers. While the protocol maintains cryptographic authenticity through Nostr's signature system, it lacks privacy protection for sensitive communications. This is particularly important for:
-
-1. **Sensitive Data Protection**: Users may need to interact with capabilities that handle personal or confidential information
-2. **Metadata Privacy**: Current protocol exposes participant identities, timestamps, and communication patterns
-
-The existing protocol's security model focuses on authenticity and integrity but lacks confidentiality. This CEP addresses this gap by adding optional encryption while preserving all existing functionality.
-
 ## Specification
 
 ### Encryption Support Discovery
 
-Encryption support is advertised through the `support_encryption` tag in server initialization responses. The presence of this tag indicates that the server supports encryption; its absence signifies that the server does not support encryption:
+Encryption support is advertised through the `support_encryption` tag in server initialization responses or public server announcements. The presence of this tag indicates that the server supports encryption; its absence signifies that the server does not support encryption:
 
 ```json
 {
-  "pubkey": "<provider-pubkey>",
+  "pubkey": "<server-pubkey>",
   "content": {
     /* server details */
   },
@@ -139,14 +129,18 @@ The request is prepared as usual, and should be signed:
       }
     }
   },
-  "tags": [["p", "<provider-pubkey>"]],
+  "tags": [["p", "<server-pubkey>"]],
   "sig": "<signature>"
 }
 ```
 
 #### 2. Seal Creation (NIP-17)
 
-The request is converted into a JSON string and gift-wrapped (kind 1059) with a random key, following NIP-44 encryption:
+The request is converted into a JSON string and encrypted to the recipient's public key, following NIP-44 encryption.
+
+#### 3. Gift Wrapping (NIP-59)
+
+The encrypted request is then gift-wrapped by placing it in the content field of a NIP-59 gift-wrap event.
 
 ```json
 {
@@ -160,8 +154,6 @@ The request is converted into a JSON string and gift-wrapped (kind 1059) with a 
 }
 ```
 
-#### 3. Gift Wrapping (NIP-59)
-
 Server responses follow the same pattern. The response is converted into a JSON string and gift-wrapped (kind 1059) with a random key, following NIP-44 encryption.
 
 The decrypted inner content contains the standard ContextVM response format. The id field used in responses should match the inner id field used in requests, not the id of the gift-wrap event.
@@ -169,21 +161,6 @@ The decrypted inner content contains the standard ContextVM response format. The
 #### Observations
 
 While this encryption scheme is secure and private enough, it has a main limitation in metadata leakage protection, as the recipient's public key is added to the gift-wrap event as a `p` tag. Therefore, the only leaked metadata is the recipient's public key, but not the sender, the kind of event contained in the gift-wrap, or the timestamp of the event. This is a limitation of the NIP-59 gift-wrapping pattern.
-
-## Rationale
-
-### Why a simplified NIP-17/NIP-59 pattern?
-
-The standard implementation of NIP-17 and NIP-59 is designed for private direct messages that are meant to persist in relays. Therefore, the standard uses an extra layer of encryption to prevent leakage of the original message if an attacker decrypts it. This involves a 'rumor' - an unsigned event embedded in a 'seal' event. The 'rumor' represents the original message, and because it lacks a signature, it cannot be leaked to relays as it is an invalid Nostr event. The 'seal' serves as the signature for the 'rumor'.
-
-In contrast, ContextVM uses ephemeral events that are not intended to be stored in relays, so the 'rumor' and 'seal' events are unnecessary, but still leveraging the metadata leakage protection of NIP-59 gift wrapping. This also reduces the size of the encrypted message.
-
-### Design Decisions
-
-1. **Optional Encryption**: Encryption is optional to maintain backward compatibility with existing implementations
-2. **Simplified NIP-17**: Removing the 'rumor'/'seal' complexity reduces implementation burden while maintaining security
-3. **NIP-59 Gift Wrapping**: Preserves metadata protection without the complexity of persistent message storage
-4. **Kind 1059 for Encrypted Messages**: Uses the standard Nostr kind for gift-wrapped messages
 
 ## Backward Compatibility
 
@@ -198,379 +175,6 @@ The only compatibility issue is that servers or clients might require encrypted 
 ## Reference Implementation
 
 A reference implementation can be found in the [ContextVM sdk](https://github.com/ContextVM/sdk/blob/master/src/core/encryption.ts)
-
-================
-File: docs/spec/ceps/cep-0002.md
-================
----
-title: CEP-0002 Server Announcements
-description: Public server discovery mechanism for ContextVM capabilities
----
-
-# ContextVM Enhancement Proposal (CEP) 0002: Server Announcements
-
-**Status:** Draft  
-**Author:** ContextVM Team  
-**Created:** 2025-08-25  
-**Type:** Standards Track
-
-## Abstract
-
-This CEP proposes a public server discovery mechanism for ContextVM using Nostr replaceable events. The mechanism allows MCP servers to advertise their capabilities and metadata through the Nostr network, enabling clients to discover and browse available services without requiring prior knowledge of server public keys. This enhances discoverability while maintaining the decentralized nature of the protocol.
-
-## Motivation
-
-ContextVM currently supports direct discovery by knowing the server public key beforehand. While direct discovery works for known servers, it lacks discoverability for new users and services. The current protocol has several limitations:
-
-1. **Limited Discoverability**: Users cannot easily discover available MCP servers and their capabilities
-2. **No Service Catalog**: There's no centralized or decentralized way to browse available services
-3. **User Experience**: New users must know server public keys or receive them through out-of-band channels
-
-This CEP addresses these limitations by introducing a standardized server announcement mechanism that enables service discovery while maintaining the decentralized, trustless nature of the Nostr network.
-
-## Specification
-
-### Overview
-
-Public server announcements act as a service catalog, allowing clients or users to discover servers and their capabilities through replaceable events on the Nostr network. This mechanism provides an initial overview of what a server offers, and their public keys to connect with them.
-
-Since each server is uniquely identified by its public key, the announcement events are replaceable (kinds 11316-11320), ensuring that only the most recent version of the server's information is active.
-
-Providers announce their servers and capabilities by publishing events with kinds 11316 (server), 11317 (tools/list), 11318 (resources/list), 11319 (resource templates/list), and 11320 (prompts/list).
-
-**Note:** The `content` field of ContextVM events contains stringified MCP messages. The examples below present the `content` as a JSON object for readability; it must be stringified before inclusion in a Nostr event.
-
-### Event Kinds for Server Announcements
-
-| Kind  | Description             |
-| ----- | ----------------------- |
-| 11316 | Server Announcement     |
-| 11317 | Tools List              |
-| 11318 | Resources List          |
-| 11319 | Resource Templates List |
-| 11320 | Prompts List            |
-
-### Server Announcement Event
-
-```json
-{
-  "kind": 11316,
-  "pubkey": "<provider-pubkey>",
-  "content": {
-    "protocolVersion": "2025-07-02",
-    "capabilities": {
-      "prompts": {
-        "listChanged": true
-      },
-      "resources": {
-        "subscribe": true,
-        "listChanged": true
-      },
-      "tools": {
-        "listChanged": true
-      }
-    },
-    "serverInfo": {
-      "name": "ExampleServer",
-      "version": "1.0.0"
-    },
-    "instructions": "Optional instructions for the client"
-  },
-  "tags": [
-    ["name", "Example Server"], // Optional: Human-readable server name
-    ["about", "Server description"], // Optional: Server description
-    ["picture", "https://example.com/server.png"], // Optional: Server icon/avatar URL
-    ["website", "https://example.com"], // Optional: Server website
-    ["support_encryption"] // Optional: Presence indicates server supports encrypted messages
-  ]
-}
-```
-
-#### Content Field Structure
-
-The `content` field contains structured server information following the [MCP specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/lifecycle#initialization), it should be a JSON string.
-
-#### Tags Field Structure
-
-The `tags` field provides additional metadata for discoverability:
-
-- **name**: Human-readable server name
-- **about**: Server description
-- **picture**: URL to server icon/avatar
-- **website**: Server website URL
-- **support_encryption**: Indicates server supports encrypted messages
-
-### Capability List Announcements
-
-As in the Server Announcement event, the `content` field contains a JSON string with the list of capabilities. The list is the result of a call to the `list` method of each capability.
-
-### Tools List Event Example
-
-```json
-{
-  "kind": 11317,
-  "pubkey": "<provider-pubkey>",
-  "content": {
-    "tools": [
-      {
-        "name": "get_weather",
-        "description": "Get current weather information for a location",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "location": {
-              "type": "string",
-              "description": "City name or zip code"
-            }
-          },
-          "required": ["location"]
-        }
-      }
-    ]
-  },
-  "tags": []
-}
-```
-
-### Discovery Process
-
-#### Client Discovery Flow
-
-1. **Subscribe to Server Announcement**: Clients subscribe to kinds 11316 (Server Announcement) on Nostr relays
-2. **Subcribe to Capability List Announcements**: Once the server announcement is fetched and parsed, the client can subscribe to the capabilities events present in the server announcement. Alternatively, the client can subscribe to all announcements published by the server.
-3. **Initialize Connection**: Client proceeds with standard MCP initialization using the server's public key
-
-### Event Replacement Behavior
-
-Since announcement events use kinds 11316-11320 (in the 10000-20000 range), they are replaceable:
-
-- **Relay Behavior**: Relays store only the latest event for each combination of kind, and pubkey
-- **Client Behavior**: Clients should always request the latest version of announcement events
-- **Server Behavior**: Servers must update announcement events when capabilities change
-
-## Rationale
-
-### Design Decisions
-
-1. **Replaceable Events**: Using kinds 11316-11320 ensures only the latest version is stored, reducing redundancy
-2. **Standardized Content**: Content field follows MCP specification for consistency
-3. **Rich Metadata**: Tags provide human-readable information for discoverability
-4. **Encryption Support**: Optional encryption tag allows servers to advertise privacy features
-5. **Capability-Specific Kinds**: Separate kinds for each capability type enables granular discovery
-
-## Reference Implementation
-
-A reference implementation can be found in the [ContextVM SDK server transport implementation](https://github.com/ContextVM/sdk/blob/master/src/transport/nostr-server-transport.ts). It is implemented by calling the list methods from the transport during the initialization of the transport and then publishing the results of those list methods.
-
-================
-File: docs/spec/ceps/cep-0003.md
-================
----
-title: CEP-0003 Capability Pricing and Payment Flow
-description: Pricing mechanism and payment processing for ContextVM capabilities
----
-
-# ContextVM Enhancement Proposal (CEP) 0003: Capability Pricing and Payment Flow
-
-**Status:** Draft  
-**Author:** ContextVM Team  
-**Created:** 2025-08-25  
-**Type:** Standards Track
-
-## Abstract
-
-This CEP proposes a standardized pricing mechanism and payment flow for ContextVM capabilities. The mechanism allows providers to advertise pricing for their capabilities, and enables clients to discover and pay for these capabilities through various payment methods. This creates a sustainable ecosystem for capability providers while maintaining the decentralized nature of the protocol.
-
-## Motivation
-
-ContextVM currently lacks a standardized way to handle capability pricing and payments, which limits the sustainability of capability providers and usability possibilities. This CEP addresses these limitations by introducing a standardized pricing mechanism and payment flow that enables sustainable capability monetization while maintaining the decentralized, trustless nature of the protocol.
-
-## Specification
-
-### Overview
-
-ContextVM supports pricing for capabilities through the use of `cap` tags in capability announcement or list capabilities responses. This allows providers to advertise their pricing and enables clients to discover and pay for capabilities.
-
-### Pricing Tag Format
-
-Pricing information is conveyed using the `cap` tag with the following format:
-
-```json
-["cap", "<capability-identifier>", "<price>", "<currency-unit>"]
-```
-
-Where:
-
-- `<capability-identifier>` is the name of the tool, prompt, or resource URI
-- `<price>` is a string representing the numerical amount (e.g., "100")
-- `<currency-unit>` is the currency symbol (e.g., "sats", "usd")
-
-### Pricing in Server Announcements
-
-Pricing can be advertised in server announcement events to provide upfront cost information to users.
-
-#### Example: Tools List Event with Pricing
-
-```json
-{
-  "kind": 11317,
-  "content": {
-    "tools": [
-      {
-        "name": "get_weather",
-        "description": "Get current weather information"
-        // ... other tool properties
-      }
-    ]
-  },
-  "tags": [["cap", "get_weather", "100", "sats"]]
-}
-```
-
-### Pricing in Capability List Responses
-
-Pricing can also be included in capability list responses.
-
-#### Example: Tools List Response with Pricing
-
-```json
-{
-  "kind": 25910,
-  "pubkey": "<provider-pubkey>",
-  "content": {
-    "result": {
-      "tools": [
-        {
-          "name": "get_weather",
-          "description": "Get current weather information"
-          // ... other tool properties
-        }
-      ],
-      "nextCursor": "next-page-cursor"
-    }
-  },
-  "tags": [
-    ["e", "<request-event-id>"], // Required: Reference to the request event
-    ["cap", "get_weather", "100", "sats"] // Optional: Pricing metadata
-  ]
-}
-```
-
-This indicates that using the `get_weather` tool costs 100 satoshis. Clients can use this information to display pricing to users.
-
-### Payment Flow
-
-When a capability has pricing information, clients and servers should handle payments. The lifecycle of request with payment follows these steps:
-
-#### 1. Request
-
-Client sends a capability request to the server:
-
-```json
-{
-  "kind": 25910,
-  "id": "<request-event-id>",
-  "pubkey": "<client-pubkey>",
-  "content": {
-    "jsonrpc": "2.0",
-    "id": 2,
-    "method": "tools/call",
-    "params": {
-      "name": "get_weather",
-      "arguments": {
-        "location": "New York"
-      }
-    }
-  },
-  "tags": [["p", "<provider-pubkey>"]]
-}
-```
-
-#### 2. Invoice Generation
-
-If the capability requires payment, the server responds with a `notifications/payment_required` notification containing payment details:
-
-```json
-{
-  "kind": 25910,
-  "pubkey": "<provider-pubkey>",
-  "content": {
-    "method": "notifications/payment_required",
-    "params": {
-      "amount": 1000,
-      "currency": "sats",
-      "invoice": "lnbc...",
-      "description": "Payment for tool execution"
-    }
-  },
-  "tags": [
-    ["p", "<client-pubkey>"],
-    ["e", "<request-event-id>"]
-  ]
-}
-```
-
-#### 3. Payment Verification
-
-Client processes the payment and the server verifies it. Payment verification can be implemented using various methods:
-
-- **Lightning Network zaps**
-- **Cashu PaymentRequests**
-- **Payment gateway URLs**
-- **Custom payment verification**
-
-#### 4. Capability Access
-
-Once payment is verified, the server processes the capability request and responds with the result:
-
-```json
-{
-  "kind": 25910,
-  "pubkey": "<provider-pubkey>",
-  "content": {
-    "jsonrpc": "2.0",
-    "id": 2,
-    "result": {
-      "content": [
-        {
-          "type": "text",
-          "text": "Current weather in New York:\nTemperature: 72°F\nConditions: Partly cloudy"
-        }
-      ],
-      "isError": false
-    }
-  },
-  "tags": [["e", "<request-event-id>"]]
-}
-```
-
-### Payment Methods
-
-The protocol supports multiple payment methods through standardized notification formats:
-
-## Rationale
-
-### Design Decisions
-
-1. **Tag-based Pricing**: Using `cap` tags keeps pricing metadata separate from core capability data
-2. **Flexible Pricing**: Support for multiple currencies and pricing models
-3. **Notification-based Flow**: Using MCP notifications for payment requests maintains protocol consistency
-4. **Optional Participation**: Pricing is optional, allowing both free and paid capabilities
-
-## Backward Compatibility
-
-This CEP introduces no breaking changes to the existing protocol:
-
-- **Existing servers** can continue to operate without pricing
-- **Existing clients** continue to work with existing servers
-- **New pricing** is additive - capabilities can be free or paid
-- **Optional participation**: Both providers and clients can choose to participate in pricing
-
-The only requirement is that new pricing information follows the specified format, which doesn't affect existing functionality.
-
-## Reference Implementation
-
-// TODO
 
 ================
 File: docs/spec/cep-guidelines.md
@@ -754,7 +358,7 @@ The Context Vending Machine (ContextVM) specification defines how the Nostr prot
     - [Call Tool Request](#call-tool-request)
     - [Call Tool Response](#call-tool-response)
 - [Notifications](#notifications)
-- [Implementation Requirements](#implementation-requirements)
+- [ContextVM Enhancement Proposals (CEPs)](#contextvm-enhancement-proposals-ceps)
 - [Complete Protocol Flow](#complete-protocol-flow)
 
 ## Introduction
@@ -1032,6 +636,20 @@ For other capabilities (resources, prompts, completions, ping, etc.), the `conte
 All notifications in ContextVM follow the standard MCP notification format and conventions, using the unified kind 25910 event type. This includes notifications for payment requests, progress updates, and all other server-to-client or client-to-server communications.
 
 Notifications are constructed according to the standard MCP notification template.
+
+## ContextVM Enhancement Proposals (CEPs)
+
+The ContextVM protocol is subject to ongoing improvements and enhancements. These improvements are managed through the ContextVM Enhancement Proposal (CEP) process, which is described in detail in the [CEP Guidelines](https://docs.contextvm.org/spec/cep-guidelines/)
+
+### Accepted CEPs
+
+The following CEPs have been accepted and implemented in ContextVM:
+
+### Final CEPs
+
+The following CEPs have been finalized and implemented in ContextVM:
+
+- [CEP-4: Encryption Support](/spec/ceps/cep-4)
 
 ## Complete Protocol Flow
 

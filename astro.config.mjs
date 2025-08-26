@@ -33,6 +33,12 @@ export default defineConfig({
           items: [
             { label: "Specification", slug: "spec/ctxvm-draft-spec" },
             { label: "CEP - Guidelines", slug: "spec/cep-guidelines" },
+            {
+              label: "CEPs",
+              items: [
+                { label: "CEP-4: Encryption Support", slug: "spec/ceps/cep-4" },
+              ],
+            },
           ],
         },
         {
