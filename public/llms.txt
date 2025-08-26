@@ -611,8 +611,10 @@ Consider proposing a CEP if your change involves any of the following:
 
 There are three kinds of CEP:
 
-1. **Standards Track** CEP describes a new feature or implementation for the ContextVM protocol. It may also describe an interoperability standard that will be supported outside the protocol specification.
+1. **Standards Track** CEP describes a new feature or implementation for the ContextVM protocol. Standards Track CEPs are maintained as separate documents from the main ContextVM specification and extend or enhance the base protocol. The main specification maintains references to all accepted and finalized Standards Track CEPs.
+
 2. **Informational** CEP describes a ContextVM protocol design issue, or provides general guidelines or information to the ContextVM community, but does not propose a new feature. Informational CEPs do not necessarily represent a ContextVM community consensus or recommendation.
+
 3. **Process** CEP describes a process surrounding ContextVM, or proposes a change to (or an event in) a process. Process CEPs are like Standards Track CEPs but apply to areas other than the ContextVM protocol itself.
 
 ## Submitting a CEP
@@ -621,11 +623,28 @@ The CEP process begins with a new idea for the ContextVM protocol. It is highly 
 
 Each CEP must have an **CEP author** -- someone who writes the CEP using the style and format described below, shepherds the discussions in the appropriate forums, and attempts to build community consensus around the idea. The CEP author should first attempt to ascertain whether the idea is CEP-able. Posting to the ContextVM community forums (Nostr, Signal, GitHub Discussions) is the best way to go about this.
 
+**Important Note**: The CEP process uses both GitHub Issues and Pull Requests:
+
+- **GitHub Issues** are used for discussion, review, and tracking the CEP proposal lifecycle
+- **Pull Requests** are normally used for Standards Track CEPs to contain the actual CEP document and specification changes
+
 ### CEP Workflow
 
-CEPs should be submitted as a GitHub Issue in the [ContextVM-docs repository](https://github.com/ContextVM/contextvm-docs). The standard CEP workflow is:
+CEPs should be submitted as a GitHub Issue in the [ContextVM-docs repository](https://github.com/ContextVM/contextvm-docs). The standard CEP workflow varies slightly depending on the CEP type:
 
-1. You, the CEP author, create a [well-formatted](#cep-format) GitHub Issue with the `CEP` and `proposal` tags. The CEP number is the same as the GitHub Issue number, the two can be used interchangeably. The issue should be complemented by a Pull Request that adds a markdown document in the `ceps` directory if the CEP is a **Standards Track** CEP.
+#### For Standards Track CEPs
+
+1. You, the CEP author, create a [well-formatted](#cep-format) GitHub Issue with the `CEP` and `proposal` tags. The CEP number is the same as the GitHub Issue number, the two can be used interchangeably.
+2. **Simultaneously**, create a Pull Request that adds a markdown document draft in the `ceps` directory. This PR should contain the initial CEP document following the [CEP Format](#cep-format) structure. Link to this PR in your GitHub Issue.
+3. Find a Maintainer to sponsor your proposal. Maintainers will regularly go over the list of open proposals to determine which proposals to sponsor. You can tag relevant maintainers in your proposal.
+4. Once a sponsor is found, the GitHub Issue is assigned to the sponsor. The sponsor will add the `draft` tag.
+5. The sponsor will informally review both the Issue and the Pull Request, and may request changes based on community feedback. When ready for formal review, the sponsor will add the `in-review` tag.
+6. After the `in-review` tag is added, the CEP enters formal review by the Maintainers. The CEP may be accepted, rejected, or returned for revision.
+7. If the CEP has not found a sponsor within three months, Maintainers may close the CEP as `dormant`.
+
+#### For Informational and Process CEPs
+
+1. You, the CEP author, create a [well-formatted](#cep-format) GitHub Issue with the `CEP` and `proposal` tags. The CEP number is the same as the GitHub Issue number, the two can be used interchangeably.
 2. Find a Maintainer to sponsor your proposal. Maintainers will regularly go over the list of open proposals to determine which proposals to sponsor. You can tag relevant maintainers in your proposal.
 3. Once a sponsor is found, the GitHub Issue is assigned to the sponsor. The sponsor will add the `draft` tag, ensure the CEP number is in the title, and assign a milestone.
 4. The sponsor will informally review the proposal and may request changes based on community feedback. When ready for formal review, the sponsor will add the `in-review` tag.
@@ -639,11 +658,28 @@ Each CEP should have the following parts:
 1. **Preamble** -- A short descriptive title, the names and contact info for each author, the current status.
 2. **Abstract** -- A short (~200 word) description of the technical issue being addressed.
 3. **Motivation** -- The motivation should clearly explain why the existing protocol specification is inadequate to address the problem that the CEP solves. The motivation is critical for CEPs that want to change the ContextVM protocol. CEP submissions without sufficient motivation may be rejected outright.
-4. **Specification** -- The technical specification should describe the syntax and semantics of any new protocol feature. The specification should be detailed enough to allow competing, interoperable implementations. A PR with the changes to the specification should be provided.
+4. **Specification** -- The technical specification should describe the syntax and semantics of any new protocol feature. The specification should be detailed enough to allow competing, interoperable implementations. For Standards Track CEPs, this should include the actual changes to the specification files in the Pull Request.
 5. **Rationale** -- The rationale explains why particular design decisions were made. It should describe alternate designs that were considered and related work. The rationale should provide evidence of consensus within the community and discuss important objections or concerns raised during discussion.
 6. **Backward Compatibility** -- All CEPs that introduce backward incompatibilities must include a section describing these incompatibilities and their severity. The CEP must explain how the author proposes to deal with these incompatibilities.
-7. **Reference Implementation** -- The reference implementation must be completed before any CEP is given status "Final", but it need not be completed before the CEP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of protocol details.
-8. **Security Implications** -- If there are security concerns in relation to the CEP, those concerns should be explicitly written out to make sure reviewers of the CEP are aware of them.
+7. **Dependencies** -- For Standards Track CEPs, this section should list any CEPs that this proposal depends on. Each dependency should be listed with its CEP number and a brief description of how it relates to the current proposal. This helps maintain a clear dependency map and ensures proper implementation order.
+8. **Reference Implementation** -- The reference implementation must be completed before any CEP is given status "Final", but it need not be completed before the CEP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of protocol details.
+9. **Security Implications** -- If there are security concerns in relation to the CEP, those concerns should be explicitly written out to make sure reviewers of the CEP are aware of them.
+
+### Pull Request Content for Standards Track CEPs
+
+For Standards Track CEPs, the Pull Request should contain:
+
+- A markdown document in the `ceps` directory following the CEP Format structure above. This document serves as the standalone specification for the enhancement.
+- Any necessary changes to reference implementation files or test suites that demonstrate the proposed changes
+- Example code or test cases that demonstrate the proposed changes
+- Documentation updates that would be required if the CEP is accepted
+- A link to the GitHub Issue in the PR description for easy tracking
+
+### Main Specification Integration
+
+Once a Standards Track CEP reaches "Accepted" status, it should be referenced in the main ContextVM specification document. When a CEP reaches "Final" status, the main specification should be updated to include a link to the finalized CEP document.
+
+This ensures that the main specification maintains an up-to-date record of all protocol extensions and enhancements.
 
 ### CEP States
 
