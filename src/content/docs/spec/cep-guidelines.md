@@ -58,7 +58,13 @@ CEPs should be submitted as a GitHub Issue in the [ContextVM-docs repository](ht
 #### For Standards Track CEPs
 
 1. You, the CEP author, create a [well-formatted](#cep-format) GitHub Issue with the `CEP` and `proposal` tags. The CEP number is the same as the GitHub Issue number, the two can be used interchangeably.
-2. **Simultaneously**, create a Pull Request that adds a markdown document draft in the `ceps` directory. This PR should contain the initial CEP document following the [CEP Format](#cep-format) structure. Link to this PR in your GitHub Issue.
+2. **Simultaneously**, create a Pull Request that adds a markdown document draft in the `ceps` directory. This PR should contain the focused specification sections following the [CEP Format](#cep-format) structure. Link to this PR in your GitHub Issue.
+
+**Important**: The GitHub Issue and Pull Request serve different purposes and contain different content:
+
+- **GitHub Issue**: Initially contains the comprehensive CEP proposal including all sections (abstract, motivation, rationale, specification, security implications, etc.). This is where community discussion happens. Once a Pull Request is opened, the specification section in the issue should be replaced with a link to the PR to avoid redundancy.
+- **Pull Request**: Contains only the specification-related sections (abstract, specification, backwards compatibility, reference implementation, and dependencies) that will become part of the final specification document. The PR should focus exclusively on technical specification content.
+
 3. Find a Maintainer to sponsor your proposal. Maintainers will regularly go over the list of open proposals to determine which proposals to sponsor. You can tag relevant maintainers in your proposal.
 4. Once a sponsor is found, the GitHub Issue is assigned to the sponsor. The sponsor will add the `draft` tag.
 5. The sponsor will informally review both the Issue and the Pull Request, and may request changes based on community feedback. When ready for formal review, the sponsor will add the `in-review` tag.
@@ -76,27 +82,27 @@ CEPs should be submitted as a GitHub Issue in the [ContextVM-docs repository](ht
 
 ### CEP Format
 
-Each CEP should have the following parts:
+Each CEP should have the following parts. For Standards Track CEPs, these sections are distributed between the GitHub Issue and Pull Request as described below:
+
+#### GitHub Issue Content (for discussion and review):
 
 1. **Preamble** -- A short descriptive title, the names and contact info for each author, the current status.
 2. **Abstract** -- A short (~200 word) description of the technical issue being addressed.
 3. **Motivation** -- The motivation should clearly explain why the existing protocol specification is inadequate to address the problem that the CEP solves. The motivation is critical for CEPs that want to change the ContextVM protocol. CEP submissions without sufficient motivation may be rejected outright.
-4. **Specification** -- The technical specification should describe the syntax and semantics of any new protocol feature. The specification should be detailed enough to allow competing, interoperable implementations. For Standards Track CEPs, this should include the actual changes to the specification files in the Pull Request.
-5. **Rationale** -- The rationale explains why particular design decisions were made. It should describe alternate designs that were considered and related work. The rationale should provide evidence of consensus within the community and discuss important objections or concerns raised during discussion.
-6. **Backward Compatibility** -- All CEPs that introduce backward incompatibilities must include a section describing these incompatibilities and their severity. The CEP must explain how the author proposes to deal with these incompatibilities.
-7. **Dependencies** -- For Standards Track CEPs, this section should list any CEPs that this proposal depends on. Each dependency should be listed with its CEP number and a brief description of how it relates to the current proposal. This helps maintain a clear dependency map and ensures proper implementation order.
-8. **Reference Implementation** -- The reference implementation must be completed before any CEP is given status "Final", but it need not be completed before the CEP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of protocol details.
-9. **Security Implications** -- If there are security concerns in relation to the CEP, those concerns should be explicitly written out to make sure reviewers of the CEP are aware of them.
+4. **Rationale** -- The rationale explains why particular design decisions were made. It should describe alternate designs that were considered and related work. The rationale should provide evidence of consensus within the community and discuss important objections or concerns raised during discussion.
+5. **Security Implications** -- If there are security concerns in relation to the CEP, those concerns should be explicitly written out to make sure reviewers of the CEP are aware of them.
+6. **Specification** -- Initially, this section should contain the technical specification describing syntax and semantics of any new protocol feature. Once a Pull Request is opened, this section should be replaced with a link to the PR to avoid duplication.
 
-### Pull Request Content for Standards Track CEPs
+#### Pull Request Content (for specification - Standards Track CEPs only):
 
-For Standards Track CEPs, the Pull Request should contain:
+1. **Preamble** -- A short descriptive title, the names and contact info for each author, the current status.
+2. **Abstract** - A short (~200 word) description of the technical issue being addressed (can reference the Issue for full details)
+3. **Specification** - The technical specification should describe the syntax and semantics of any new protocol feature. The specification should be detailed enough to allow competing, interoperable implementations. For Standards Track CEPs, this should include the actual changes to the specification files in the Pull Request.
+4. **Backward Compatibility** - All CEPs that introduce backward incompatibilities must include a section describing these incompatibilities and their severity. The CEP must explain how the author proposes to deal with these incompatibilities.
+5. **Dependencies** - For Standards Track CEPs, this section should list any CEPs that this proposal depends on. Each dependency should be listed with its CEP number and a brief description of how it relates to the current proposal. This helps maintain a clear dependency map and ensures proper implementation order.
+6. **Reference Implementation** - The reference implementation must be completed before any CEP is given status "Final", but it need not be completed before the CEP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of protocol details.
 
-- A markdown document in the `ceps` directory following the CEP Format structure above. This document serves as the standalone specification for the enhancement.
-- Any necessary changes to reference implementation files or test suites that demonstrate the proposed changes
-- Example code or test cases that demonstrate the proposed changes
-- Documentation updates that would be required if the CEP is accepted
-- A link to the GitHub Issue in the PR description for easy tracking
+**Important**: Once a Pull Request is open, the GitHub Issue's "Specification" section should be updated to simply link to the PR. This ensures the technical specification is maintained in a single location (the PR) while keeping the issue focused on discussion and consensus building.
 
 ### Main Specification Integration
 
