@@ -37,6 +37,10 @@ export default defineConfig({
               label: "CEPs",
               items: [
                 { label: "CEP-4: Encryption Support", slug: "spec/ceps/cep-4" },
+                {
+                  label: "CEP-6: Public Server Announcements",
+                  slug: "spec/ceps/cep-6",
+                },
               ],
             },
           ],
