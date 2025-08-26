@@ -32,7 +32,7 @@ The Context Vending Machine (ContextVM) specification defines how the Nostr prot
     - [Call Tool Request](#call-tool-request)
     - [Call Tool Response](#call-tool-response)
 - [Notifications](#notifications)
-- [Implementation Requirements](#implementation-requirements)
+- [ContextVM Enhancement Proposals (CEPs)](#contextvm-enhancement-proposals-ceps)
 - [Complete Protocol Flow](#complete-protocol-flow)
 
 ## Introduction
@@ -310,6 +310,20 @@ For other capabilities (resources, prompts, completions, ping, etc.), the `conte
 All notifications in ContextVM follow the standard MCP notification format and conventions, using the unified kind 25910 event type. This includes notifications for payment requests, progress updates, and all other server-to-client or client-to-server communications.
 
 Notifications are constructed according to the standard MCP notification template.
+
+## ContextVM Enhancement Proposals (CEPs)
+
+The ContextVM protocol is subject to ongoing improvements and enhancements. These improvements are managed through the ContextVM Enhancement Proposal (CEP) process, which is described in detail in the [CEP Guidelines](https://docs.contextvm.org/spec/cep-guidelines/)
+
+### Accepted CEPs
+
+The following CEPs have been accepted and implemented in ContextVM:
+
+### Final CEPs
+
+The following CEPs have been finalized and implemented in ContextVM:
+
+- [CEP-4: Encryption Support](/spec/ceps/cep-4)
 
 ## Complete Protocol Flow
 
