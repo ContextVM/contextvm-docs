@@ -5,13 +5,13 @@ description: End-to-end encryption for ContextVM messages using NIP-17 and NIP-5
 
 # Encryption Support
 
-**Status:** Proposal
+**Status:** Final
 **Author:** @Gzuuus
 **Type:** Standards Track
 
 ## Abstract
 
-This CEP proposes optional end-to-end encryption for ContextVM messages to enhance privacy and security. The encryption mechanism leverages a simplified version of NIP-17 (Private Direct Messages) for secure message encryption and NIP-59 (Gift Wrap) pattern with no 'rumor' with NIP-59 gift wrapping for metadata protection, ensuring message content privacy and metadata protection while maintaining full compatibility with the standard protocol.
+This CEP proposes optional end-to-end encryption for ContextVM messages to enhance privacy and security. The encryption mechanism leverages a simplified version of NIP-17 (Private Direct Messages) for secure message encryption and NIP-59 (Gift Wrap) pattern with no 'rumor' using NIP-59 gift wrapping for metadata protection. This approach ensures message content privacy and metadata protection while maintaining full compatibility with the standard protocol.
 
 ## Specification
 
@@ -39,7 +39,7 @@ Clients can discover encryption support by:
 
 ### Message Encryption Flow
 
-When encryption is enabled, ContextVM messages follow a simplified NIP-17 pattern with no 'rumor' with NIP-59 gift wrapping.
+When encryption is enabled, ContextVM messages follow a simplified NIP-17 pattern with no 'rumor', using NIP-59 gift wrapping.
 
 #### 1. Content Preparation
 
@@ -66,11 +66,11 @@ The request is prepared as usual, and should be signed:
 }
 ```
 
-#### 2. Seal Creation (NIP-17)
+#### 2. Seal Creation
 
-The request is converted into a JSON string and encrypted to the recipient's public key, following NIP-44 encryption.
+The request is converted into a JSON string and encrypted to the recipient's public key, following NIP-44 encryption scheme.
 
-#### 3. Gift Wrapping (NIP-59)
+#### 3. Gift Wrapping
 
 The encrypted request is then gift-wrapped by placing it in the content field of a NIP-59 gift-wrap event.
 
@@ -86,7 +86,7 @@ The encrypted request is then gift-wrapped by placing it in the content field of
 }
 ```
 
-Server responses follow the same pattern. The response is converted into a JSON string and gift-wrapped (kind 1059) with a random key, following NIP-44 encryption.
+Server responses follow the same pattern.
 
 The decrypted inner content contains the standard ContextVM response format. The id field used in responses should match the inner id field used in requests, not the id of the gift-wrap event.
 
