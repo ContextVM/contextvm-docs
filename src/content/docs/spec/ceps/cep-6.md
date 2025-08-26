@@ -1,9 +1,9 @@
 ---
-title: CEP-6 Server Announcements
+title: CEP-6 Public Server Announcements
 description: Public server discovery mechanism for ContextVM capabilities
 ---
 
-# Server Announcements
+# Public Server Announcements
 
 **Status:** Draft
 **Author:** @Gzuuus
