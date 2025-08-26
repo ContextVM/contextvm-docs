@@ -5,7 +5,7 @@ description: Public server discovery mechanism for ContextVM capabilities
 
 # Public Server Announcements
 
-**Status:** Draft
+**Status:** Final
 **Author:** @Gzuuus
 **Type:** Standards Track
 

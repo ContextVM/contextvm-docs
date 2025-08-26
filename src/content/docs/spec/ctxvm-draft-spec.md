@@ -317,13 +317,14 @@ The ContextVM protocol is subject to ongoing improvements and enhancements. Thes
 
 ### Accepted CEPs
 
-The following CEPs have been accepted and implemented in ContextVM:
+The following CEPs have been accepted:
 
 ### Final CEPs
 
-The following CEPs have been finalized and implemented in ContextVM:
+The following CEPs have been finalized:
 
 - [CEP-4: Encryption Support](/spec/ceps/cep-4)
+- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
 
 ## Complete Protocol Flow
 
