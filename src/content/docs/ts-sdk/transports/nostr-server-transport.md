@@ -26,12 +26,45 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
   serverInfo?: ServerInfo;
   isPublicServer?: boolean;
   allowedPublicKeys?: string[];
+  /** List of capabilities that are excluded from public key whitelisting requirements */
+  excludedCapabilities?: CapabilityExclusion[];
 }
 ```
 
 - **`serverInfo`**: (Optional) Information about the server (`name`, `picture`, `website`) to be used in public announcements.
 - **`isPublicServer`**: (Optional) If `true`, the transport will automatically announce the server's capabilities on the Nostr network. Defaults to `false`.
 - **`allowedPublicKeys`**: (Optional) A list of client public keys that are allowed to connect. If not provided, any client can connect.
+- **`excludedCapabilities`**: (Optional) A list of capabilities that are excluded from public key whitelisting requirements. This allows certain operations from disallowed public keys, enhancing security policy flexibility while maintaining backward compatibility.
+
+### Capability Exclusion
+
+The `CapabilityExclusion` interface allows you to define specific capabilities that bypass the public key whitelisting requirements:
+
+```typescript
+/**
+ * Represents a capability exclusion pattern that can bypass whitelisting.
+ * Can be either a method-only pattern (e.g., 'tools/list') or a method + name pattern (e.g., 'tools/call, get_weather').
+ */
+export interface CapabilityExclusion {
+  /** The JSON-RPC method to exclude from whitelisting (e.g., 'tools/call', 'tools/list') */
+  method: string;
+  /** Optional capability name to specifically exclude (e.g., 'get_weather') */
+  name?: string;
+}
+```
+
+#### How Capability Exclusion Works
+
+Capability exclusion provides fine-grained control over access by allowing specific operations to be performed even by clients that are not in the `allowedPublicKeys` list. This is useful for:
+
+- Allowing public access to server discovery endpoints like `tools/list`
+- Permitting specific tool calls from untrusted clients
+- Maintaining backward compatibility with existing clients
+
+#### Exclusion Patterns
+
+- **Method-only exclusion**: `{ method: 'tools/list' }` - Excludes all calls to the `tools/list` method
+- **Method + name exclusion**: `{ method: 'tools/call', name: 'add' }` - Excludes only the `add` tool from the `tools/call` method
 
 ## Usage Example
 
@@ -65,6 +98,11 @@ const serverNostrTransport = new NostrServerTransport({
     name: "My Awesome MCP Server",
     website: "https://example.com",
   },
+  allowedPublicKeys: ["trusted-client-key"], // Only allow specific clients
+  excludedCapabilities: [
+    { method: "tools/list" }, // Allow any client to list available tools
+    { method: "tools/call", name: "get_weather" }, // Allow any client to call get_weather tool
+  ],
 });
 
 // 4. Connect the server
@@ -92,6 +130,20 @@ The `NostrServerTransport` manages a session for each unique client public key. 
 - Whether the session is encrypted.
 - A map of pending requests to correlate responses.
 - The timestamp of the last activity, used for cleaning up inactive sessions.
+
+## Security and Policy Flexibility
+
+The capability exclusion feature provides enhanced security policy flexibility by allowing you to create a whitelist-based security model with specific exceptions. This approach is particularly useful for:
+
+### Use Cases
+
+1. **Public Discovery**: Allow any client to discover your server's capabilities via `tools/list` while restricting actual tool usage to authorized clients.
+
+2. **Limited Public Access**: Permit specific, safe operations from untrusted clients while maintaining security for sensitive operations.
+
+3. **Backward Compatibility**: Gradually introduce stricter security policies while maintaining compatibility with existing clients.
+
+4. **Tiered Access**: Create different levels of access where certain capabilities are available to all clients, while others require explicit authorization.
 
 ## Next Steps
 
