@@ -1122,7 +1122,7 @@ export interface NostrMCPGatewayOptions {
 This example shows how to create a gateway that connects to a local MCP server (running in a separate process) and exposes it to the Nostr network.
 
 ```typescript
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/stdio";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { NostrMCPGateway } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
 import { SimpleRelayPool } from "@contextvm/sdk";
@@ -1209,7 +1209,7 @@ export interface NostrMCPProxyOptions {
 This example demonstrates how to create a proxy that listens for a local client over standard I/O and connects to a remote server over Nostr.
 
 ```typescript
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/stdio";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { NostrMCPProxy } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
 import { SimpleRelayPool } from "@contextvm/sdk";
@@ -1955,10 +1955,12 @@ To create an instance of `NostrClientTransport`, you must provide a configuratio
 ```typescript
 export interface NostrTransportOptions extends BaseNostrTransportOptions {
   serverPubkey: string;
+  isStateless?: boolean;
 }
 ```
 
 - **`serverPubkey`**: The public key of the target MCP server. The transport will only listen for events from this public key.
+- **`isStateless`** (optional): When set to `true`, enables stateless mode for the client transport. In stateless mode, the client emulates the server's initialize response without requiring a full server initialization roundtrip. This enables faster startup and reduced network overhead. Default is `false`.
 
 ## Usage Example
 
@@ -1987,7 +1989,11 @@ const clientNostrTransport = new NostrClientTransport({
 });
 
 // 4. Create and connect the MCP client
-const mcpClient = new Client();
+const mcpClient = new Client({
+  name: "My Client",
+  version: "1.0.0",
+});
+
 await mcpClient.connect(clientNostrTransport);
 
 // 5. Use the client to interact with the server
@@ -2001,6 +2007,8 @@ console.log("Available tools:", tools);
 ## How It Works
 
 1.  **`start()`**: When `mcpClient.connect()` is called, it internally calls the transport's `start()` method. This method connects to the relays and subscribes to events targeting the client's public key.
+    - In **stateless mode** (`isStateless: true`), the client emulates the server's initialize response without sending it over the network, skipping the `notifications/initialized` message exchange.
+    - In **standard mode** (`isStateless: false` or undefined), the client performs the full initialization roundtrip with the server.
 2.  **`send(message)`**: When you call an MCP method like `mcpClient.listTools()`, the client creates a JSON-RPC request and passes it to the transport's `send()` method. The transport then:
     - Wraps the message in a Nostr event.
     - Signs the event.
@@ -2009,6 +2017,28 @@ console.log("Available tools:", tools);
 3.  **Event Processing**: The transport listens for incoming events. When an event is received, it is decrypted (if necessary) and converted back into a JSON-RPC message.
     - If the message is a **response** (correlated by the original event ID), it is passed to the MCP client to resolve the pending request.
     - If the message is a **notification**, it is emitted through the `onmessage` handler.
+
+## Stateless Mode
+
+The stateless mode is designed to optimize performance by reducing the initialization overhead:
+
+- **Faster Startup**: By emulating the initialize response, the client can begin operations immediately without waiting for server response.
+- **Reduced Network Overhead**: Eliminates the need for the initialization roundtrip.
+- **Use Cases**: Ideal for scenarios where the client needs to quickly connect and interact with the server, such as in serverless functions or short-lived processes.
+
+To enable stateless mode, set `isStateless: true` in the transport configuration:
+
+```typescript
+const clientNostrTransport = new NostrClientTransport({
+  signer,
+  relayHandler: relayPool,
+  serverPubkey: REMOTE_SERVER_PUBKEY,
+  encryptionMode: EncryptionMode.OPTIONAL,
+  isStateless: true, // Enable stateless mode
+});
+```
+
+**Note**: The stateless mode might not work with all servers.
 
 ## Next Steps
 
@@ -2092,7 +2122,7 @@ Capability exclusion provides fine-grained control over access by allowing speci
 Here's how to use the `NostrServerTransport` with an `McpServer` from the `@modelcontextprotocol/sdk`:
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { NostrServerTransport } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
 import { SimpleRelayPool } from "@contextvm/sdk";
@@ -2203,12 +2233,11 @@ First, let's create the MCP server. This server will use the `NostrServerTranspo
 Create a new file named `server.ts`:
 
 ```typescript
-import { McpServer, Tool } from "@modelcontextprotocol/sdk/server";
 import { NostrServerTransport } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
 import { SimpleRelayPool } from "@contextvm/sdk";
-import { generateSecretKey, getPublicKey } from "nostr-tools/pure";
-
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 // --- Configuration ---
 // IMPORTANT: Replace with your own private key
 const SERVER_PRIVATE_KEY_HEX =
@@ -2232,7 +2261,7 @@ async function main() {
   });
 
   // 3. Define a simple "echo" tool
-  server.registerTool(
+  mcpServer.registerTool(
     "echo",
     {
       title: "Echo Tool",
@@ -2316,7 +2345,10 @@ async function main() {
   });
 
   // 3. Create and connect the MCP Client
-  const mcpClient = new Client();
+  const mcpClient = new Client({
+    name: "my-client",
+    version: "0.0.1",
+  });
   await mcpClient.connect(clientTransport);
 
   console.log("Connected to server!");

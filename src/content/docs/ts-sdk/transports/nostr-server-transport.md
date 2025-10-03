@@ -71,7 +71,7 @@ Capability exclusion provides fine-grained control over access by allowing speci
 Here's how to use the `NostrServerTransport` with an `McpServer` from the `@modelcontextprotocol/sdk`:
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { NostrServerTransport } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
 import { SimpleRelayPool } from "@contextvm/sdk";

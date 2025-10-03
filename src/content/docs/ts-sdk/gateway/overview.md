@@ -43,7 +43,7 @@ export interface NostrMCPGatewayOptions {
 This example shows how to create a gateway that connects to a local MCP server (running in a separate process) and exposes it to the Nostr network.
 
 ```typescript
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/stdio";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { NostrMCPGateway } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
 import { SimpleRelayPool } from "@contextvm/sdk";

@@ -28,12 +28,11 @@ First, let's create the MCP server. This server will use the `NostrServerTranspo
 Create a new file named `server.ts`:
 
 ```typescript
-import { McpServer, Tool } from "@modelcontextprotocol/sdk/server";
 import { NostrServerTransport } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
 import { SimpleRelayPool } from "@contextvm/sdk";
-import { generateSecretKey, getPublicKey } from "nostr-tools/pure";
-
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 // --- Configuration ---
 // IMPORTANT: Replace with your own private key
 const SERVER_PRIVATE_KEY_HEX =
@@ -57,7 +56,7 @@ async function main() {
   });
 
   // 3. Define a simple "echo" tool
-  server.registerTool(
+  mcpServer.registerTool(
     "echo",
     {
       title: "Echo Tool",
@@ -141,7 +140,10 @@ async function main() {
   });
 
   // 3. Create and connect the MCP Client
-  const mcpClient = new Client();
+  const mcpClient = new Client({
+    name: "my-client",
+    version: "0.0.1",
+  });
   await mcpClient.connect(clientTransport);
 
   console.log("Connected to server!");
