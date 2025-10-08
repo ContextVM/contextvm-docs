@@ -16,18 +16,12 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
 
 ## Core Concepts
 
 <CardGrid stagger>
-  <Card title="Architecture" icon="rocket" href="https://github.com/ContextVM/sdk/blob/master/docs/ctxvm-draft-spec.md#complete-protocol-flow">
-    Learn the foundational concepts and architecture of ContextVM
-  </Card>
-  <Card title="SDK Documentation" icon="add-document" href="ts-sdk/quick-overview/">
-    Explore our comprehensive documentation and implementation examples
-  </Card>
-  <Card title="Integrations" icon="puzzle" href="spec/ctxvm-draft-spec/">
-    Discover how ContextVM integrates MCP with Nostr
-  </Card>
+  <LinkCard title="Architecture" href="https://github.com/ContextVM/sdk/blob/master/docs/ctxvm-draft-spec.md#complete-protocol-flow" description="Learn the foundational concepts and architecture of ContextVM" />
+  <LinkCard title="SDK Documentation" href="ts-sdk/quick-overview/" description="Explore our comprehensive documentation and implementation examples" />
+  <LinkCard title="Integrations" href="spec/ctxvm-draft-spec/" description="Discover how ContextVM integrates MCP with Nostr" />
 </CardGrid>
