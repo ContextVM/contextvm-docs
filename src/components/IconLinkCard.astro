@@ -1,0 +1,87 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+
+interface Props {
+  title: string;
+  href: string;
+  description: string;
+  icon: string;
+}
+
+const { title, href, description, icon } = Astro.props;
+---
+
+<a href={href} class="icon-link-card">
+  <span class="icon-wrapper">
+    <Icon name={icon} size="2rem" />
+  </span>
+  <span class="content">
+    <span class="title">{title}</span>
+    <span class="description">{description}</span>
+  </span>
+  <Icon name="right-arrow" class="arrow" />
+</a>
+
+<style>
+  .icon-link-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background-color: var(--sl-color-gray-6);
+    text-decoration: none;
+    color: var(--sl-color-white);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .icon-link-card:hover {
+    border-color: var(--sl-color-text-accent);
+    background-color: var(--sl-color-gray-5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    background: var(--sl-color-gray-5);
+    color: var(--sl-color-text-accent);
+    flex-shrink: 0;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex-grow: 1;
+  }
+
+  .title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+
+  .description {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-2);
+    line-height: 1.5;
+  }
+
+  .arrow {
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+  }
+
+  .icon-link-card:hover .arrow {
+    transform: translateX(0.25rem);
+  }
+</style>
+
