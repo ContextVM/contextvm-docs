@@ -16,21 +16,34 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
+import { CardGrid } from "@astrojs/starlight/components";
+import IconLinkCard from "../../components/IconLinkCard.astro";
 
 ## Core Concepts
 
 <CardGrid stagger>
-  <Card title="Architecture" icon="rocket">
-    [Learn the foundational concepts and architecture of ContextVM](https://github.com/ContextVM/sdk/blob/master/docs/ctxvm-draft-spec.md#complete-protocol-flow)
-  </Card>
-  <Card title="SDK Documentation" icon="add-document">
-    [Explore our comprehensive documentation and implementation examples](ts-sdk/quick-overview/)
-  </Card>
-  <Card title="Integrations" icon="puzzle">
-    [Discover how ContextVM integrates MCP with Nostr](spec/ctxvm-draft-spec/)
-  </Card>
-  <Card title="Tutorials" icon="open-book">
-    [Step-by-step guides to help you build with ContextVM](ts-sdk/tutorials/client-server-communication/)
-  </Card>
+  <IconLinkCard 
+    title="Architecture" 
+    icon="rocket"
+    href="https://github.com/ContextVM/sdk/blob/master/docs/ctxvm-draft-spec.md#complete-protocol-flow"
+    description="Learn the foundational concepts and architecture of ContextVM"
+  />
+  <IconLinkCard 
+    title="SDK Documentation" 
+    icon="add-document"
+    href="ts-sdk/quick-overview/"
+    description="Explore our comprehensive documentation and implementation examples"
+  />
+  <IconLinkCard 
+    title="Integrations" 
+    icon="puzzle"
+    href="spec/ctxvm-draft-spec/"
+    description="Discover how ContextVM integrates MCP with Nostr"
+  />
+  <IconLinkCard 
+    title="Tutorials" 
+    icon="open-book"
+    href="ts-sdk/tutorials/client-server-communication/"
+    description="Step-by-step guides to help you build with ContextVM"
+  />
 </CardGrid>
