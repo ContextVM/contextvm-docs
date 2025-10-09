@@ -93,7 +93,6 @@ const mcpServer = new McpServer({
 const serverNostrTransport = new NostrServerTransport({
   signer: signer,
   relayHandler: relayPool,
-  isPublicServer: true, // Announce the server publicly
   serverInfo: {
     name: "My Awesome MCP Server",
     website: "https://example.com",

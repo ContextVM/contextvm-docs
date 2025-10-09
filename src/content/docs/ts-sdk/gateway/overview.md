@@ -64,7 +64,6 @@ const gateway = new NostrMCPGateway({
   nostrTransportOptions: {
     signer,
     relayHandler: relayPool,
-    isPublicServer: true, // Announce this gateway on Nostr
   },
 });
 

@@ -1143,7 +1143,6 @@ const gateway = new NostrMCPGateway({
   nostrTransportOptions: {
     signer,
     relayHandler: relayPool,
-    isPublicServer: true, // Announce this gateway on Nostr
   },
 });
 
@@ -2144,7 +2143,6 @@ const mcpServer = new McpServer({
 const serverNostrTransport = new NostrServerTransport({
   signer: signer,
   relayHandler: relayPool,
-  isPublicServer: true, // Announce the server publicly
   serverInfo: {
     name: "My Awesome MCP Server",
     website: "https://example.com",
@@ -2277,7 +2275,6 @@ async function main() {
   const serverTransport = new NostrServerTransport({
     signer,
     relayHandler: relayPool,
-    isPublicServer: true, // Announce this server on the Nostr network
     serverInfo: {
       name: "CTXVM Echo Server",
     },

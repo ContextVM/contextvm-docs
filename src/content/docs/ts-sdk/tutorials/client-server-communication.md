@@ -72,7 +72,6 @@ async function main() {
   const serverTransport = new NostrServerTransport({
     signer,
     relayHandler: relayPool,
-    isPublicServer: true, // Announce this server on the Nostr network
     serverInfo: {
       name: "CTXVM Echo Server",
     },
