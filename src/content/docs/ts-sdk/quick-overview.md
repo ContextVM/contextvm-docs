@@ -28,6 +28,7 @@ This will install the SDK and its dependencies into your project.
 The SDK is organized into several modules, each providing a specific set of functionalities:
 
 - **[Core](/core/interfaces)**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
+- **[Logging](/core/logging)**: SDK logging conventions, configuration and best practices (Pino-based).
 - **[Transports](/transports/base-nostr-transport)**: Critical for communication, this module provides `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
 - **[Signer](/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
 - **[Relay](/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.

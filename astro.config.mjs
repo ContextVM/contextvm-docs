@@ -54,6 +54,7 @@ export default defineConfig({
               items: [
                 { label: "Constants", slug: "ts-sdk/core/constants" },
                 { label: "Interfaces", slug: "ts-sdk/core/interfaces" },
+                { label: "Logging", slug: "ts-sdk/core/logging" },
                 {
                   label: "Relay handler",
                   slug: "ts-sdk/relay/relay-handler-interface",
