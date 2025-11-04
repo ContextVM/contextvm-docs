@@ -20,6 +20,11 @@ export default defineConfig({
           label: "ContextVM",
           href: "https://github.com/contextvm/ts-sdk",
         },
+        {
+          icon: "external",
+          label: "ContextVM Website",
+          href: "https://contextvm.org/",
+        },
       ],
       sidebar: [
         {
