@@ -6,12 +6,13 @@ interface Props {
   href: string;
   description: string;
   icon: string;
+  target?: string;
 }
 
-const { title, href, description, icon } = Astro.props;
+const { title, href, description, icon, target } = Astro.props;
 ---
 
-<a href={href} class="icon-link-card">
+<a href={href} class="icon-link-card" target={target || "_self"}>
   <span class="icon-wrapper">
     <Icon name={icon} size="2rem" />
   </span>

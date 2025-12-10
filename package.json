@@ -12,8 +12,8 @@
     "gen-llmtxt": "repomix --quiet --style plain --compress --no-file-summary --no-directory-structure -o ./public/llms.txt src/content"
   },
   "dependencies": {
-    "@astrojs/starlight": "0.36.2",
-    "astro": "5.15.3",
+    "@astrojs/starlight": "0.37.1",
+    "astro": "5.16.4",
     "prettier": "^3.6.2",
     "sharp": "^0.34.2"
   },
