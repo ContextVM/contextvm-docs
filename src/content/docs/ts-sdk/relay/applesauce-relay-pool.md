@@ -31,19 +31,12 @@ The constructor takes a single argument:
 import { ApplesauceRelayPool } from "@contextvm/sdk";
 import { NostrClientTransport } from "@contextvm/sdk";
 
-// 1. Define the list of relays you want to connect to
-const myRelays = [
-  "wss://relay.damus.io",
-  "wss://relay.primal.net",
-  "wss://nos.lol",
-];
-
-// 2. Create an instance of the ApplesauceRelayPool
-const relayPool = new ApplesauceRelayPool(myRelays);
-
 // 3. Pass the instance to a transport
 const transport = new NostrClientTransport({
-  relayHandler: relayPool,
+  relayHandler: new ApplesauceRelayPool([
+    "wss://relay1.com",
+    "wss://relay2.io",
+  ]),
   // ... other options
 });
 ```

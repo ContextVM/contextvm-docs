@@ -28,6 +28,13 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
   allowedPublicKeys?: string[];
   /** List of capabilities that are excluded from public key whitelisting requirements */
   excludedCapabilities?: CapabilityExclusion[];
+  /** Log level for the NostrServerTransport: 'debug' | 'info' | 'warn' | 'error' | 'silent' */
+  logLevel?: LogLevel;
+  /**
+   * Whether to inject the client's public key into the _meta field of incoming messages.
+   * @default false
+   */
+  injectClientPubkey?: boolean;
 }
 ```
 
@@ -35,6 +42,7 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
 - **`isPublicServer`**: (Optional) If `true`, the transport will automatically announce the server's capabilities on the Nostr network. Defaults to `false`.
 - **`allowedPublicKeys`**: (Optional) A list of client public keys that are allowed to connect. If not provided, any client can connect.
 - **`excludedCapabilities`**: (Optional) A list of capabilities that are excluded from public key whitelisting requirements. This allows certain operations from disallowed public keys, enhancing security policy flexibility while maintaining backward compatibility.
+- **`injectClientPubkey`**: (Optional) If `true`, the transport will inject the client's public key into the `_meta` field of requests passed to the underlying server. Defaults to `false`.
 
 ### Capability Exclusion
 
@@ -102,6 +110,7 @@ const serverNostrTransport = new NostrServerTransport({
     { method: "tools/list" }, // Allow any client to list available tools
     { method: "tools/call", name: "get_weather" }, // Allow any client to call get_weather tool
   ],
+  injectClientPubkey: true, // Enable client public key injection
 });
 
 // 4. Connect the server
@@ -118,6 +127,7 @@ console.log("MCP server is running and available on Nostr.");
 1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isPublicServer` is `true`, it also initiates the announcement process.
 2.  **Incoming Events**: The transport listens for events from clients. For each client, it maintains a `ClientSession`.
 3.  **Request Handling**: When a valid request is received from an authorized client, the transport forwards it to the `McpServer`'s internal logic via the `onmessage` handler. It replaces the request's original ID with the unique Nostr event ID to prevent ID collisions between different clients.
+    - If `injectClientPubkey` is enabled, the client's public key is injected into the request's `_meta` field before being passed to the server.
 4.  **Response Handling**: When the `McpServer` sends a response, the transport's `send()` method is called. The transport looks up the original request details from the client's session, restores the original request ID, and sends the response back to the correct client, referencing the original event ID.
 5.  **Announcements**: If `isPublicServer` is true, the transport sends requests to its own `McpServer` for `initialize`, `tools/list`, etc. It then formats the responses into the appropriate replaceable Nostr events (kinds 11316-11320) and publishes them.
 
@@ -143,6 +153,41 @@ The capability exclusion feature provides enhanced security policy flexibility b
 3. **Backward Compatibility**: Gradually introduce stricter security policies while maintaining compatibility with existing clients.
 
 4. **Tiered Access**: Create different levels of access where certain capabilities are available to all clients, while others require explicit authorization.
+
+## Client Public Key Injection
+
+When the `injectClientPubkey` option is enabled, the transport injects the client's public key into the `_meta` field of requests passed to the underlying MCP server. This enables servers to access client identification information for authentication, authorization, and enhanced integration purposes.
+
+### How It Works
+
+1. When a request is received from a client, the transport extracts the client's public key from the Nostr event
+2. The transport embeds the `clientPubkey` field in the message's `_meta` field
+3. The modified request is then passed to the underlying server
+
+The injected metadata follows this structure:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "example_tool",
+    "arguments": {}
+  },
+  "_meta": {
+    "clientPubkey": "<client-public-key-hex>"
+  }
+}
+```
+
+### Use Cases
+
+- **Authentication**: Servers can verify client identity without additional protocol overhead
+- **Authorization**: Implement per-client access controls based on public key
+- **Logging**: Track client activity and usage patterns
+- **Rate Limiting**: Apply rate limits on a per-client basis
+- **Personalization**: Provide client-specific responses or data
 
 ## Next Steps
 
