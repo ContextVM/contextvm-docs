@@ -138,31 +138,40 @@ Servers that implement a common tool schema MUST include the schema hash in the 
 
 Servers MAY publish CEP-6 public announcements to advertise which common tool schemas they implement.
 
-This CEP uses a single announcement marker (`I`) to avoid introducing an “authoritative definer” concept. Schema identity comes solely from `schemaHash`.
+This CEP uses NIP-73 compliant `i` and `k` tags to enable schema discovery and ecosystem integration (e.g., NIP-22 comments, NIP-25 reactions, voting on schemas). Schema identity comes solely from `schemaHash`.
 
-#### 3.1 Implemented schema marker (`I` tag)
+#### 3.1 Implemented schema marker (NIP-73 `i` and `k` tags)
 
-Servers implementing a common tool schema include an `I` tag:
-
-```json
-{
-  "kind": 11317,
-  "pubkey": "<server-pubkey>",
-  "tags": [["I", "a7f3d9c2b1e8...", "translate_text"]]
-}
-```
-
-**Tag format**: `["I", "<schema-hash>", "<tool-name>"]` — indicates this server implements the common schema identified by `<schema-hash>` for tool name `<tool-name>`.
-
-**Multi-tool servers**: A server MAY announce multiple implemented common schemas by including multiple `I` tags in the same event (one per tool schema hash). For example:
+Servers implementing a common tool schema include `i` and `k` tags:
 
 ```json
 {
   "kind": 11317,
   "pubkey": "<server-pubkey>",
   "tags": [
-    ["I", "a7f3d9c2b1e8...", "translate_text"],
-    ["I", "f8e7d6c5b4a3...", "get_weather"]
+    ["i", "a7f3d9c2b1e8...", "translate_text"],
+    ["k", "io.contextvm/common-schema"]
+  ]
+}
+```
+
+**Tag format**:
+
+- `["i", "<schema-hash>", "<tool-name>"]` — NIP-73 identifier for the common schema
+- `["k", "io.contextvm/common-schema"]` — NIP-73 kind identifier (one per event)
+
+The `i` tag contains the schema hash as the identifier, with the tool name as the optional third item. The `k` tag specifies the identifier kind, matching the namespace used in the `_meta` field.
+
+**Multi-tool servers**: A server MAY announce multiple implemented common schemas by including multiple `i` tags in the same event (one per tool schema hash), with a single `k` tag. For example:
+
+```json
+{
+  "kind": 11317,
+  "pubkey": "<server-pubkey>",
+  "tags": [
+    ["i", "a7f3d9c2b1e8...", "translate_text"],
+    ["i", "f8e7d6c5b4a3...", "get_weather"],
+    ["k", "io.contextvm/common-schema"]
   ]
 }
 ```
@@ -182,7 +191,8 @@ Example:
   "kind": 11317,
   "pubkey": "<server-pubkey>",
   "tags": [
-    ["I", "a7f3d9c2b1e8...", "translate_text"],
+    ["i", "a7f3d9c2b1e8...", "translate_text"],
+    ["k", "io.contextvm/common-schema"],
     ["t", "translation"],
     ["t", "traduccion"]
   ]
@@ -198,7 +208,13 @@ Example:
 **Find all implementers of a schema hash:**
 
 ```json
-{ "kinds": [11317], "#I": ["a7f3d9c2b1e8..."] }
+{ "kinds": [11317], "#i": ["a7f3d9c2b1e8..."] }
+```
+
+**Find all ContextVM common tool schemas:**
+
+```json
+{ "kinds": [11317], "#k": ["io.contextvm/common-schema"] }
 ```
 
 **Browse candidates by category (best-effort):**
@@ -212,7 +228,7 @@ Recommended client behavior is a two-step flow:
 1. Browse/search using `t` tags (optional, best-effort)
 2. For interoperable provider switching, rely on `schemaHash` by:
    - extracting the hash from announcements and/or `tools/list`, and
-   - querying `#I` by hash to find other implementers
+   - querying `#i` by hash to find other implementers
 
 #### 4.2 Verification process
 
@@ -305,14 +321,14 @@ Fully backward compatible:
 - Design `inputSchema` and (optionally, but strongly recommended) `outputSchema`
 - Compute `schemaHash` using JCS + SHA-256
 - Include `schemaHash` in `_meta["io.contextvm/common-schema"].schemaHash`
-- Publish a CEP-6 announcement with an `I` tag
+- Publish a CEP-6 announcement with `i` and `k` tags (NIP-73 compliant)
 - Optionally include `t` tags for categorization
 
 ### For client developers
 
 **Discovery**:
 
-- Query Nostr for `I` tags to find providers for a known `schemaHash`
+- Query Nostr for `i` tags to find providers for a known `schemaHash`
 - Optionally support browsing via `t` tags, then refine by hash
 
 **Verification**:
@@ -362,7 +378,8 @@ Fully backward compatible:
   "kind": 11317,
   "pubkey": "<server-pubkey>",
   "tags": [
-    ["I", "f8e7d6c5b4a3...", "get_weather"],
+    ["i", "f8e7d6c5b4a3...", "get_weather"],
+    ["k", "io.contextvm/common-schema"],
     ["t", "weather-forecast"]
   ]
 }
@@ -373,7 +390,7 @@ Fully backward compatible:
 Find implementers:
 
 ```json
-{ "kinds": [11317], "#I": ["f8e7d6c5b4a3..."] }
+{ "kinds": [11317], "#i": ["f8e7d6c5b4a3..."] }
 ```
 
 Or browse by category (best-effort):
@@ -399,6 +416,7 @@ Works identically across all providers implementing the same schema hash.
 ## Dependencies
 
 - [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
+- [NIP-73: External Content IDs](https://github.com/nostr-protocol/nips/blob/master/73.md)
 - [RFC 8785: JSON Canonicalization Scheme (JCS)](https://tools.ietf.org/html/rfc8785)
 - [MCP Specification: Tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)
 - [MCP Specification: \_meta field](https://modelcontextprotocol.io/specification/2025-11-25/basic#json-schema-usage)
