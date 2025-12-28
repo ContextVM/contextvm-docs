@@ -4,7 +4,7 @@ import starlight from "@astrojs/starlight";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://contextvm.org",
+  site: "https://docs.contextvm.org",
   integrations: [
     starlight({
       title: "ContextVM Documentation",
@@ -45,6 +45,15 @@ export default defineConfig({
                 {
                   label: "CEP-6: Public Server Announcements",
                   slug: "spec/ceps/cep-6",
+                },
+                {
+                  label: "Informational",
+                  items: [
+                    {
+                      label: "CEP-16: Client Public Key Injection",
+                      slug: "spec/ceps/informational/cep-16",
+                    },
+                  ],
                 },
               ],
             },
