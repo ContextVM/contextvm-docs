@@ -89,6 +89,8 @@ The `tags` field provides additional metadata for discoverability:
 
 As in the Server Announcement event, the `content` field contains a JSON string with the list of capabilities. The list is the result of a call to the `list` method of each capability.
 
+**Note**: For tools list announcements (kind 11317), see [CEP-15: Common Tool Schemas](/spec/ceps/cep-15) for additional tag conventions that enable schema discovery and ecosystem integration.
+
 ### Tools List Event Example
 
 ```json
@@ -142,3 +144,4 @@ A reference implementation can be found in the [ContextVM SDK server transport i
 ## Dependencies
 
 - [CEP-4: Encryption Support](/spec/ceps/cep-4)
+- [CEP-15: Common Tool Schemas](/spec/ceps/cep-15) — Extends tools list announcements with schema discovery and NIP-73 integration
