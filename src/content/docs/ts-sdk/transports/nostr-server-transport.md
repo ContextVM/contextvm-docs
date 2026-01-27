@@ -82,11 +82,11 @@ Here's how to use the `NostrServerTransport` with an `McpServer` from the `@mode
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { NostrServerTransport } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
-import { SimpleRelayPool } from "@contextvm/sdk";
+import { ApplesauceRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay pool
 const signer = new PrivateKeySigner("your-server-private-key");
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
+const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
 
 // 2. Create the McpServer instance
 const mcpServer = new McpServer({
@@ -121,6 +121,8 @@ console.log("MCP server is running and available on Nostr.");
 // Keep the process running...
 // To shut down: await mcpServer.close();
 ```
+
+> **Note**: The `relayHandler` option also accepts a `string[]` of relay URLs, in which case an `ApplesauceRelayPool` will be created automatically. See the [Base Nostr Transport](/transports/base-nostr-transport) documentation for details.
 
 ## How It Works
 

@@ -42,11 +42,11 @@ import { Client } from "@modelcontextprotocol/sdk/client";
 import { NostrClientTransport } from "@contextvm/sdk";
 import { EncryptionMode } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
-import { SimpleRelayPool } from "@contextvm/sdk";
+import { ApplesauceRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay handler
 const signer = new PrivateKeySigner("your-private-key"); // Replace with your actual private key
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
+const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
 
 // 2. Set the public key of the target server
 const REMOTE_SERVER_PUBKEY = "remote-server-public-key";
@@ -74,6 +74,8 @@ console.log("Available tools:", tools);
 // 6. Close the connection when done
 // await mcpClient.close();
 ```
+
+> **Note**: The `relayHandler` option also accepts a `string[]` of relay URLs, in which case an `ApplesauceRelayPool` will be created automatically. See the [Base Nostr Transport](/transports/base-nostr-transport) documentation for details.
 
 ## How It Works
 

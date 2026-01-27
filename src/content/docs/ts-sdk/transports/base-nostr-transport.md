@@ -25,14 +25,51 @@ When creating a transport that extends `BaseNostrTransport`, you must provide a 
 ```typescript
 export interface BaseNostrTransportOptions {
   signer: NostrSigner;
-  relayHandler: RelayHandler;
+  relayHandler: RelayHandler | string[];
   encryptionMode?: EncryptionMode;
+  logLevel?: LogLevel;
 }
 ```
 
 - **`signer`**: An instance of a `NostrSigner` for signing events. This is a required parameter.
-- **`relayHandler`**: An instance of a `RelayHandler` for managing relay connections. This is a required parameter.
+- **`relayHandler`**: An instance of a `RelayHandler` for managing relay connections, or an array of relay URLs to create an `ApplesauceRelayPool` automatically. This is a required parameter.
 - **`encryptionMode`**: An optional `EncryptionMode` enum that determines the encryption policy for the transport. Defaults to `OPTIONAL`.
+- **`logLevel`**: (Optional) Log level for debugging output.
+
+## Simplified Relay Handler Configuration
+
+The `relayHandler` option provides flexibility in how you configure relay connections:
+
+### Option 1: Pass a RelayHandler Instance
+
+For advanced use cases, create and configure your own relay handler:
+
+```typescript
+import { ApplesauceRelayPool } from "@contextvm/sdk";
+
+const relayHandler = new ApplesauceRelayPool([
+  "wss://relay.damus.io",
+  "wss://relay.primal.net",
+]);
+
+const transport = new NostrClientTransport({
+  signer,
+  relayHandler,
+});
+```
+
+### Option 2: Pass an Array of Relay URLs
+
+For simple use cases, pass an array of relay URLs and the transport will create an `ApplesauceRelayPool` automatically:
+
+```typescript
+const transport = new NostrClientTransport({
+  signer,
+  relayHandler: ["wss://relay.damus.io", "wss://relay.primal.net"],
+});
+```
+
+This is the recommended approach for most use cases as it provides sensible defaults for relay management.
 
 ## Key Methods
 
