@@ -1,5 +1,5 @@
 ---
-title: CEP-X Server Relay List Metadata
+title: CEP-18 Server Relay List Metadata
 description: Relay list publication mechanism for ContextVM servers using NIP-65 conventions
 ---
 
