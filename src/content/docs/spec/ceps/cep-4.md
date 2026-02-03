@@ -37,6 +37,12 @@ Clients can discover encryption support by:
 1. **Direct Discovery**: Check for the presence of the `support_encryption` tag in initialization responses
 2. **Encrypted Handshake**: Attempt an encrypted initialization
 
+#### Ephemeral Gift Wrap Compatibility
+
+Implementations MAY additionally support **ephemeral gift wraps** (kind `21059`) as specified by cep-19.
+
+Servers that support ephemeral gift wraps SHOULD advertise it by including the `support_encryption_ephemeral` tag alongside `support_encryption`.
+
 ### Message Encryption Flow
 
 When encryption is enabled, ContextVM messages follow a simplified NIP-17 pattern with no 'rumor', using NIP-59 gift wrapping.
@@ -86,6 +92,8 @@ The encrypted request is then gift-wrapped by placing it in the content field of
 }
 ```
 
+For improved privacy (no relay persistence of the encrypted envelope), implementations MAY use kind `21059` instead of `1059` as defined in cep-19.
+
 Server responses follow the same pattern.
 
 The decrypted inner content contains the standard ContextVM response format. The id field used in responses should match the inner id field used in requests, not the id of the gift-wrap event.
@@ -107,3 +115,7 @@ The only compatibility issue is that servers or clients might require encrypted 
 ## Reference Implementation
 
 A reference implementation can be found in the [ContextVM sdk](https://github.com/ContextVM/sdk/blob/master/src/core/encryption.ts)
+
+## Dependencies
+
+- [cep-19: Ephemeral Gift Wraps](/spec/ceps/cep-19)
