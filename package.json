@@ -17,6 +17,9 @@
     "prettier": "^3.8.1",
     "sharp": "^0.34.5"
   },
+  "overrides": {
+    "zod": "^3.25.76"
+  },
   "devDependencies": {
     "repomix": "^1.11.1"
   }
