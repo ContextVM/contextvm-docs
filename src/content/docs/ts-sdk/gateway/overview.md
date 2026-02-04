@@ -36,7 +36,7 @@ export interface NostrMCPGatewayOptions {
    * Required unless `createMcpClientTransport` is provided.
    */
   mcpClientTransport?: Transport;
-  
+
   /** Options for configuring the Nostr server transport */
   nostrTransportOptions: NostrServerTransportOptions;
 
@@ -59,7 +59,7 @@ export interface NostrMCPGatewayOptions {
 ### Option Details
 
 - **`mcpClientTransport`** (optional): An instance of a client-side MCP transport that the gateway will use to connect to your existing MCP server.
-  
+
   **Note**: You must provide either `mcpClientTransport` OR `createMcpClientTransport`, but not both.
 
 - **`nostrTransportOptions`**: The full configuration object required by the `NostrServerTransport`. This includes the `signer`, `relayHandler`, and options like `isPublicServer`.
@@ -168,7 +168,7 @@ const gateway = new NostrMCPGateway({
   // Factory function creates a new transport for each unique client pubkey
   createMcpClientTransport: ({ clientPubkey: _clientPubkey }) =>
     new StreamableHTTPClientTransport(new URL(target)),
-  
+
   nostrTransportOptions: {
     signer,
     relayHandler: relayPool,
