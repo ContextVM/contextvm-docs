@@ -6,7 +6,7 @@ description: End-to-end encryption for ContextVM messages using NIP-17 and NIP-5
 # Encryption Support
 
 **Status:** Final
-**Author:** @Gzuuus
+**Author:** @contextvm-org
 **Type:** Standards Track
 
 ## Abstract

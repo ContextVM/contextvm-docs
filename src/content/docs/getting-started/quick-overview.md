@@ -3,8 +3,6 @@ title: Quick Overview
 description: An overview of the ContextVM documentation, including the specification and SDK documentation.
 ---
 
-# Quick Overview
-
 Welcome to the ContextVM documentation! This guide provides a brief overview of what you'll find in our documentation to help you get started with ContextVM.
 
 ## Documentation Structure
@@ -32,7 +30,7 @@ The TypeScript SDK provides tools and libraries for building applications with C
 
 ## What is ContextVM?
 
-ContextVM is a protocol that bridges the Model Context Protocol (MCP) with the Nostr network, enabling decentralized communication. It allows MCP servers and clients to communicate over the Nostr protocol, leveraging its decentralized infrastructure for secure and private interactions.
+ContextVM is a protocol that bridges the Model Context Protocol (MCP) with the Nostr network, enabling decentralized communication. It allows MCP servers and clients to communicate over the Nostr protocol, leveraging its decentralized infrastructure for secure and private interactions. The protocol is designed to be used programmatically or by Large Language Models (LLMs). Client and server interactions can be triggered by a user's input through an interface or by an LLM, as the underlying MCP protocol allows LLMs to use it.
 
 ## Key Features
 

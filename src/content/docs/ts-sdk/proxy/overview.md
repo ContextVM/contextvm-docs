@@ -43,7 +43,7 @@ export interface NostrMCPProxyOptions {
 This example demonstrates how to create a proxy that listens for a local client over standard I/O and connects to a remote server over Nostr.
 
 ```typescript
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/stdio";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { NostrMCPProxy } from "@contextvm/sdk";
 import { PrivateKeySigner } from "@contextvm/sdk";
 import { SimpleRelayPool } from "@contextvm/sdk";

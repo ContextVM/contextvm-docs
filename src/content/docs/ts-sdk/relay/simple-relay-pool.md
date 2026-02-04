@@ -3,9 +3,11 @@ title: SimpleRelayPool
 description: A default relay handler implementation for the @contextvm/sdk.
 ---
 
+⚠️ This RelayHandler is deprecated and will be removed in a future version. Please use the [ApplesauceRelayPool](/ts-sdk/relay/applesauce-relay-pool) instead.
+
 # `SimpleRelayPool`
 
-The `SimpleRelayPool` is the default implementation of the [`RelayHandler`](/relay/relay-handler-interface) interface provided by the `@contextvm/sdk`. It uses the `SimplePool` from the `nostr-tools` library to manage connections to a list of specified relays.
+The `SimpleRelayPool` is the default implementation of the [`RelayHandler`](/ts-sdk/relay/relay-handler-interface) interface provided by the `@contextvm/sdk`. It uses the `SimplePool` from the `nostr-tools` library to manage connections to a list of specified relays.
 
 ## Overview
 
