@@ -162,10 +162,6 @@ Recommended PMIs are intentionally **payload-scoped**: they are specific enough 
 | PMI | `pay_req` payload (PMI-defined) | Notes |
 | --- | --- | --- |
 | `bitcoin-lightning-bolt11` | BOLT11 invoice string | Use when `pay_req` is a BOLT11 invoice (e.g. `lnbc...`). |
-| `bitcoin-onchain-bip21` | BIP21 URI | Use when `pay_req` is a URI (amount/address/label may be embedded). |
-| `bitcoin-onchain-p2wpkh` | Bitcoin address (P2WPKH) or implementation-defined address string | Prefer a URI PMI (e.g. `...-bip21`) if you need amounts/labels encoded. |
-| `bitcoin-onchain-p2tr` | Bitcoin address (P2TR) or implementation-defined address string | Prefer a URI PMI (e.g. `...-bip21`) if you need amounts/labels encoded. |
-| `basic-card` | Checkout URL / opaque gateway reference | Intentionally generic: `pay_req` is typically a link or session reference. |
 
 **Extensibility:** Users MAY use any PMI that follows the W3C format. New PMIs can be proposed for inclusion in the recommended list.
 
@@ -174,7 +170,7 @@ Recommended PMIs are intentionally **payload-scoped**: they are specific enough 
 To keep `pay_req` semantics unambiguous, recommended PMIs SHOULD:
 
 1. Identify the asset/network/rail family (example: `bitcoin-lightning`).
-2. Identify the **request payload format** (example: `bolt11`, `bip21`).
+2. Identify the **request payload format** (example: `bolt11`).
 3. If the payload format alone is still ambiguous, include the relevant sub-variant (example: `p2tr`, `p2wpkh`).
 
 Avoid overly generic PMIs like `bitcoin-lightning` when multiple incompatible request payload standards exist.
@@ -204,8 +200,7 @@ Servers advertise supported PMIs using the `pmi` tag in initialization responses
   },
   "tags": [
     ["pmi", "bitcoin-lightning-bolt11"],
-    ["pmi", "bitcoin-cashu"],
-    ["pmi", "bitcoin-onchain"]
+    ["pmi", "another-payment-method"]
   ]
 }
 ```
@@ -226,7 +221,7 @@ Clients advertise their supported PMIs in initialization requests:
   "tags": [
     ["p", "<server-pubkey>"],
     ["pmi", "bitcoin-lightning-bolt11"],
-    ["pmi", "bitcoin-cashu"]
+    ["pmi", "another-payment-method"]
   ]
 }
 ```
