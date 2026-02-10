@@ -41,7 +41,7 @@ This CEP does **not** define:
 
 ### New Tags Introduced
 
-This CEP introduces two new tags to the ContextVM protocol:
+This CEP introduces the following new tags to the ContextVM protocol:
 
 #### `cap` Tag
 
@@ -64,7 +64,7 @@ Where:
 
 ##### Notes
 
-- The `cap` tag is a **reference** price signal for discovery and UX. The actual `amount` requested for payment is provided in [`notifications/payment_required`](#payment-required-notification).
+- The `cap` tag is a **reference** price signal for discovery and UX. The actual `amount` requested for payment is provided in [`notifications/payment_required`](#payment-request-notification-fields).
 - If `<price>` is a range, servers MAY request any `amount` within the advertised inclusive range. Clients MAY accept or ignore the payment request based on their own policy.
 - If multiple `cap` tags are present for the same capability, clients SHOULD prefer the most specific and most recent context (for example, a live `tools/list` response over a public announcement).
 
@@ -77,6 +77,14 @@ The `pmi` tag is used to advertise supported Payment Method Identifiers. It foll
 ```
 
 Where `<payment-method-identifier>` is a standardized PMI string following the W3C Payment Method Identifiers specification (e.g., "bitcoin-lightning-bolt11", "bitcoin-cashu").
+
+#### `direct_payment` Tag (optional)
+
+The `direct_payment` tag is an optional optimization for bearer-asset payment methods. It allows a client to include a PMI-scoped settlement payload directly on the request event (see [Optional direct payment](#optional-direct-payment-bearer-asset-optimization)).
+
+```json
+["direct_payment", "<pmi>", "<payload>"]
+```
 
 ### Pricing Mechanism
 
@@ -131,17 +139,45 @@ The `cap` tag indicates that using the `get_weather` tool costs 100 satoshis, al
 
 The protocol supports multiple payment methods through Payment Method Identifiers (PMI) that follow the W3C Payment Method Identifiers specification.
 
+#### PMI boundaries (what PMI defines)
+
+PMIs are not only a discovery label; they define the **settlement protocol surface** for CEP-8 payments.
+
+- The `pmi` value in `notifications/payment_required` defines how a payment handler MUST interpret the associated opaque `pay_req` string.
+- The format and semantics of `pay_req` are **PMI-defined**.
+- The optional `_meta` objects in `notifications/payment_required` and `notifications/payment_accepted` MAY contain PMI-specific fields. Unknown `_meta` fields MUST be ignored.
+
+In other words, `pmi` is the type tag for `pay_req` (analogous to a content-type).
+
 #### PMI Format and Registry
 
-PMIs MUST follow the format defined by the [W3C Payment Method Identifiers](https://www.w3.org/TR/payment-method-id/) specification, matching the pattern: `[a-z0-9-]+` (e.g., `bitcoin-onchain`, `bitcoin-lightning-bolt11`, `bitcoin-cashu`, `basic-card`, etc).
+PMIs MUST follow the format defined by the [W3C Payment Method Identifiers](https://www.w3.org/TR/payment-method-id/) specification, matching the pattern: `[a-z0-9-]+`.
 
-**ContextVM PMI References:**
+##### Recommended PMIs (ContextVM ecosystem)
 
-- `"bitcoin-onchain"` - Bitcoin on-chain transactions
-- `"bitcoin-lightning-bolt11"` - Lightning Network with BOLT11 invoice format
-- `"bitcoin-cashu"` - Bitcoin via Cashu ecash tokens
+This CEP maintains a small list of **recommended PMIs** to maximize interoperability.
 
-**Note:** The listed PMIs are reference recommendations for the ContextVM ecosystem. Users can use any PMI that follows the W3C format, propose new PMIs for inclusion, or extend the reference list over time.
+Recommended PMIs are intentionally **payload-scoped**: they are specific enough that a client can determine what `pay_req` contains.
+
+| PMI | `pay_req` payload (PMI-defined) | Notes |
+| --- | --- | --- |
+| `bitcoin-lightning-bolt11` | BOLT11 invoice string | Use when `pay_req` is a BOLT11 invoice (e.g. `lnbc...`). |
+| `bitcoin-onchain-bip21` | BIP21 URI | Use when `pay_req` is a URI (amount/address/label may be embedded). |
+| `bitcoin-onchain-p2wpkh` | Bitcoin address (P2WPKH) or implementation-defined address string | Prefer a URI PMI (e.g. `...-bip21`) if you need amounts/labels encoded. |
+| `bitcoin-onchain-p2tr` | Bitcoin address (P2TR) or implementation-defined address string | Prefer a URI PMI (e.g. `...-bip21`) if you need amounts/labels encoded. |
+| `basic-card` | Checkout URL / opaque gateway reference | Intentionally generic: `pay_req` is typically a link or session reference. |
+
+**Extensibility:** Users MAY use any PMI that follows the W3C format. New PMIs can be proposed for inclusion in the recommended list.
+
+##### Naming conventions for recommended PMIs
+
+To keep `pay_req` semantics unambiguous, recommended PMIs SHOULD:
+
+1. Identify the asset/network/rail family (example: `bitcoin-lightning`).
+2. Identify the **request payload format** (example: `bolt11`, `bip21`).
+3. If the payload format alone is still ambiguous, include the relevant sub-variant (example: `p2tr`, `p2wpkh`).
+
+Avoid overly generic PMIs like `bitcoin-lightning` when multiple incompatible request payload standards exist.
 
 #### PMI Benefits and Roles
 
@@ -275,7 +311,7 @@ If the client included one or more `pmi` tags in the original request, the serve
 
 If the client did not advertise any PMIs (for example, in a purely stateless request), the server MAY send multiple `notifications/payment_required` notifications (for example, one per supported PMI). Clients MAY ignore any or all payment requests.
 
-#### 4. Payment Accepted Notification (Receipt)
+#### 4. Payment Accepted Notification
 
 Once payment is verified, the server SHOULD notify the client that payment has been accepted.
 
@@ -288,9 +324,8 @@ Once payment is verified, the server SHOULD notify the client that payment has b
     "params": {
       "amount": 100,
       "pmi": "bitcoin-lightning-bolt11",
-      "receipt": "optional-opaque-receipt",
       "_meta": {
-        "note": "Optional receipt metadata"
+        "note": "Optional acceptance metadata"
       }
     }
   },
@@ -301,7 +336,7 @@ Once payment is verified, the server SHOULD notify the client that payment has b
 }
 ```
 
-The `receipt` field is optional and opaque. Its semantics are implementation-defined and/or PMI-defined (for example: a transaction id, invoice hash, internal payment reference, etc.).
+The optional `_meta` field is the extension point for payment acceptance details.
 
 #### 5. Capability Access
 
@@ -341,7 +376,10 @@ The `notifications/payment_required` notification `params` object contains:
 
 ##### Payment request payload
 
-`pay_req` is an opaque string. It MUST be sufficient for a payment handler that supports the specified `pmi` to attempt payment.
+`pay_req` is an opaque string.
+
+- It MUST be sufficient for a payment handler that supports the specified `pmi` to attempt payment.
+- Its format and interpretation are PMI-defined (see [PMI boundaries](#pmi-boundaries-what-pmi-defines)).
 
 ##### TTL and metadata
 
@@ -354,8 +392,33 @@ The `notifications/payment_accepted` notification `params` object contains:
 
 - `amount` (required): Numeric payment amount accepted by the server
 - `pmi` (required): Payment Method Identifier string
-- `receipt` (optional): Opaque receipt string
-- `_meta` (optional): Additional receipt metadata object. Use for PMI-specific or implementation-specific fields.
+- `_meta` (optional): Additional acceptance metadata object. Use for PMI-specific or implementation-specific fields.
+
+### Optional direct payment (bearer-asset optimization)
+
+Some payment methods are based on bearer assets and can be sent directly with the capability request, avoiding a `notifications/payment_required` roundtrip.
+
+This CEP defines an optional request tag for such cases:
+
+```json
+["direct_payment", "<pmi>", "<payload>"]
+```
+
+Where:
+
+- `<pmi>` identifies how to interpret `<payload>`.
+- `<payload>` is an opaque string whose format is PMI-defined.
+
+#### `-direct` PMI suffix
+
+PMIs that support direct bearer payments SHOULD use the `-direct` suffix to signal that a client MAY include `direct_payment` on the request.
+
+Example (conceptual): `bitcoin-cashu-v4-direct`.
+
+If a server receives a request with a `direct_payment` tag:
+
+- If the server supports the specified PMI and validates the provided payload, it MAY proceed directly to fulfill the request.
+- Otherwise, it MAY fall back to the normal CEP-8 flow (emit `notifications/payment_required`) or reject the request, implementation-defined.
 
 ### Correlation and Idempotency
 
