@@ -21,7 +21,7 @@ ContextVM pricing for capabilities is implemented through a standardized mechani
 
 1. **Pricing Tags**: Servers advertise pricing information using the `cap` tag
 2. **Payment Method Identifiers (PMI)**: Both parties advertise supported payment methods using the `pmi` tag
-3. **Payment Notifications**: Servers notify clients of payment requirements through the `notifications/payment_required` notification
+3. **Payment Notifications**: Servers notify clients of payment requirements through the `notifications/payment_required` notification, and MAY acknowledge outcomes with `notifications/payment_accepted` / `notifications/payment_rejected`
 
 When a capability requires payment, the server acts as the payment processor (generating and validating payment requests) while the client acts as the payment handler (executing payments for supported payment methods). Clients can discover supported payment methods beforehand through PMI discovery, enabling informed decisions before initiating requests.
 
@@ -85,6 +85,21 @@ The `direct_payment` tag is an optional optimization for bearer-asset payment me
 ```json
 ["direct_payment", "<pmi>", "<payload>"]
 ```
+
+#### `change` Tag (optional)
+
+The `change` tag is an optional settlement artifact for bearer-asset payment methods.
+
+It allows a server to return overpayment remainder on the [`notifications/payment_accepted`](#payment-accepted-notification-fields) event.
+
+```json
+["change", "<pmi>", "<payload>"]
+```
+
+Where:
+
+- `<pmi>` identifies how to interpret `<payload>`.
+- `<payload>` is an opaque string whose format is PMI-defined.
 
 ### Pricing Mechanism
 
@@ -155,25 +170,9 @@ PMIs MUST follow the format defined by the [W3C Payment Method Identifiers](http
 
 ##### Recommended PMIs (ContextVM ecosystem)
 
-This CEP maintains a small list of **recommended PMIs** to maximize interoperability.
+This CEP maintains no in-document registry of recommended PMIs.
 
-Recommended PMIs are intentionally **payload-scoped**: they are specific enough that a client can determine what `pay_req` contains.
-
-| PMI | `pay_req` payload (PMI-defined) | Notes |
-| --- | --- | --- |
-| `bitcoin-lightning-bolt11` | BOLT11 invoice string | Use when `pay_req` is a BOLT11 invoice (e.g. `lnbc...`). |
-
-**Extensibility:** Users MAY use any PMI that follows the W3C format. New PMIs can be proposed for inclusion in the recommended list.
-
-##### Naming conventions for recommended PMIs
-
-To keep `pay_req` semantics unambiguous, recommended PMIs SHOULD:
-
-1. Identify the asset/network/rail family (example: `bitcoin-lightning`).
-2. Identify the **request payload format** (example: `bolt11`).
-3. If the payload format alone is still ambiguous, include the relevant sub-variant (example: `p2tr`, `p2wpkh`).
-
-Avoid overly generic PMIs like `bitcoin-lightning` when multiple incompatible request payload standards exist.
+Recommended PMIs and naming conventions are documented in the informational companion CEP, [CEP-21: Payment Method Identifier (PMI) Recommendations](/spec/ceps/informational/cep-21).
 
 #### PMI Benefits and Roles
 
@@ -333,6 +332,30 @@ Once payment is verified, the server SHOULD notify the client that payment has b
 
 The optional `_meta` field is the extension point for payment acceptance details.
 
+For bearer-asset direct payments, the server MAY include a [`change` tag](#change-tag-optional) on this event to return any overpayment remainder.
+
+#### 4b. Payment Rejected Notification
+
+If the server cannot accept payment for a request (for example, an invalid or insufficient `direct_payment` payload), it MAY notify the client that payment was rejected.
+
+```json
+{
+  "kind": 25910,
+  "pubkey": "<provider-pubkey>",
+  "content": {
+    "method": "notifications/payment_rejected",
+    "params": {
+      "pmi": "bitcoin-cashu-v4-direct",
+      "message": "Insufficient direct payment"
+    }
+  },
+  "tags": [
+    ["p", "<client-pubkey>"],
+    ["e", "<request-event-id>"]
+  ]
+}
+```
+
 #### 5. Capability Access
 
 Once payment is verified, the server processes the capability request and responds with the result:
@@ -389,6 +412,22 @@ The `notifications/payment_accepted` notification `params` object contains:
 - `pmi` (required): Payment Method Identifier string
 - `_meta` (optional): Additional acceptance metadata object. Use for PMI-specific or implementation-specific fields.
 
+If the server returns change for a bearer-asset direct payment, it SHOULD include a [`change` tag](#change-tag-optional) on the event. In that case, `amount` is the final amount charged for the request.
+
+### Payment Rejected Notification Fields
+
+The `notifications/payment_rejected` notification `params` object contains:
+
+- `pmi` (required): Payment Method Identifier string associated with the attempted payment.
+- `amount` (optional): Numeric amount hint. For example, if a bearer-asset `direct_payment` was insufficient, servers MAY set this to the required amount.
+- `message` (optional): Human-readable rejection reason.
+
+##### Notes
+
+- `notifications/payment_rejected` is a generic negative acknowledgment for CEP-8 payment attempts.
+- For non-bearer PMIs (for example, invoice-based rails), servers will typically use [`notifications/payment_required`](#payment-request-notification-fields) to request the exact amount, and `payment_rejected` MAY be used when an attempted payment cannot be accepted or verified.
+- Only bearer-asset direct payments can return remainder value via the [`change` tag](#change-tag-optional).
+
 ### Optional direct payment (bearer-asset optimization)
 
 Some payment methods are based on bearer assets and can be sent directly with the capability request, avoiding a `notifications/payment_required` roundtrip.
@@ -413,7 +452,16 @@ Example (conceptual): `bitcoin-cashu-v4-direct`.
 If a server receives a request with a `direct_payment` tag:
 
 - If the server supports the specified PMI and validates the provided payload, it MAY proceed directly to fulfill the request.
-- Otherwise, it MAY fall back to the normal CEP-8 flow (emit `notifications/payment_required`) or reject the request, implementation-defined.
+- If the provided payload is valid and its value exceeds the final price, the server MAY return the remainder as change by including a [`change` tag](#change-tag-optional) on [`notifications/payment_accepted`](#payment-accepted-notification-fields).
+- If the server cannot accept the provided payload (for example, invalid or insufficient), it MAY emit [`notifications/payment_rejected`](#payment-rejected-notification-fields) and/or fall back to the normal CEP-8 flow (emit `notifications/payment_required`), implementation-defined.
+
+##### Multiple `direct_payment` tags
+
+Clients SHOULD include at most one `direct_payment` tag. If multiple `direct_payment` tags are present, servers SHOULD evaluate them in request order and select the first one whose `<pmi>` the server supports.
+
+##### Rejection and bearer-asset consumption
+
+For bearer-asset PMIs, servers SHOULD treat `notifications/payment_rejected` as meaning the bearer asset was not consumed/redeemed.
 
 ### Correlation and Idempotency
 
