@@ -35,9 +35,9 @@ This CEP does **not** define:
 
 Recommended PMIs are intentionally **payload-scoped**: they are specific enough that a client can determine what a CEP-8 `pay_req` contains.
 
-| PMI | `pay_req` payload (PMI-defined) | Notes |
-| --- | --- | --- |
-| `bitcoin-lightning-bolt11` | BOLT11 invoice string | Use when `pay_req` is a BOLT11 invoice (e.g. `lnbc...`). |
+| PMI                        | `pay_req` payload (PMI-defined) | Notes                                                    |
+| -------------------------- | ------------------------------- | -------------------------------------------------------- |
+| `bitcoin-lightning-bolt11` | BOLT11 invoice string           | Use when `pay_req` is a BOLT11 invoice (e.g. `lnbc...`). |
 
 **Extensibility:** Implementations MAY use any PMI that follows the W3C format. This CEP’s list is only a recommendation set.
 
@@ -62,4 +62,3 @@ This is a convention for discovery and interoperability; support is ultimately i
 ## Dependencies
 
 - [CEP-8: Capability Pricing and Payment Flow](/spec/ceps/cep-8)
-

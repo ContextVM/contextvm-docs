@@ -79,19 +79,19 @@ Capability exclusion provides fine-grained control over access by allowing speci
 Here's how to use the `NostrServerTransport` with an `McpServer` from the `@modelcontextprotocol/sdk`:
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { NostrServerTransport } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { ApplesauceRelayPool } from "@contextvm/sdk";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { NostrServerTransport } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
 // 1. Configure the signer and relay pool
-const signer = new PrivateKeySigner("your-server-private-key");
-const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
+const signer = new PrivateKeySigner('your-server-private-key');
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
 
 // 2. Create the McpServer instance
 const mcpServer = new McpServer({
-  name: "demo-server",
-  version: "1.0.0",
+  name: 'demo-server',
+  version: '1.0.0',
 });
 
 // Register your server's tools, resources, etc.
@@ -102,13 +102,13 @@ const serverNostrTransport = new NostrServerTransport({
   signer: signer,
   relayHandler: relayPool,
   serverInfo: {
-    name: "My Awesome MCP Server",
-    website: "https://example.com",
+    name: 'My Awesome MCP Server',
+    website: 'https://example.com',
   },
-  allowedPublicKeys: ["trusted-client-key"], // Only allow specific clients
+  allowedPublicKeys: ['trusted-client-key'], // Only allow specific clients
   excludedCapabilities: [
-    { method: "tools/list" }, // Allow any client to list available tools
-    { method: "tools/call", name: "get_weather" }, // Allow any client to call get_weather tool
+    { method: 'tools/list' }, // Allow any client to list available tools
+    { method: 'tools/call', name: 'get_weather' }, // Allow any client to call get_weather tool
   ],
   injectClientPubkey: true, // Enable client public key injection
 });
@@ -116,7 +116,7 @@ const serverNostrTransport = new NostrServerTransport({
 // 4. Connect the server
 await mcpServer.connect(serverNostrTransport);
 
-console.log("MCP server is running and available on Nostr.");
+console.log('MCP server is running and available on Nostr.');
 
 // Keep the process running...
 // To shut down: await mcpServer.close();
