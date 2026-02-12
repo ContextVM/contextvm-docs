@@ -34,6 +34,7 @@ The SDK is organized into several modules, each providing a specific set of func
 - **[Relay](/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
 - **[Proxy](/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
 - **[Gateway](/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
+- **[Payments](/payments/overview)**: Add CEP-8 payments to servers and clients with Lightning, NWC, and custom rails.
 
 ## Core Concepts
 
@@ -69,3 +70,5 @@ These components abstract away the underlying transport complexities, making it 
 ## Next Steps
 
 Now that you have a basic understanding of the SDK's modules and concepts, you are ready to dive deeper. Explore the **Core Modules** section to learn about the fundamental interfaces and data structures.
+
+To add payments to your ContextVM implementation, check out the [Payments guide](/payments/overview/).

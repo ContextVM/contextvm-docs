@@ -132,6 +132,31 @@ export default defineConfig({
                 },
                 { label: 'Gateway', slug: 'ts-sdk/gateway/overview' },
                 { label: 'Proxy', slug: 'ts-sdk/proxy/overview' },
+                {
+                  label: 'Payments',
+                  items: [
+                    { label: 'Overview', slug: 'ts-sdk/payments/overview' },
+                    {
+                      label: 'Getting Started',
+                      slug: 'ts-sdk/payments/getting-started',
+                    },
+                    { label: 'Server', slug: 'ts-sdk/payments/server' },
+                    { label: 'Client', slug: 'ts-sdk/payments/client' },
+                    {
+                      label: 'Rails',
+                      items: [
+                        {
+                          label: 'Lightning over NWC',
+                          slug: 'ts-sdk/payments/rails/lightning-nwc',
+                        },
+                      ],
+                    },
+                    {
+                      label: 'Build Your Own Rail',
+                      slug: 'ts-sdk/payments/custom-rails',
+                    },
+                  ],
+                },
               ],
             },
             {
