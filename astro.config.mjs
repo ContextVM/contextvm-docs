@@ -46,12 +46,17 @@ export default defineConfig({
                   label: 'CEP-6: Public Server Announcements',
                   slug: 'spec/ceps/cep-6',
                 },
+                { label: 'CEP-8: Capability Pricing and Payment Flow', slug: 'spec/ceps/cep-8' },
                 {
                   label: 'Informational',
                   items: [
                     {
                       label: 'CEP-16: Client Public Key Injection',
                       slug: 'spec/ceps/informational/cep-16',
+                    },
+                    {
+                      label: 'CEP-21: Payment Method Identifier (PMI) Recommendations',
+                      slug: 'spec/ceps/informational/cep-21',
                     },
                   ],
                 },
