@@ -20,8 +20,8 @@ hero:
       variant: minimal
 ---
 
-import { CardGrid } from "@astrojs/starlight/components";
-import IconLinkCard from "../../components/IconLinkCard.astro";
+import { CardGrid } from '@astrojs/starlight/components';
+import IconLinkCard from '../../components/IconLinkCard.astro';
 
 ## Core Concepts
 
@@ -52,6 +52,13 @@ import IconLinkCard from "../../components/IconLinkCard.astro";
     icon="open-book"
     href="ts-sdk/tutorials/client-server-communication/"
     description="Step-by-step guides to help you build with ContextVM"
+    target="_blank"
+  />
+  <IconLinkCard
+    title="Payments"
+    icon="credit-card"
+    href="ts-sdk/payments/overview/"
+    description="Add CEP-8 payments to servers and clients with Lightning, NWC, and custom rails"
     target="_blank"
   />
 </CardGrid>

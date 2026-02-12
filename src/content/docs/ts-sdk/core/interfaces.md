@@ -68,9 +68,9 @@ The `EncryptionMode` enum defines the encryption policy for a transport.
 
 ```typescript
 export enum EncryptionMode {
-  OPTIONAL = "optional",
-  REQUIRED = "required",
-  DISABLED = "disabled",
+  OPTIONAL = 'optional',
+  REQUIRED = 'required',
+  DISABLED = 'disabled',
 }
 ```
 

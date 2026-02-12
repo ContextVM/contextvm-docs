@@ -43,15 +43,15 @@ export interface NostrMCPProxyOptions {
 This example demonstrates how to create a proxy that listens for a local client over standard I/O and connects to a remote server over Nostr.
 
 ```typescript
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { NostrMCPProxy } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { SimpleRelayPool } from "@contextvm/sdk";
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { NostrMCPProxy } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { SimpleRelayPool } from '@contextvm/sdk';
 
 // 1. Configure the signer and relay handler for the Nostr connection
-const signer = new PrivateKeySigner("your-private-key");
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
-const REMOTE_SERVER_PUBKEY = "remote-server-public-key";
+const signer = new PrivateKeySigner('your-private-key');
+const relayPool = new SimpleRelayPool(['wss://relay.damus.io']);
+const REMOTE_SERVER_PUBKEY = 'remote-server-public-key';
 
 // 2. Configure the transport for the local client
 // In this case, a stdio transport that the local client can connect to
@@ -70,7 +70,7 @@ const proxy = new NostrMCPProxy({
 // 4. Start the proxy
 await proxy.start();
 
-console.log("Proxy is running. Connect your local MCP client.");
+console.log('Proxy is running. Connect your local MCP client.');
 
 // To stop the proxy: await proxy.stop();
 ```

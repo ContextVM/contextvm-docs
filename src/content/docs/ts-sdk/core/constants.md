@@ -42,11 +42,11 @@ The `announcementMethods` object maps capability types to their corresponding MC
 
 ```typescript
 export const announcementMethods = {
-  server: "initialize",
-  tools: "tools/list",
-  resources: "resources/list",
-  resourceTemplates: "resources/templates/list",
-  prompts: "prompts/list",
+  server: 'initialize',
+  tools: 'tools/list',
+  resources: 'resources/list',
+  resourceTemplates: 'resources/templates/list',
+  prompts: 'prompts/list',
 } as const;
 ```
 

@@ -28,14 +28,14 @@ The constructor takes a single argument:
 ## Usage Example
 
 ```typescript
-import { ApplesauceRelayPool } from "@contextvm/sdk";
-import { NostrClientTransport } from "@contextvm/sdk";
+import { ApplesauceRelayPool } from '@contextvm/sdk';
+import { NostrClientTransport } from '@contextvm/sdk';
 
 // 3. Pass the instance to a transport
 const transport = new NostrClientTransport({
   relayHandler: new ApplesauceRelayPool([
-    "wss://relay1.com",
-    "wss://relay2.io",
+    'wss://relay1.com',
+    'wss://relay2.io',
   ]),
   // ... other options
 });
