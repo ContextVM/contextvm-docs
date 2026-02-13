@@ -47,12 +47,12 @@ The `RelayHandler` interface manages interactions with Nostr relays. It is respo
 export interface RelayHandler {
   connect(): Promise<void>;
   disconnect(relayUrls?: string[]): Promise<void>;
-  publish(event: NostrEvent): Promise<void>;
+  publish(event: NostrEvent, opts?: { abortSignal?: AbortSignal }): Promise<void>;
   subscribe(
     filters: Filter[],
     onEvent: (event: NostrEvent) => void,
     onEose?: () => void,
-  ): Promise<void>;
+  ): Promise<() => void>;
   unsubscribe(): void;
 }
 ```

@@ -52,11 +52,11 @@ The `ApplesauceRelayPool` implements the `RelayHandler` interface using the `app
 
 ### Event Publishing
 
-- **`publish(event)`**: Uses `relayGroup.publish()` which includes automatic retry logic. The method returns a Promise that resolves when the publish operation completes.
+- **`publish(event, { abortSignal })`**: Uses `relayGroup.publish()` with retry logic. The method supports cancellation via `AbortSignal`.
 
 ### Subscription Management
 
-- **`subscribe(filters, onEvent, onEose)`**: Creates a persistent subscription using `relayGroup.subscription()` with automatic reconnection. Subscriptions are tracked internally for lifecycle management.
+- **`subscribe(filters, onEvent, onEose)`**: Creates a subscription using `relayGroup.subscription()` with automatic reconnection. Returns an unsubscribe function for that specific subscription, and subscriptions are tracked internally for lifecycle management.
 - **`unsubscribe()`**: Closes all active subscriptions and clears the internal subscription tracking.
 
 ### Advanced Features
