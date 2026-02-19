@@ -1,3 +1,6 @@
 [submodule "ts-sdk"]
 	path = ts-sdk
 	url = git@github.com:ContextVM/ts-sdk.git
+[submodule "cvmi"]
+	path = cvmi
+	url = https://github.com/ContextVM/cvmi

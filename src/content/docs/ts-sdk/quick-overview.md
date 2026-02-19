@@ -27,14 +27,14 @@ This will install the SDK and its dependencies into your project.
 
 The SDK is organized into several modules, each providing a specific set of functionalities:
 
-- **[Core](/core/interfaces)**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
-- **[Logging](/core/logging)**: SDK logging conventions, configuration and best practices (Pino-based).
-- **[Transports](/transports/base-nostr-transport)**: Critical for communication, this module provides `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
-- **[Signer](/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
-- **[Relay](/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
-- **[Proxy](/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
-- **[Gateway](/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
-- **[Payments](/payments/overview)**: Add CEP-8 payments to servers and clients with Lightning, NWC, and custom rails.
+- **[Core](/ts-sdk/core/interfaces)**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
+- **[Logging](/ts-sdk/core/logging)**: SDK logging conventions, configuration and best practices (Pino-based).
+- **[Transports](/ts-sdk/transports/base-nostr-transport)**: Critical for communication, this module provides `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
+- **[Signer](/ts-sdk/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
+- **[Relay](/ts-sdk/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
+- **[Proxy](/ts-sdk/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
+- **[Gateway](/ts-sdk/gateway/overview)**: An MCP server transport that binds to another MCP server, exposing its capabilities to the Nostr network, specially useful for servers that don't natively support Nostr transport.
+- **[Payments](/ts-sdk/payments/overview)**: Add CEP-8 payments to servers and clients with Lightning, NWC, and custom rails.
 
 ## Core Concepts
 
@@ -53,8 +53,8 @@ These components are fundamental for creating and broadcasting Nostr events, whi
 
 The SDK provides two specialized transports to send and receive MCP messages over the Nostr network:
 
-- [`NostrClientTransport`](/transports/nostr-client-transport): Used by MCP clients to connect to remote MCP servers exposed via Nostr.
-- [`NostrServerTransport`](/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr.
+- [`NostrClientTransport`](/ts-sdk/transports/nostr-client-transport): Used by MCP clients to connect to remote MCP servers exposed via Nostr.
+- [`NostrServerTransport`](/ts-sdk/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr.
 
 These transports handle the serialization of MCP messages into Nostr events and manage the communication flow.
 
@@ -62,8 +62,8 @@ These transports handle the serialization of MCP messages into Nostr events and 
 
 To simplify integration with existing MCP applications, the SDK provides two high-level bridging components:
 
-- [`NostrMCPProxy`](/proxy/overview): A client-side bridge that allows an MCP client to communicate with a remote MCP server over Nostr without requiring native Nostr support in the client.
-- [`NostrMCPGateway`](/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
+- [`NostrMCPProxy`](/ts-sdk/proxy/overview): A client-side bridge that allows an MCP client to communicate with a remote MCP server over Nostr without requiring native Nostr support in the client.
+- [`NostrMCPGateway`](/ts-sdk/gateway/overview): A server-side bridge that exposes an existing MCP server to the Nostr network, allowing it to be discovered and used by Nostr-native clients.
 
 These components abstract away the underlying transport complexities, making it easy to connect conventional MCP setups with the decentralized Nostr ecosystem.
 

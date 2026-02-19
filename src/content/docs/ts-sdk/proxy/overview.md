@@ -81,4 +81,4 @@ In this setup, a separate MCP client process could connect to this proxy's `Stdi
 
 Next, we'll look at the server-side equivalent of the proxy:
 
-- **[Gateway](/overview)**
+- **[Gateway](/ts-sdk/gateway/overview)**

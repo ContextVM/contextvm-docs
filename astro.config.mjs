@@ -65,7 +65,7 @@ export default defineConfig({
           ],
         },
         {
-          label: 'ts-SDK',
+          label: 'TypeScript SDK',
           items: [
             { label: 'Quick Overview', slug: 'ts-sdk/quick-overview' },
             {
@@ -171,6 +171,28 @@ export default defineConfig({
                   label: 'Client-Server Communication',
                   slug: 'ts-sdk/tutorials/client-server-communication',
                 },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'CVMI (CLI Tool)',
+          items: [
+            { label: 'Overview', slug: 'cvmi/overview' },
+            { label: 'Installation', slug: 'cvmi/installation' },
+            { label: 'Commands', slug: 'cvmi/commands' },
+            { label: 'Configuration', slug: 'cvmi/configuration' },
+            {
+              label: 'Skills',
+              items: [
+                { label: 'Overview', slug: 'cvmi/skills/overview' },
+                { label: 'Concepts', slug: 'cvmi/skills/concepts' },
+                { label: 'Server Development', slug: 'cvmi/skills/server-dev' },
+                { label: 'Client Development', slug: 'cvmi/skills/client-dev' },
+                { label: 'TypeScript SDK', slug: 'cvmi/skills/typescript-sdk' },
+                { label: 'Payments', slug: 'cvmi/skills/payments' },
+                { label: 'Deployment', slug: 'cvmi/skills/deployment' },
+                { label: 'Troubleshooting', slug: 'cvmi/skills/troubleshooting' },
               ],
             },
           ],

@@ -480,7 +480,7 @@ This CEP introduces no breaking changes to the existing protocol:
 
 ## Reference Implementation
 
-// TODO
+A reference implementation of this CEP is available in the [ContextVM TypeScript SDK](https://github.com/ContextVM/sdk) since version `0.4.0`.
 
 ## Dependencies
 

@@ -110,7 +110,7 @@ You can connect to MCP servers using ContextVM by knowing their public key and t
 
 **Note:** The content field of ContextVM events contains stringified MCP messages. The examples below present the content as a JSON object for readability; it must be stringified before inclusion in a Nostr event.
 
-#### Client Initialization Request
+### Client Initialization Request
 
 ```json
 {
@@ -140,7 +140,7 @@ You can connect to MCP servers using ContextVM by knowing their public key and t
 - Tags:
   - `p`: Server public key
 
-#### Server Initialization Response
+### Server Initialization Response
 
 ```json
 {
@@ -178,7 +178,7 @@ You can connect to MCP servers using ContextVM by knowing their public key and t
 - Tags:
   - `e`: Reference to the client's initialization request event
 
-#### Client Initialized Notification
+### Client Initialized Notification
 
 After receiving the server initialization response, the client MUST send an initialized notification to indicate it is ready to begin normal operations:
 

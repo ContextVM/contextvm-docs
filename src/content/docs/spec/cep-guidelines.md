@@ -112,7 +112,7 @@ This ensures that the main specification maintains an up-to-date record of all p
 
 ### CEP States
 
-CEPs can be one one of the following states:
+CEPs can be one of the following states:
 
 - `proposal`: CEP proposal without a sponsor.
 - `draft`: CEP proposal with a sponsor.
