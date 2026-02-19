@@ -120,6 +120,26 @@ When rejected:
 - no processor method is called
 - the request is not forwarded
 
+## Waiving payment (prepaid / subscription)
+
+To waive payment and allow the request to proceed without creating an invoice, return `{ waive: true }` from `resolvePrice`.
+
+```ts
+const resolvePrice: ResolvePriceFn = async ({ capability, clientPubkey }) => {
+  const hasPrepaid = await checkPrepaidBalance(clientPubkey);
+  if (hasPrepaid) {
+    return { waive: true };
+  }
+  return { amount: capability.amount };
+};
+```
+
+When waived:
+
+- no `notifications/payment_required` is emitted
+- no processor method is called
+- the request is forwarded immediately
+
 ## Notifications and correlation
 
 Payment notifications are correlated to the original request using an `e` tag (the request event id).

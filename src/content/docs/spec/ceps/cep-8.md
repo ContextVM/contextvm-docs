@@ -25,6 +25,8 @@ ContextVM pricing for capabilities is implemented through a standardized mechani
 
 When a capability requires payment, the server acts as the payment processor (generating and validating payment requests) while the client acts as the payment handler (executing payments for supported payment methods). Clients can discover supported payment methods beforehand through PMI discovery, enabling informed decisions before initiating requests.
 
+Servers MAY waive payment for a priced capability invocation based on server-side policy (for example, prepaid balances, subscriptions, allowlists, or internal accounting) and fulfill the request without emitting `notifications/payment_required`.
+
 #### Scope and Non-goals
 
 This CEP defines:
@@ -244,6 +246,8 @@ In stateless operation (no prior initialization), clients that want to use paid 
 ### Payment Flow
 
 The complete payment flow for a capability with pricing information follows these steps:
+
+> Note: Pricing tags are a reference/discovery surface. Servers MAY decide at request time that an invocation does not require an interactive payment step (for example, a prepaid balance covers the price) and proceed directly to fulfill the request.
 
 #### 1. Capability Request
 

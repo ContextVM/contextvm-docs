@@ -175,6 +175,28 @@ Client Request
       → Request is NOT forwarded
 ```
 
+### Waiving Payment (Prepaid / Subscription Models)
+
+You can waive payment for a priced request by returning `{ waive: true }` from `resolvePrice`. The server forwards the request immediately without emitting `notifications/payment_required` or calling the processor.
+
+This is useful for:
+
+- Prepaid balances or top-up accounts
+- Subscription-based access where payment is handled separately
+- Internal users or allowlisted clients
+
+```ts
+import type { ResolvePriceFn } from '@contextvm/sdk/payments';
+
+const resolvePrice: ResolvePriceFn = async ({ capability, clientPubkey }) => {
+  const hasBalance = await checkPrepaidBalance(clientPubkey, capability.amount);
+  if (hasBalance) {
+    return { waive: true };
+  }
+  return { amount: capability.amount };
+};
+```
+
 ## Client: Paying for Capabilities
 
 ### Basic Setup
