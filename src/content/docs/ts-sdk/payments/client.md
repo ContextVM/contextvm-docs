@@ -54,6 +54,49 @@ Your app should typically:
 - stop retrying the same request (unless the policy might change)
 - surface the optional message to users/operators
 
+## Client-side payment policy (`paymentPolicy`)
+
+You can optionally intercept `notifications/payment_required` locally and decide whether the client should proceed with payment.
+
+This is designed for:
+
+- interactive UX (UI prompts)
+- LLM-driven consent
+- headless "Code Mode" policies (budgets / allowlists)
+
+```ts
+import {
+  withClientPayments,
+  type PaymentHandlerRequest,
+} from '@contextvm/sdk/payments';
+
+const paidTransport = withClientPayments(baseTransport, {
+  handlers: [handler],
+  paymentPolicy: async (
+    req: PaymentHandlerRequest,
+    ctx,
+  ): Promise<boolean> => {
+    // ctx?.method examples: "tools/call", "prompts/get", "resources/read"
+    // ctx?.capability examples: "tool:add", "prompt:welcome", "resource:greeting://alice"
+    if (req.amount > 500) return false;
+    if (ctx?.capability === 'tool:expensive_tool') return false;
+    return true;
+  },
+});
+```
+
+### Decline behavior (fail-fast)
+
+When `paymentPolicy` returns `false`, the SDK will **fail the original request immediately** (instead of hanging until timeout) on transports that support correlation (such as `NostrClientTransport`).
+
+The synthesized JSON-RPC error uses:
+
+- `error.code = -32000`
+- `error.message = "Payment declined by client policy"`
+- `error.data` includes `{ pmi, amount, method, capability }` when available
+
+Similarly, if a handler's `canHandle` returns `false`, the SDK will fail-fast with `"Payment declined by client handler"` when correlation exists.
+
 ## Multiple handlers
 
 You can configure multiple handlers if you support multiple payment rails.
