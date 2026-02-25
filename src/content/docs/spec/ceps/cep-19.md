@@ -102,10 +102,7 @@ This CEP introduces no breaking changes:
 
 ## Reference Implementation
 
-The ContextVM SDK encryption implementation currently uses kind `1059` (CEP-4). A reference update would:
-
-- add support for wrapping/unwrapping kind `21059`, and
-- select kind `21059` when `support_encryption_ephemeral` is advertised.
+A reference implementation is available in the [ContextVM SDK](https://github.com/contextvm/sdk).
 
 ## Dependencies
 

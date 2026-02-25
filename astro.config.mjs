@@ -47,6 +47,10 @@ export default defineConfig({
                   slug: "spec/ceps/cep-6",
                 },
                 {
+                  label: "CEP-19: Ephemeral Gift Wraps",
+                  slug: "spec/ceps/cep-19",
+                },
+                {
                   label: "Informational",
                   items: [
                     {
