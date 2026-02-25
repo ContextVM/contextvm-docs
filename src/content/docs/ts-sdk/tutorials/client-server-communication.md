@@ -28,16 +28,16 @@ First, let's create the MCP server. This server will use the `NostrServerTranspo
 Create a new file named `server.ts`:
 
 ```typescript
-import { NostrServerTransport } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { SimpleRelayPool } from "@contextvm/sdk";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { NostrServerTransport } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { SimpleRelayPool } from '@contextvm/sdk';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 // --- Configuration ---
 // IMPORTANT: Replace with your own private key
 const SERVER_PRIVATE_KEY_HEX =
-  process.env.SERVER_PRIVATE_KEY || "your-32-byte-server-private-key-in-hex";
-const RELAYS = ["wss://relay.damus.io", "wss://nos.lol"];
+  process.env.SERVER_PRIVATE_KEY || 'your-32-byte-server-private-key-in-hex';
+const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol'];
 
 // --- Main Server Logic ---
 async function main() {
@@ -47,24 +47,24 @@ async function main() {
   const serverPubkey = await signer.getPublicKey();
 
   console.log(`Server Public Key: ${serverPubkey}`);
-  console.log("Connecting to relays...");
+  console.log('Connecting to relays...');
 
   // 2. Create and Configure the MCP Server
   const mcpServer = new McpServer({
-    name: "nostr-echo-server",
-    version: "1.0.0",
+    name: 'nostr-echo-server',
+    version: '1.0.0',
   });
 
   // 3. Define a simple "echo" tool
   mcpServer.registerTool(
-    "echo",
+    'echo',
     {
-      title: "Echo Tool",
-      description: "Echoes back the provided message",
+      title: 'Echo Tool',
+      description: 'Echoes back the provided message',
       inputSchema: { message: z.string() },
     },
     async ({ message }) => ({
-      content: [{ type: "text", text: `Tool echo: ${message}` }],
+      content: [{ type: 'text', text: `Tool echo: ${message}` }],
     }),
   );
 
@@ -73,19 +73,19 @@ async function main() {
     signer,
     relayHandler: relayPool,
     serverInfo: {
-      name: "CTXVM Echo Server",
+      name: 'CTXVM Echo Server',
     },
   });
 
   // 5. Connect the server
   await mcpServer.connect(serverTransport);
 
-  console.log("Server is running and listening for requests on Nostr...");
-  console.log("Press Ctrl+C to exit.");
+  console.log('Server is running and listening for requests on Nostr...');
+  console.log('Press Ctrl+C to exit.');
 }
 
 main().catch((error) => {
-  console.error("Failed to start server:", error);
+  console.error('Failed to start server:', error);
   process.exit(1);
 });
 ```
@@ -109,19 +109,19 @@ Next, let's create the client that will connect to our server.
 Create a new file named `client.ts`:
 
 ```typescript
-import { Client } from "@modelcontextprotocol/sdk/client";
-import { NostrClientTransport } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { SimpleRelayPool } from "@contextvm/sdk";
+import { Client } from '@modelcontextprotocol/sdk/client';
+import { NostrClientTransport } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { SimpleRelayPool } from '@contextvm/sdk';
 
 // --- Configuration ---
 // IMPORTANT: Replace with the server's public key from the server output
-const SERVER_PUBKEY = "the-public-key-printed-by-server.ts";
+const SERVER_PUBKEY = 'the-public-key-printed-by-server.ts';
 
 // IMPORTANT: Replace with your own private key
 const CLIENT_PRIVATE_KEY_HEX =
-  process.env.CLIENT_PRIVATE_KEY || "your-32-byte-client-private-key-in-hex";
-const RELAYS = ["wss://relay.damus.io", "wss://nos.lol"];
+  process.env.CLIENT_PRIVATE_KEY || 'your-32-byte-client-private-key-in-hex';
+const RELAYS = ['wss://relay.damus.io', 'wss://nos.lol'];
 
 // --- Main Client Logic ---
 async function main() {
@@ -129,7 +129,7 @@ async function main() {
   const signer = new PrivateKeySigner(CLIENT_PRIVATE_KEY_HEX);
   const relayPool = new SimpleRelayPool(RELAYS);
 
-  console.log("Connecting to relays...");
+  console.log('Connecting to relays...');
 
   // 2. Configure the Nostr Client Transport
   const clientTransport = new NostrClientTransport({
@@ -140,33 +140,33 @@ async function main() {
 
   // 3. Create and connect the MCP Client
   const mcpClient = new Client({
-    name: "my-client",
-    version: "0.0.1",
+    name: 'my-client',
+    version: '0.0.1',
   });
   await mcpClient.connect(clientTransport);
 
-  console.log("Connected to server!");
+  console.log('Connected to server!');
 
   // 4. List the available tools
-  console.log("\nListing available tools...");
+  console.log('\nListing available tools...');
   const tools = await mcpClient.listTools();
-  console.log("Tools:", tools);
+  console.log('Tools:', tools);
 
   // 5. Call the "echo" tool
   console.log('\nCalling the "echo" tool...');
   const echoResult = await mcpClient.callTool({
-    name: "echo",
-    arguments: { message: "Hello, Nostr!" },
+    name: 'echo',
+    arguments: { message: 'Hello, Nostr!' },
   });
-  console.log("Echo result:", echoResult);
+  console.log('Echo result:', echoResult);
 
   // 6. Close the connection
   await mcpClient.close();
-  console.log("\nConnection closed.");
+  console.log('\nConnection closed.');
 }
 
 main().catch((error) => {
-  console.error("Client failed:", error);
+  console.error('Client failed:', error);
   process.exit(1);
 });
 ```

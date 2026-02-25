@@ -12,13 +12,13 @@ The SDK uses Pino for high-performance logging with structured JSON output. By d
 [`typescript`](src/content/docs/ts-sdk/core/logging.md:10)
 
 ```typescript
-import { createLogger } from "@contextvm/sdk/core";
+import { createLogger } from '@contextvm/sdk/core';
 
 // Create a logger for your module
-const logger = createLogger("my-module");
+const logger = createLogger('my-module');
 
-logger.info("Application started");
-logger.error("An error occurred", { error: "details" });
+logger.info('Application started');
+logger.error('An error occurred', { error: 'details' });
 ```
 
 #### Configuration Options
@@ -26,14 +26,14 @@ logger.error("An error occurred", { error: "details" });
 [`typescript`](src/content/docs/ts-sdk/core/logging.md:20)
 
 ```typescript
-import { createLogger, LoggerConfig } from "@contextvm/sdk/core";
+import { createLogger, LoggerConfig } from '@contextvm/sdk/core';
 
 const config: LoggerConfig = {
-  level: "debug", // Minimum log level (debug, info, warn, error)
-  file: "app.log", // Optional: log to a file instead of stderr
+  level: 'debug', // Minimum log level (debug, info, warn, error)
+  file: 'app.log', // Optional: log to a file instead of stderr
 };
 
-const logger = createLogger("my-module", config);
+const logger = createLogger('my-module', config);
 ```
 
 **Note:** Pretty printing is automatically enabled when logs are written to stderr/stdout (not to a file) for better readability during development.
@@ -72,11 +72,11 @@ LOG_ENABLED=false node app.js
 
 ```javascript
 // Set this in a <script> tag in your HTML or at the top of your entry point
-window.LOG_LEVEL = "debug";
+window.LOG_LEVEL = 'debug';
 
 // Now, when you import and use the SDK, it will use the 'debug' log level.
-import { logger } from "@contextvm/sdk";
-logger.debug("This is a debug message.");
+import { logger } from '@contextvm/sdk';
+logger.debug('This is a debug message.');
 ```
 
 #### Module-specific Loggers
@@ -84,12 +84,12 @@ logger.debug("This is a debug message.");
 [`typescript`](src/content/docs/ts-sdk/core/logging.md:75)
 
 ```typescript
-const baseLogger = createLogger("my-app");
-const authLogger = baseLogger.withModule("auth");
-const dbLogger = baseLogger.withModule("database");
+const baseLogger = createLogger('my-app');
+const authLogger = baseLogger.withModule('auth');
+const dbLogger = baseLogger.withModule('database');
 
-authLogger.info("User login attempt");
-dbLogger.debug("Query executed", { query: "SELECT * FROM users" });
+authLogger.info('User login attempt');
+dbLogger.debug('Query executed', { query: 'SELECT * FROM users' });
 ```
 
 #### Conventions and Best Practices
@@ -115,21 +115,21 @@ dbLogger.debug("Query executed", { query: "SELECT * FROM users" });
 [`typescript`](src/content/docs/ts-sdk/core/logging.md:105)
 
 ```typescript
-logger.info("payment.processed", {
-  module: "payments",
-  txId: "abcd-1234",
-  userId: "user-42",
+logger.info('payment.processed', {
+  module: 'payments',
+  txId: 'abcd-1234',
+  userId: 'user-42',
   amount: 1999,
-  currency: "EUR",
+  currency: 'EUR',
   durationMs: 245,
 });
 
 try {
   // do something that throws
 } catch (err) {
-  logger.error("payment.failed", {
-    module: "payments",
-    txId: "abcd-1234",
+  logger.error('payment.failed', {
+    module: 'payments',
+    txId: 'abcd-1234',
     error: { message: err.message, stack: err.stack },
   });
 }
