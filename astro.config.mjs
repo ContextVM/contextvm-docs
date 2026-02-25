@@ -48,7 +48,11 @@ export default defineConfig({
                 },
                 { label: 'CEP-8: Capability Pricing and Payment Flow', slug: 'spec/ceps/cep-8' },
                 {
-                  label: 'Informational',
+                  label: "CEP-19: Ephemeral Gift Wraps",
+                  slug: "spec/ceps/cep-19",
+                },
+                {
+                  label: "Informational",
                   items: [
                     {
                       label: 'CEP-16: Client Public Key Injection',
