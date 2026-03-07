@@ -2,9 +2,13 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
+const isGitHubPages = process.env.GITHUB_PAGES === 'true';
+const githubPagesBase = '/contextvm-docs';
+
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://docs.contextvm.org',
+  site: isGitHubPages ? 'https://contextvm.github.io/contextvm-docs' : 'https://docs.contextvm.org',
+  base: isGitHubPages ? githubPagesBase : '/',
   integrations: [
     starlight({
       title: 'ContextVM Documentation',
