@@ -21,7 +21,7 @@ ContextVM servers publish their relay list metadata using NIP-65 `kind:10002` re
 
 ### Event Structure
 
-The relay list event follows the NIP-65 specification exactly:
+The relay list event uses the NIP-65 event format:
 
 ```json
 {
@@ -51,7 +51,7 @@ The `r` tag values are relay URLs. An optional third element specifies the relay
 
 #### Marker Interpretation
 
-- **`read` relays**: Where the server subscribes to incoming client messages (kind 25910 events targeting the server's pubkey)
+- **`read` relays**: Where the server subscribes to incoming client messages
 - **`write` relays**: Where the server publishes its responses and announcements
 - **No marker**: The server uses the relay for both purposes
 
@@ -59,7 +59,7 @@ The `r` tag values are relay URLs. An optional third element specifies the relay
 
 #### Publishing Requirements
 
-1. **Public servers** (those publishing kind 11316 announcements) SHOULD publish a relay list event
+1. **Public servers** SHOULD publish a relay list event
 2. **Private servers** MAY publish a relay list at their discretion
 3. Servers MUST use the same pubkey for relay list events as their server announcements and operational events
 
@@ -71,11 +71,17 @@ Since `kind:10002` is a replaceable event (10000-20000 range):
 - Relays store only the latest event for each pubkey
 - Clients SHOULD always request the latest version when discovering a server
 
+#### Recommended Publication Lifecycle
+
+- When updating a relay list, servers SHOULD publish the new `kind:10002` event to all relays in the new list and, when still reachable, to relays that were removed from the previous list
+- This helps clients querying either the old or new relay set obtain the latest relay list during relay migrations or partial network fragmentation
+- Servers SHOULD also publish their relay list to one or more widely used relays for bootstrapping and discoverability, even when those relays are not included in the published relay list itself
+
 ### Client Behavior
 
 #### Discovery Flow
 
-1. **Server Discovery**: Client discovers a server's pubkey via kind 11316 (Server Announcement) or out-of-band
+1. **Server Discovery**: Client discovers a server's pubkey via server announcements or out-of-band
 2. **Relay List Fetch**: Client queries `kind:10002` events from the server's pubkey
 3. **Connection Establishment**: Client connects to appropriate relays based on markers:
    - For sending requests: use `read` relays or relays with no marker
