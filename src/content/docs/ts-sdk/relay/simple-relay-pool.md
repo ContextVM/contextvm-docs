@@ -29,14 +29,14 @@ The constructor takes a single argument:
 ## Usage Example
 
 ```typescript
-import { SimpleRelayPool } from "@contextvm/sdk";
-import { NostrClientTransport } from "@contextvm/sdk";
+import { SimpleRelayPool } from '@contextvm/sdk';
+import { NostrClientTransport } from '@contextvm/sdk';
 
 // 1. Define the list of relays you want to connect to
 const myRelays = [
-  "wss://relay.damus.io",
-  "wss://relay.primal.net",
-  "wss://nos.lol",
+  'wss://relay.damus.io',
+  'wss://relay.primal.net',
+  'wss://nos.lol',
 ];
 
 // 2. Create an instance of the SimpleRelayPool

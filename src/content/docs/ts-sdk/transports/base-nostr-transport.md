@@ -27,6 +27,7 @@ export interface BaseNostrTransportOptions {
   signer: NostrSigner;
   relayHandler: RelayHandler | string[];
   encryptionMode?: EncryptionMode;
+  giftWrapMode?: GiftWrapMode;
   logLevel?: LogLevel;
 }
 ```
@@ -34,7 +35,30 @@ export interface BaseNostrTransportOptions {
 - **`signer`**: An instance of a `NostrSigner` for signing events. This is a required parameter.
 - **`relayHandler`**: An instance of a `RelayHandler` for managing relay connections, or an array of relay URLs to create an `ApplesauceRelayPool` automatically. This is a required parameter.
 - **`encryptionMode`**: An optional `EncryptionMode` enum that determines the encryption policy for the transport. Defaults to `OPTIONAL`.
+- **`giftWrapMode`**: An optional `GiftWrapMode` enum that determines which gift wrap kind to use for encrypted messages. Defaults to `OPTIONAL`.
 - **`logLevel`**: (Optional) Log level for debugging output.
+
+## `GiftWrapMode`
+
+The `GiftWrapMode` enum controls which NIP-59 gift wrap kind is used for encrypted communications:
+
+- **`OPTIONAL`**: Negotiates with the remote peer and uses ephemeral gift wraps (kind `21059`) when both sides support it, falling back to persistent gift wraps (kind `1059`) otherwise. This is the default.
+- **`EPHEMERAL`**: Always uses ephemeral gift wraps (kind `21059`). Only use this when you know the remote peer supports ephemeral gift wraps.
+- **`PERSISTENT`**: Always uses persistent gift wraps (kind `1059`). Use this for maximum compatibility with existing implementations.
+
+Ephemeral gift wraps (kind `21059`) are preferred for privacy-sensitive communications as relays are not expected to store them. See [CEP-19: Ephemeral Gift Wraps](/spec/ceps/cep-19) for more details.
+
+### Example: Using Ephemeral Gift Wraps
+
+```typescript
+import { NostrClientTransport, GiftWrapMode } from "@contextvm/sdk";
+
+const transport = new NostrClientTransport({
+  signer,
+  relayHandler: ["wss://relay.damus.io"],
+  giftWrapMode: GiftWrapMode.EPHEMERAL,
+});
+```
 
 ## Simplified Relay Handler Configuration
 
@@ -45,11 +69,11 @@ The `relayHandler` option provides flexibility in how you configure relay connec
 For advanced use cases, create and configure your own relay handler:
 
 ```typescript
-import { ApplesauceRelayPool } from "@contextvm/sdk";
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
 const relayHandler = new ApplesauceRelayPool([
-  "wss://relay.damus.io",
-  "wss://relay.primal.net",
+  'wss://relay.damus.io',
+  'wss://relay.primal.net',
 ]);
 
 const transport = new NostrClientTransport({
@@ -65,7 +89,7 @@ For simple use cases, pass an array of relay URLs and the transport will create 
 ```typescript
 const transport = new NostrClientTransport({
   signer,
-  relayHandler: ["wss://relay.damus.io", "wss://relay.primal.net"],
+  relayHandler: ['wss://relay.damus.io', 'wss://relay.primal.net'],
 });
 ```
 

@@ -20,10 +20,9 @@ The Context Vending Machine (ContextVM) specification defines how the Nostr prot
   - [Message Structure](#message-structure)
 - [Event Kinds](#event-kinds)
 - [Server Discovery](#server-discovery)
-  - [Direct Discovery](#direct-discovery)
-    - [Client Initialization Request](#client-initialization-request)
-    - [Server Initialization Response](#server-initialization-response)
-    - [Client Initialized Notification](#client-initialized-notification)
+  - [Client Initialization Request](#client-initialization-request)
+  - [Server Initialization Response](#server-initialization-response)
+  - [Client Initialized Notification](#client-initialized-notification)
 - [Capability Operations](#capability-operations)
   - [List Operations](#list-operations)
     - [List Request Template](#list-request-template)
@@ -111,7 +110,7 @@ You can connect to MCP servers using ContextVM by knowing their public key and t
 
 **Note:** The content field of ContextVM events contains stringified MCP messages. The examples below present the content as a JSON object for readability; it must be stringified before inclusion in a Nostr event.
 
-#### Client Initialization Request
+### Client Initialization Request
 
 ```json
 {
@@ -141,7 +140,7 @@ You can connect to MCP servers using ContextVM by knowing their public key and t
 - Tags:
   - `p`: Server public key
 
-#### Server Initialization Response
+### Server Initialization Response
 
 ```json
 {
@@ -179,7 +178,7 @@ You can connect to MCP servers using ContextVM by knowing their public key and t
 - Tags:
   - `e`: Reference to the client's initialization request event
 
-#### Client Initialized Notification
+### Client Initialized Notification
 
 After receiving the server initialization response, the client MUST send an initialized notification to indicate it is ready to begin normal operations:
 
