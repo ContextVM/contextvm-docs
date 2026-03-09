@@ -17,7 +17,7 @@ This CEP proposes a relay list metadata mechanism for ContextVM servers using NI
 
 ### Overview
 
-ContextVM servers publish their relay list metadata using NIP-65 `kind:10002` replaceable events. These events contain `r` tags specifying the relay URLs the server uses, with optional markers indicating whether the relay is used for reading (receiving client requests) or writing (publishing responses).
+ContextVM servers publish relay list metadata using NIP-65 `kind:10002` replaceable events. These events contain `r` tags specifying the relay URLs the server uses, with optional markers indicating whether the relay is used primarily for reading (receiving client requests) or writing (publishing responses).
 
 ### Event Structure
 
@@ -61,8 +61,8 @@ This keeps the mental model simple: a relay listed in `kind:10002` is, by defaul
 
 #### Publishing Requirements
 
-1. **Public servers** SHOULD publish a relay list event
-2. **Private servers** MAY publish a relay list at their discretion
+1. Servers that want to be discoverable SHOULD publish a relay list event
+2. Servers that do not want relay-based discoverability MAY omit the relay list event
 3. Servers MUST use the same pubkey for relay list events as their server announcements and operational events
 4. Servers SHOULD publish a small set of unmarked operational relays unless they have a specific reason to use directional markers
 
@@ -76,7 +76,7 @@ Since `kind:10002` is a replaceable event (10000-20000 range):
 
 #### Recommended Publication Lifecycle
 
-- When updating a relay list, servers SHOULD publish the new `kind:10002` event to all relays in the new list and, when still reachable, to relays that were removed from the previous list
+- When updating a relay list, servers SHOULD publish the new `kind:10002` event to the relays in the new list and MAY also publish it to previously used or other bootstrap relays to improve continuity during relay migrations
 - This helps clients querying either the old or new relay set obtain the latest relay list during relay migrations or partial network fragmentation
 - Servers SHOULD also publish their relay list to one or more widely used relays for bootstrapping and discoverability, even when those relays are not included in the published relay list itself
 
@@ -124,7 +124,7 @@ The relay list event complements the server announcement (kind 11316):
 | 11316 | Advertises server capabilities, protocol version, and metadata |
 | 10002 | Advertises where (which relays) the server can be reached |
 
-Servers SHOULD publish their kind 10002 relay list to the same relays where they publish their kind 11316 announcement, ensuring discoverability. In implementations that support bootstrap relays, both discoverability event types SHOULD be published to the same bootstrap targets.
+Servers SHOULD publish their kind 10002 relay list to the same relays where they publish their kind 11316 announcement, ensuring discoverability. Implementations MAY additionally publish discoverability events to bootstrap relays that are not advertised as operational relays.
 
 ## Backward Compatibility
 
