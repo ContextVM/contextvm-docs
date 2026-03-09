@@ -25,6 +25,9 @@ The transport is configured via the `NostrServerTransportOptions` interface:
 export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
   serverInfo?: ServerInfo;
   isPublicServer?: boolean;
+  publishRelayList?: boolean;
+  relayListUrls?: string[];
+  bootstrapRelayUrls?: string[];
   allowedPublicKeys?: string[];
   /** List of capabilities that are excluded from public key whitelisting requirements */
   excludedCapabilities?: CapabilityExclusion[];
@@ -40,6 +43,9 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
 
 - **`serverInfo`**: (Optional) Information about the server (`name`, `picture`, `website`) to be used in public announcements.
 - **`isPublicServer`**: (Optional) If `true`, the transport will automatically announce the server's capabilities on the Nostr network. Defaults to `false`.
+- **`publishRelayList`**: (Optional) If `true`, the transport publishes a NIP-65 relay list (`kind:10002`) even when `isPublicServer` is `false`. Defaults to `true`.
+- **`relayListUrls`**: (Optional) Explicit relay URLs to advertise in the published relay list. If omitted, the SDK derives them from the configured relay handler when possible.
+- **`bootstrapRelayUrls`**: (Optional) Extra relays used only as publication targets for discoverability events such as `kind:11316` and `kind:10002`. These are not automatically advertised in the relay list.
 - **`allowedPublicKeys`**: (Optional) A list of client public keys that are allowed to connect. If not provided, any client can connect.
 - **`excludedCapabilities`**: (Optional) A list of capabilities that are excluded from public key whitelisting requirements. This allows certain operations from disallowed public keys, enhancing security policy flexibility while maintaining backward compatibility.
 - **`injectClientPubkey`**: (Optional) If `true`, the transport will inject the client's public key into the `_meta` field of requests passed to the underlying server. Defaults to `false`.
@@ -101,6 +107,9 @@ const mcpServer = new McpServer({
 const serverNostrTransport = new NostrServerTransport({
   signer: signer,
   relayHandler: relayPool,
+  isPublicServer: true,
+  publishRelayList: true,
+  bootstrapRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"],
   serverInfo: {
     name: 'My Awesome MCP Server',
     website: 'https://example.com',
@@ -126,12 +135,32 @@ console.log('MCP server is running and available on Nostr.');
 
 ## How It Works
 
-1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isPublicServer` is `true`, it also initiates the announcement process.
+1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isPublicServer` is `true`, it publishes public announcement events. Independently, if `publishRelayList` is enabled, it also publishes relay-list metadata.
 2.  **Incoming Events**: The transport listens for events from clients. For each client, it maintains a `ClientSession`.
 3.  **Request Handling**: When a valid request is received from an authorized client, the transport forwards it to the `McpServer`'s internal logic via the `onmessage` handler. It replaces the request's original ID with the unique Nostr event ID to prevent ID collisions between different clients.
     - If `injectClientPubkey` is enabled, the client's public key is injected into the request's `_meta` field before being passed to the server.
 4.  **Response Handling**: When the `McpServer` sends a response, the transport's `send()` method is called. The transport looks up the original request details from the client's session, restores the original request ID, and sends the response back to the correct client, referencing the original event ID.
-5.  **Announcements**: If `isPublicServer` is true, the transport sends requests to its own `McpServer` for `initialize`, `tools/list`, etc. It then formats the responses into the appropriate replaceable Nostr events (kinds 11316-11320) and publishes them.
+5.  **Discoverability publication**: Public announcement events (kinds 11316-11320) are controlled by `isPublicServer`. Relay-list metadata (`kind:10002`) is controlled independently by `publishRelayList`.
+
+## Relay List Discoverability
+
+Servers can publish a NIP-65 relay list so clients can discover where the server is reachable.
+
+### Default Behavior
+
+- `isPublicServer: true` enables public announcement publication
+- `publishRelayList` defaults to `true` for both public and private servers
+- if `relayListUrls` is omitted, the SDK derives advertised relays from the configured relay handler when possible
+- `bootstrapRelayUrls` can be used to publish discoverability events to extra relays without advertising them as operational relays
+
+### Why bootstrap relays exist
+
+Operational relays and discoverability relays do not always need to be identical:
+
+- **Operational relays** are where the server actually handles requests and responses
+- **Bootstrap relays** are additional relays used to make the server easier to discover
+
+This separation helps keep the published relay list focused while still improving network visibility.
 
 ## Session Management
 
