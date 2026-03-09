@@ -35,10 +35,10 @@ import type {
   PaymentProcessor,
   PaymentProcessorCreateParams,
   PaymentProcessorVerifyParams,
-} from '@contextvm/sdk/payments';
+} from "@contextvm/sdk/payments";
 
 export class MyRailPaymentProcessor implements PaymentProcessor {
-  public readonly pmi = 'my-rail-v1';
+  public readonly pmi = "my-rail-v1";
 
   public async createPaymentRequired(
     params: PaymentProcessorCreateParams,
@@ -54,7 +54,7 @@ export class MyRailPaymentProcessor implements PaymentProcessor {
     return {
       amount: params.amount,
       pay_req: JSON.stringify({
-        invoiceId: '...',
+        invoiceId: "...",
         requestEventId: params.requestEventId,
       }),
       description: params.description,
@@ -86,10 +86,10 @@ Skeleton:
 import type {
   PaymentHandler,
   PaymentHandlerRequest,
-} from '@contextvm/sdk/payments';
+} from "@contextvm/sdk/payments";
 
 export class MyRailPaymentHandler implements PaymentHandler {
-  public readonly pmi = 'my-rail-v1';
+  public readonly pmi = "my-rail-v1";
 
   public async canHandle(_req: PaymentHandlerRequest): Promise<boolean> {
     // Optional: enforce client policy (max amount, disabled rail, etc.)

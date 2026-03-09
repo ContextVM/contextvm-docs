@@ -17,15 +17,15 @@ If you haven’t set up Nostr transports yet, start with the transport docs firs
 Define what is paid using `pricedCapabilities`.
 
 ```ts
-import type { PricedCapability } from '@contextvm/sdk/payments';
+import type { PricedCapability } from "@contextvm/sdk/payments";
 
 export const pricedCapabilities: PricedCapability[] = [
   {
-    method: 'tools/call',
-    name: 'my-tool',
+    method: "tools/call",
+    name: "my-tool",
     amount: 10,
-    currencyUnit: 'sats',
-    description: 'Example paid tool',
+    currencyUnit: "sats",
+    description: "Example paid tool",
   },
 ];
 ```
@@ -38,8 +38,8 @@ Create a processor, then wrap your server transport.
 import {
   LnBolt11NwcPaymentProcessor,
   withServerPayments,
-} from '@contextvm/sdk/payments';
-import { NostrServerTransport } from '@contextvm/sdk/transport';
+} from "@contextvm/sdk/payments";
+import { NostrServerTransport } from "@contextvm/sdk/transport";
 
 const baseTransport = new NostrServerTransport({
   signer,
@@ -71,8 +71,8 @@ Create a handler and wrap your client transport.
 import {
   LnBolt11NwcPaymentHandler,
   withClientPayments,
-} from '@contextvm/sdk/payments';
-import { NostrClientTransport } from '@contextvm/sdk/transport';
+} from "@contextvm/sdk/payments";
+import { NostrClientTransport } from "@contextvm/sdk/transport";
 
 const baseTransport = new NostrClientTransport({
   signer,
@@ -97,7 +97,7 @@ Any request that matches `pricedCapabilities` will trigger the payment flow.
 
 ```ts
 await client.callTool({
-  name: 'my-tool',
+  name: "my-tool",
   arguments: { example: true },
 });
 ```

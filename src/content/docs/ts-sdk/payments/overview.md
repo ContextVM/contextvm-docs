@@ -64,16 +64,16 @@ On the server you:
 3. attach server payment middleware
 
 ```ts
-import { withServerPayments } from '@contextvm/sdk/payments';
+import { withServerPayments } from "@contextvm/sdk/payments";
 
 const paidTransport = withServerPayments(baseTransport, {
   processors: [processor],
   pricedCapabilities: [
     {
-      method: 'tools/call',
-      name: 'my-tool',
+      method: "tools/call",
+      name: "my-tool",
       amount: 10,
-      currencyUnit: 'sats',
+      currencyUnit: "sats",
     },
   ],
 });
@@ -96,7 +96,7 @@ Common cases:
 - converting an advertised currency unit (e.g. USD) into settlement units (e.g. sats)
 
 ```ts
-import type { ResolvePriceFn } from '@contextvm/sdk/payments';
+import type { ResolvePriceFn } from "@contextvm/sdk/payments";
 
 const resolvePrice: ResolvePriceFn = async ({ capability, clientPubkey }) => {
   // Example: give volume discounts
@@ -127,7 +127,7 @@ Typical use cases:
 - server-side validation failures you don’t want to charge for
 
 ```ts
-import type { ResolvePriceFn } from '@contextvm/sdk/payments';
+import type { ResolvePriceFn } from "@contextvm/sdk/payments";
 
 const usedCapabilities = new Set<string>(); // Track used capabilities per user
 
@@ -141,7 +141,7 @@ const resolvePrice: ResolvePriceFn = async ({
   if (usedCapabilities.has(key)) {
     return {
       reject: true,
-      message: 'This capability can only be used once per user',
+      message: "This capability can only be used once per user",
     };
   }
 
@@ -186,7 +186,7 @@ This is useful for:
 - Internal users or allowlisted clients
 
 ```ts
-import type { ResolvePriceFn } from '@contextvm/sdk/payments';
+import type { ResolvePriceFn } from "@contextvm/sdk/payments";
 
 const resolvePrice: ResolvePriceFn = async ({ capability, clientPubkey }) => {
   const hasBalance = await checkPrepaidBalance(clientPubkey, capability.amount);
@@ -207,7 +207,7 @@ On the client you:
 2. attach client payment middleware
 
 ```ts
-import { withClientPayments } from '@contextvm/sdk/payments';
+import { withClientPayments } from "@contextvm/sdk/payments";
 
 const paidTransport = withClientPayments(baseTransport, {
   handlers: [handler],

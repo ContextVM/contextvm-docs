@@ -19,8 +19,8 @@ npx cvmi add [options]
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
+| Option           | Description                      |
+| ---------------- | -------------------------------- |
 | `--skill <name>` | Install a specific skill by name |
 
 ### Examples
@@ -58,10 +58,10 @@ npx cvmi serve [options] -- <command> [args...]
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
+| Option                  | Description                                                       |
+| ----------------------- | ----------------------------------------------------------------- |
 | `-e, --env <key=value>` | Pass environment variables to the spawned MCP server (repeatable) |
-| `--config <path>` | Use a custom configuration file |
+| `--config <path>`       | Use a custom configuration file                                   |
 
 ### Examples
 
@@ -113,8 +113,8 @@ npx cvmi use <serverPubkey> [options]
 
 ### Arguments
 
-| Argument | Description |
-|----------|-------------|
+| Argument       | Description                                          |
+| -------------- | ---------------------------------------------------- |
 | `serverPubkey` | The Nostr public key of the server (npub1... or hex) |
 
 ### Examples
@@ -134,6 +134,7 @@ LOG_LEVEL=warn npx cvmi use npub1q...
 ### Use Case
 
 The `use` command is particularly useful when:
+
 - You have an MCP client that only supports stdio transport
 - You want to connect to a remote server published on Nostr
 - You're testing or debugging Nostr-based MCP servers
@@ -158,11 +159,11 @@ Inspect server schema and capabilities. Get detailed information about available
 
 All commands support these global options:
 
-| Option | Description |
-|--------|-------------|
+| Option            | Description                         |
+| ----------------- | ----------------------------------- |
 | `--config <path>` | Specify a custom configuration file |
-| `--help` | Display help for the command |
-| `--version` | Display version information |
+| `--help`          | Display help for the command        |
+| `--version`       | Display version information         |
 
 ## Environment Variables
 

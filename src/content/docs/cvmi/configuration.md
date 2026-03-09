@@ -33,29 +33,29 @@ This is separate from `~/.agents/` which is used for storing installed skills.
 
 CVMI uses the following environment variable prefixes for configuration:
 
-| Prefix | Description |
-|--------|-------------|
-| `CVMI_SERVE_*` | Settings for the `serve` command (gateway) |
-| `CVMI_GATEWAY_*` | Legacy alias for `CVMI_SERVE_*` |
-| `CVMI_USE_*` | Settings for the `use` command (proxy) |
-| `CVMI_PROXY_*` | Legacy alias for `CVMI_USE_*` |
+| Prefix           | Description                                |
+| ---------------- | ------------------------------------------ |
+| `CVMI_SERVE_*`   | Settings for the `serve` command (gateway) |
+| `CVMI_GATEWAY_*` | Legacy alias for `CVMI_SERVE_*`            |
+| `CVMI_USE_*`     | Settings for the `use` command (proxy)     |
+| `CVMI_PROXY_*`   | Legacy alias for `CVMI_USE_*`              |
 
 ### Additional Serve Environment Variables
 
-| Variable | Description |
-|----------|-------------|
+| Variable                              | Description                                   |
+| ------------------------------------- | --------------------------------------------- |
 | `CVMI_SERVE_URL` / `CVMI_GATEWAY_URL` | Set the remote Streamable HTTP MCP server URL |
 
 ### Logging Environment Variables
 
 The underlying `@contextvm/sdk` uses these environment variables to control logging:
 
-| Variable | Values | Description |
-|----------|--------|-------------|
-| `LOG_LEVEL` | `debug`, `info`, `warn`, `error`, `silent` | Minimum log level to output (default: `info`) |
-| `LOG_DESTINATION` | `stderr`, `stdout`, `file` | Where to write logs (default: `stderr`) |
-| `LOG_FILE` | path string | Path to log file (used when `LOG_DESTINATION=file`) |
-| `LOG_ENABLED` | `true`, `false` | Disable all logging with `false` (default: `true`) |
+| Variable          | Values                                     | Description                                         |
+| ----------------- | ------------------------------------------ | --------------------------------------------------- |
+| `LOG_LEVEL`       | `debug`, `info`, `warn`, `error`, `silent` | Minimum log level to output (default: `info`)       |
+| `LOG_DESTINATION` | `stderr`, `stdout`, `file`                 | Where to write logs (default: `stderr`)             |
+| `LOG_FILE`        | path string                                | Path to log file (used when `LOG_DESTINATION=file`) |
+| `LOG_ENABLED`     | `true`, `false`                            | Disable all logging with `false` (default: `true`)  |
 
 ## Example Config Files
 

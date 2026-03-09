@@ -26,17 +26,17 @@ The ContextVM protocol defines several Nostr event kinds for different types of 
 
 The SDK defines an object `NOSTR_TAGS` that contains constants for the various Nostr event tags used in the ContextVM protocol.
 
-| Key                           | Tag                           | Description                                                            |
-| ----------------------------- | ----------------------------- | ---------------------------------------------------------------------- |
-| `PUBKEY`                      | `p`                           | The public key of the message recipient.                               |
-| `EVENT_ID`                    | `e`                           | The event ID used to correlate requests and responses.                 |
-| `CAPABILITY`                  | `cap`                         | A tag for specifying pricing metadata for a tool, resource, or prompt. |
-| `NAME`                        | `name`                        | The human-readable name of a server in an announcement.                |
-| `WEBSITE`                     | `website`                     | The URL of a server's website in an announcement.                      |
-| `PICTURE`                     | `picture`                     | The URL of a server's icon in an announcement.                         |
-| `ABOUT`                       | `about`                       | A tag for providing a short description of a server.                   |
-| `SUPPORT_ENCRYPTION`          | `support_encryption`          | A tag indicating that a server supports end-to-end encryption.         |
-| `SUPPORT_ENCRYPTION_EPHEMERAL`| `support_encryption_ephemeral`| A tag indicating support for ephemeral gift wraps (kind 21059).        |
+| Key                            | Tag                            | Description                                                            |
+| ------------------------------ | ------------------------------ | ---------------------------------------------------------------------- |
+| `PUBKEY`                       | `p`                            | The public key of the message recipient.                               |
+| `EVENT_ID`                     | `e`                            | The event ID used to correlate requests and responses.                 |
+| `CAPABILITY`                   | `cap`                          | A tag for specifying pricing metadata for a tool, resource, or prompt. |
+| `NAME`                         | `name`                         | The human-readable name of a server in an announcement.                |
+| `WEBSITE`                      | `website`                      | The URL of a server's website in an announcement.                      |
+| `PICTURE`                      | `picture`                      | The URL of a server's icon in an announcement.                         |
+| `ABOUT`                        | `about`                        | A tag for providing a short description of a server.                   |
+| `SUPPORT_ENCRYPTION`           | `support_encryption`           | A tag indicating that a server supports end-to-end encryption.         |
+| `SUPPORT_ENCRYPTION_EPHEMERAL` | `support_encryption_ephemeral` | A tag indicating support for ephemeral gift wraps (kind 21059).        |
 
 ## Announcement Methods
 
@@ -44,11 +44,11 @@ The `announcementMethods` object maps capability types to their corresponding MC
 
 ```typescript
 export const announcementMethods = {
-  server: 'initialize',
-  tools: 'tools/list',
-  resources: 'resources/list',
-  resourceTemplates: 'resources/templates/list',
-  prompts: 'prompts/list',
+  server: "initialize",
+  tools: "tools/list",
+  resources: "resources/list",
+  resourceTemplates: "resources/templates/list",
+  prompts: "prompts/list",
 } as const;
 ```
 
@@ -56,9 +56,9 @@ This object is used internally by the `NostrServerTransport` to construct announ
 
 ## Timeout Configuration
 
-| Constant             | Value   | Description                                      |
-| -------------------- | ------- | ------------------------------------------------ |
-| `DEFAULT_TIMEOUT_MS` | 30000   | Default timeout for network/relay operations (30 seconds). Used for encryption/decryption operations and connection timeouts. |
+| Constant             | Value | Description                                                                                                                   |
+| -------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `DEFAULT_TIMEOUT_MS` | 30000 | Default timeout for network/relay operations (30 seconds). Used for encryption/decryption operations and connection timeouts. |
 
 ## Next Steps
 

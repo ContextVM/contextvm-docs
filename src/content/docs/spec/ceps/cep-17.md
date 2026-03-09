@@ -34,7 +34,7 @@ The relay list event uses the NIP-65 event format:
     ["r", "wss://relay3.example.com", "write"],
     ["r", "wss://relay4.example.com", "read"]
   ],
-  "created_at": 1234567890,
+  "created_at": 1234567890
   // other fields...
 }
 ```
@@ -43,10 +43,10 @@ The relay list event uses the NIP-65 event format:
 
 The `r` tag values are relay URLs. ContextVM's recommended profile is to publish **unmarked** relay tags, meaning the same relay is used for both inbound and outbound communication.
 
-| Marker | Meaning |
-|--------|---------|
-| (none) | Relay is used for both reading and writing |
-| `read` | Relay is intended primarily for inbound requests |
+| Marker  | Meaning                                            |
+| ------- | -------------------------------------------------- |
+| (none)  | Relay is used for both reading and writing         |
+| `read`  | Relay is intended primarily for inbound requests   |
 | `write` | Relay is intended primarily for outbound responses |
 
 #### Recommended ContextVM Profile
@@ -119,10 +119,10 @@ Following NIP-65 guidance:
 
 The relay list event complements the server announcement (kind 11316):
 
-| Event Kind | Purpose |
-|------------|---------|
-| 11316 | Advertises server capabilities, protocol version, and metadata |
-| 10002 | Advertises where (which relays) the server can be reached |
+| Event Kind | Purpose                                                        |
+| ---------- | -------------------------------------------------------------- |
+| 11316      | Advertises server capabilities, protocol version, and metadata |
+| 10002      | Advertises where (which relays) the server can be reached      |
 
 Servers SHOULD publish their kind 10002 relay list to the same relays where they publish their kind 11316 announcement, ensuring discoverability. Implementations MAY additionally publish discoverability events to bootstrap relays that are not advertised as operational relays.
 

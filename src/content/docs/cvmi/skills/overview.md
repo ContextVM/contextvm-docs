@@ -18,16 +18,16 @@ Skills are specialized documentation packages installed via CVMI that contain:
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| **overview** | ContextVM fundamentals, protocol design, MCP integration |
-| **concepts** | Core concepts of running MCP over Nostr |
-| **server-dev** | Server development with NostrServerTransport |
-| **client-dev** | Client development with NostrClientTransport |
-| **typescript-sdk** | TypeScript SDK usage and common patterns |
-| **payments** | CEP-8 payments integration |
-| **deployment** | Docker deployment and production best practices |
-| **troubleshooting** | Common issues and debugging strategies |
+| Skill               | Description                                              |
+| ------------------- | -------------------------------------------------------- |
+| **overview**        | ContextVM fundamentals, protocol design, MCP integration |
+| **concepts**        | Core concepts of running MCP over Nostr                  |
+| **server-dev**      | Server development with NostrServerTransport             |
+| **client-dev**      | Client development with NostrClientTransport             |
+| **typescript-sdk**  | TypeScript SDK usage and common patterns                 |
+| **payments**        | CEP-8 payments integration                               |
+| **deployment**      | Docker deployment and production best practices          |
+| **troubleshooting** | Common issues and debugging strategies                   |
 
 ## Installing Skills
 
@@ -45,6 +45,7 @@ Skills are installed to `~/.agents/` and managed through the CVMI CLI.
 ## When to Use Skills
 
 Use skills when:
+
 - Working with an AI assistant to build with ContextVM
 - The AI has the relevant skill installed
 - You need context-specific guidance on implementation

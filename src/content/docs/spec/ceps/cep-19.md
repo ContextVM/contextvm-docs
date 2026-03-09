@@ -37,10 +37,7 @@ Servers that support ephemeral gift wraps MUST advertise support by including th
 Example (tags only):
 
 ```json
-[
-  ["support_encryption"],
-  ["support_encryption_ephemeral"]
-]
+[["support_encryption"], ["support_encryption_ephemeral"]]
 ```
 
 Support semantics:
@@ -108,4 +105,3 @@ A reference implementation is available in the [ContextVM SDK](https://github.co
 
 - [CEP-4: Encryption Support](/spec/ceps/cep-4)
 - [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
-

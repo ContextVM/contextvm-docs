@@ -1,0 +1,130 @@
+---
+const PAGE_TITLE_ID = '_top';
+import { getDocSourceBySlug } from '../../utils/docSource';
+
+const { entry } = Astro.locals.starlightRoute;
+const docSource = getDocSourceBySlug(entry.slug);
+const copyButtonId = `copy-markdown-${entry.slug.replace(/[^a-z0-9-]/gi, '-')}`;
+---
+
+<div class="page-title-row">
+  <h1 id={PAGE_TITLE_ID}>{entry.data.title}</h1>
+  {
+    docSource && (
+      <>
+        <button class="copy-markdown-button" id={copyButtonId} type="button">
+          Copy Markdown
+        </button>
+        <template data-markdown-source-for={copyButtonId}>{docSource}</template>
+      </>
+    )
+  }
+</div>
+
+<script is:inline>
+  (() => {
+    const getMarkdownFromTemplate = (template) => {
+      if (!(template instanceof HTMLTemplateElement)) return '';
+      return template.innerHTML;
+    };
+
+    const fallbackCopyText = async (text) => {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      textarea.style.pointerEvents = 'none';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      try {
+        document.execCommand('copy');
+      } finally {
+        textarea.remove();
+      }
+    };
+
+    const initCopyButtons = () => {
+      document.querySelectorAll('.copy-markdown-button').forEach((button) => {
+        if (!(button instanceof HTMLButtonElement) || button.dataset.copyMarkdownBound === 'true') return;
+
+        button.dataset.copyMarkdownBound = 'true';
+
+        button.addEventListener('click', async () => {
+          const template = document.querySelector(
+            `template[data-markdown-source-for="${button.id}"]`
+          );
+
+          const markdown = getMarkdownFromTemplate(template);
+          if (!markdown) return;
+
+          const previousLabel = button.textContent;
+
+          try {
+            if (navigator.clipboard?.writeText) {
+              await navigator.clipboard.writeText(markdown);
+            } else {
+              await fallbackCopyText(markdown);
+            }
+            button.textContent = 'Copied';
+          } catch {
+            try {
+              await fallbackCopyText(markdown);
+              button.textContent = 'Copied';
+            } catch {
+              button.textContent = 'Copy failed';
+            }
+          }
+
+          window.setTimeout(() => {
+            button.textContent = previousLabel;
+          }, 1600);
+        });
+      });
+    };
+
+    initCopyButtons();
+    document.addEventListener('astro:page-load', initCopyButtons);
+  })();
+</script>
+
+<style>
+  @layer starlight.core {
+    .page-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin-top: 1rem;
+      margin-bottom: 0;
+      font-size: var(--sl-text-h1);
+      line-height: var(--sl-line-height-headings);
+      font-weight: 600;
+      color: var(--sl-color-white);
+    }
+
+    .copy-markdown-button {
+      border: 1px solid var(--sl-color-gray-5);
+      border-radius: 0.5rem;
+      background: var(--sl-color-black);
+      color: var(--sl-color-text);
+      padding: 0.5rem 0.75rem;
+      font: inherit;
+      line-height: 1;
+      cursor: pointer;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .copy-markdown-button:hover,
+    .copy-markdown-button:focus-visible {
+      border-color: var(--sl-color-accent);
+      background: var(--sl-color-gray-6);
+    }
+  }
+</style>

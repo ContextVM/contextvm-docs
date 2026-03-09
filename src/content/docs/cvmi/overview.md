@@ -22,6 +22,7 @@ CVMI serves as your Swiss army knife for working with ContextVM. It simplifies c
 ### Swiss Army Knife for CVM
 
 CVMI consolidates multiple tools into a single CLI interface, making it easy to:
+
 - Install skills interactively or programmatically
 - Expose local or remote MCP servers as Nostr gateways
 - Use remote Nostr-based MCP servers through a local stdio proxy
@@ -29,6 +30,7 @@ CVMI consolidates multiple tools into a single CLI interface, making it easy to:
 ### Skills System
 
 The skills system allows you to install documentation and code templates directly into your project:
+
 - Browse available skills interactively
 - Install specific skills on demand
 - Keep your skills up to date
@@ -36,6 +38,7 @@ The skills system allows you to install documentation and code templates directl
 ### Gateway Mode (`cvmi serve`)
 
 Expose any MCP server to the Nostr network:
+
 - Works with local stdio-based MCP servers
 - Supports remote Streamable HTTP MCP servers
 - Automatic key generation and encryption handling
@@ -43,6 +46,7 @@ Expose any MCP server to the Nostr network:
 ### Proxy Mode (`cvmi use`)
 
 Connect to remote Nostr-based MCP servers as if they were local:
+
 - Bridges Nostr transport to stdio for clients that don't natively support Nostr
 - Perfect for integrating with existing MCP clients
 
@@ -59,12 +63,12 @@ Connect to remote Nostr-based MCP servers as if they were local:
 
 ### CVMI vs. TypeScript SDK
 
-| CVMI | TypeScript SDK |
-|------|----------------|
-| CLI tool for quick tasks | Library for building applications |
-| No code required | Requires JavaScript/TypeScript development |
-| Skills management | Core protocol implementation |
-| Gateway/proxy commands | Transport implementations |
+| CVMI                     | TypeScript SDK                             |
+| ------------------------ | ------------------------------------------ |
+| CLI tool for quick tasks | Library for building applications          |
+| No code required         | Requires JavaScript/TypeScript development |
+| Skills management        | Core protocol implementation               |
+| Gateway/proxy commands   | Transport implementations                  |
 
 ### CVMI vs. Specification
 
