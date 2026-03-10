@@ -60,10 +60,12 @@ export interface RelayHandler {
 }
 ```
 
-By implementing this interface, you can create custom relay management logic, such as sophisticated relay selection strategies or custom reconnection policies. The SDK includes `SimpleRelayPool` as a default implementation.
+By implementing this interface, you can create custom relay management logic, such as sophisticated relay selection strategies or custom reconnection policies. The SDK recommends `ApplesauceRelayPool` for current projects.
 
 - **Learn more:** [`RelayHandler` Deep Dive](/relay/relay-handler-interface)
-- **Default Implementation:** [`SimpleRelayPool`](/relay/simple-relay-pool)
+- **Recommended Implementation:** [`ApplesauceRelayPool`](/relay/applesauce-relay-pool)
+
+Some concrete transports may expose more ergonomic public APIs than the base relay abstraction alone suggests. For example, the client transport can resolve operational relays through `nprofile` hints and CEP-17 discovery, so its public options allow omitting `relayHandler` even though the base transport normalizes one internally.
 
 ## `EncryptionMode`
 

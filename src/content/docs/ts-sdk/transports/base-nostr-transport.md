@@ -38,6 +38,8 @@ export interface BaseNostrTransportOptions {
 - **`giftWrapMode`**: An optional `GiftWrapMode` enum that determines which gift wrap kind to use for encrypted messages. Defaults to `OPTIONAL`.
 - **`logLevel`**: (Optional) Log level for debugging output.
 
+> **Note**: This interface describes the shared base abstraction. A concrete transport may expose a more ergonomic public options type while still normalizing to these base requirements internally. For example, the client transport can resolve relays through discovery flows and therefore allows omitting `relayHandler` at its public API layer.
+
 ## `GiftWrapMode`
 
 The `GiftWrapMode` enum controls which NIP-59 gift wrap kind is used for encrypted communications:

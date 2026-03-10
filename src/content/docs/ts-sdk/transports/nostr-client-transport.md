@@ -25,16 +25,21 @@ By using this transport, an MCP client can interact with a Nostr-enabled MCP ser
 To create an instance of `NostrClientTransport`, you must provide a configuration object that implements the `NostrTransportOptions` interface:
 
 ```typescript
-export interface NostrTransportOptions extends BaseNostrTransportOptions {
+export interface NostrTransportOptions
+  extends Omit<BaseNostrTransportOptions, 'relayHandler'> {
+  relayHandler?: RelayHandler | string[];
   serverPubkey: string;
   discoveryRelayUrls?: string[];
   isStateless?: boolean;
 }
 ```
 
+- **`relayHandler`** (optional): Explicit operational relays for the client. Accepts either a `RelayHandler` instance or a `string[]`. When omitted, the client can still resolve operational relays from `nprofile` hints or CEP-17 discovery.
 - **`serverPubkey`**: The target server identity. Accepts a hex pubkey, `npub`, or `nprofile`. The transport normalizes this to the server's hex public key internally.
 - **`discoveryRelayUrls`** (optional): Relay URLs used only for CEP-17 relay-list discovery when no operational relays are explicitly configured.
 - **`isStateless`** (optional): When set to `true`, enables stateless mode for the client transport. In stateless mode, the client emulates the server's initialize response without requiring a full server initialization roundtrip. This enables faster startup and reduced network overhead. Default is `false`.
+
+When `discoveryRelayUrls` is omitted, the transport uses the SDK bootstrap relay defaults for CEP-17 discovery.
 
 ## Usage Example
 
@@ -80,6 +85,8 @@ console.log("Available tools:", tools);
 
 > **Note**: The `relayHandler` option also accepts a `string[]` of relay URLs, in which case an `ApplesauceRelayPool` will be created automatically. See the [Base Nostr Transport](/transports/base-nostr-transport) documentation for details.
 
+> **Note**: On the client transport, `relayHandler` is optional. If it is omitted, the transport can still resolve operational relays from `nprofile` relay hints or CEP-17 relay-list discovery.
+
 ### Identity input precedence
 
 [`NostrClientTransport`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:56) resolves server identity and relays conservatively:
@@ -87,6 +94,7 @@ console.log("Available tools:", tools);
 1. explicit operational relays from `relayHandler`
 2. relay hints embedded in `nprofile`
 3. CEP-17 relay-list discovery via `discoveryRelayUrls`
+4. SDK bootstrap relay defaults when `discoveryRelayUrls` is omitted
 
 This keeps the active relay set minimal and avoids automatically merging every possible relay source.
 
@@ -112,8 +120,9 @@ Typical flow:
 
 1. If explicit operational relays are configured, the transport uses them directly.
 2. Else, if the server identity is an `nprofile` with relay hints, the transport uses those hints as the operational relay set.
-3. Else, if [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:30) is provided, the transport queries the server's `kind:10002` relay-list metadata.
-4. The transport prefers unmarked `r` tags as the operational relay set, matching the recommended ContextVM profile in [`CEP-17`](contextvm-docs/src/content/docs/spec/ceps/cep-17.md:52).
+3. Else, the transport queries the server's `kind:10002` relay-list metadata using [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:33) when provided.
+4. If [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:33) is omitted, the transport falls back to the SDK bootstrap relays for the CEP-17 lookup.
+5. The transport prefers unmarked `r` tags as the operational relay set, matching the recommended ContextVM profile in [`CEP-17`](contextvm-docs/src/content/docs/spec/ceps/cep-17.md:52).
 
 Example with discovery fallback:
 
@@ -126,12 +135,23 @@ import {
 
 const clientNostrTransport = new NostrClientTransport({
   signer: new PrivateKeySigner("your-private-key"),
-  relayHandler: [],
   serverPubkey: "nprofile1...",
   discoveryRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"],
   encryptionMode: EncryptionMode.OPTIONAL,
 });
 ```
+
+Example using discovery with no explicit relay handler:
+
+```typescript
+const clientNostrTransport = new NostrClientTransport({
+  signer: new PrivateKeySigner("your-private-key"),
+  serverPubkey: "npub1...",
+  encryptionMode: EncryptionMode.OPTIONAL,
+});
+```
+
+In this case the client will attempt to resolve operational relays automatically using the normal precedence rules.
 
 ### Important distinction
 
@@ -152,7 +172,6 @@ To enable stateless mode, set `isStateless: true` in the transport configuration
 ```typescript
 const clientNostrTransport = new NostrClientTransport({
   signer,
-  relayHandler: relayPool,
   serverPubkey: REMOTE_SERVER,
   encryptionMode: EncryptionMode.OPTIONAL,
   isStateless: true, // Enable stateless mode
