@@ -5,7 +5,7 @@ description: Learn how to create a custom relay handler for the @contextvm/sdk.
 
 # Custom Relay Handler Development
 
-The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandler`](/relay/relay-handler-interface) interface, allows developers to implement custom logic for managing Nostr-relay connections. This is particularly useful for advanced use cases that require more sophisticated behavior than what the default [`SimpleRelayPool`](/relay/simple-relay-pool) provides.
+The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandler`](/relay/relay-handler-interface) interface, allows developers to implement custom logic for managing Nostr-relay connections.
 
 ## Why Create a Custom Relay Handler?
 
@@ -57,7 +57,7 @@ class MyRelayHandler implements RelayHandler {
   async subscribe(
     filters: Filter[],
     onEvent: (event: NostrEvent) => void,
-    onEose?: () => void,
+    onEose?: () => void
   ): Promise<void> {
     // Create the subscription (non-blocking)
     const closer = this.pool.subscribeMany(relayUrls, filters, {
@@ -77,7 +77,7 @@ class MyRelayHandler implements RelayHandler {
 }
 ```
 
-This pattern is used by both [`SimpleRelayPool`](/relay/simple-relay-pool) and [`ApplesauceRelayPool`](/relay/applesauce-relay-pool) implementations.
+This pattern is used by [`ApplesauceRelayPool`](/relay/applesauce-relay-pool) implementations.
 
 ## Using Your Custom Relay Handler
 

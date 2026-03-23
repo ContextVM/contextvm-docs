@@ -24,7 +24,9 @@ The transport is configured via the `NostrServerTransportOptions` interface:
 ```typescript
 export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
   serverInfo?: ServerInfo;
+  /** @deprecated Use isAnnouncedServer instead. */
   isPublicServer?: boolean;
+  isAnnouncedServer?: boolean;
   publishRelayList?: boolean;
   relayListUrls?: string[];
   bootstrapRelayUrls?: string[];
@@ -42,8 +44,9 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
 ```
 
 - **`serverInfo`**: (Optional) Information about the server (`name`, `picture`, `website`) to be used in public announcements.
-- **`isPublicServer`**: (Optional) If `true`, the transport will automatically announce the server's capabilities on the Nostr network. Defaults to `false`.
-- **`publishRelayList`**: (Optional) If `true`, the transport publishes a NIP-65 relay list (`kind:10002`) even when `isPublicServer` is `false`. Defaults to `true`.
+- **`isAnnouncedServer`**: (Optional) If `true`, the transport publishes public announcement events for relay-based discovery. Defaults to `false`.
+- **`isPublicServer`**: (Deprecated) Legacy alias for `isAnnouncedServer`.
+- **`publishRelayList`**: (Optional) If `true`, the transport publishes a NIP-65 relay list (`kind:10002`) even when `isAnnouncedServer` is `false`. Defaults to `true`.
 - **`relayListUrls`**: (Optional) Explicit relay URLs to advertise in the published relay list. If omitted, the SDK derives them from the configured relay handler when possible.
 - **`bootstrapRelayUrls`**: (Optional) Extra relays used only as publication targets for discoverability events such as `kind:11316` and `kind:10002`. These are not automatically advertised in the relay list.
 - **`allowedPublicKeys`**: (Optional) A list of client public keys that are allowed to connect. If not provided, any client can connect.
@@ -85,19 +88,19 @@ Capability exclusion provides fine-grained control over access by allowing speci
 Here's how to use the `NostrServerTransport` with an `McpServer` from the `@modelcontextprotocol/sdk`:
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { NostrServerTransport } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { ApplesauceRelayPool } from "@contextvm/sdk";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { NostrServerTransport } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
 // 1. Configure the signer and relay pool
-const signer = new PrivateKeySigner("your-server-private-key");
-const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
+const signer = new PrivateKeySigner('your-server-private-key');
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
 
 // 2. Create the McpServer instance
 const mcpServer = new McpServer({
-  name: "demo-server",
-  version: "1.0.0",
+  name: 'demo-server',
+  version: '1.0.0',
 });
 
 // Register your server's tools, resources, etc.
@@ -107,17 +110,17 @@ const mcpServer = new McpServer({
 const serverNostrTransport = new NostrServerTransport({
   signer: signer,
   relayHandler: relayPool,
-  isPublicServer: true,
+  isAnnouncedServer: true,
   publishRelayList: true,
-  bootstrapRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"],
+  bootstrapRelayUrls: ['wss://relay.damus.io', 'wss://nos.lol'],
   serverInfo: {
-    name: "My Awesome MCP Server",
-    website: "https://example.com",
+    name: 'My Awesome MCP Server',
+    website: 'https://example.com',
   },
-  allowedPublicKeys: ["trusted-client-key"], // Only allow specific clients
+  allowedPublicKeys: ['trusted-client-key'], // Only allow specific clients
   excludedCapabilities: [
-    { method: "tools/list" }, // Allow any client to list available tools
-    { method: "tools/call", name: "get_weather" }, // Allow any client to call get_weather tool
+    { method: 'tools/list' }, // Allow any client to list available tools
+    { method: 'tools/call', name: 'get_weather' }, // Allow any client to call get_weather tool
   ],
   injectClientPubkey: true, // Enable client public key injection
 });
@@ -125,7 +128,7 @@ const serverNostrTransport = new NostrServerTransport({
 // 4. Connect the server
 await mcpServer.connect(serverNostrTransport);
 
-console.log("MCP server is running and available on Nostr.");
+console.log('MCP server is running and available on Nostr.');
 
 // Keep the process running...
 // To shut down: await mcpServer.close();
@@ -135,12 +138,12 @@ console.log("MCP server is running and available on Nostr.");
 
 ## How It Works
 
-1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isPublicServer` is `true`, it publishes public announcement events. Independently, if `publishRelayList` is enabled, it also publishes relay-list metadata.
+1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isAnnouncedServer` is `true`, it publishes public announcement events. Independently, if `publishRelayList` is enabled, it also publishes relay-list metadata.
 2.  **Incoming Events**: The transport listens for events from clients. For each client, it maintains a `ClientSession`.
 3.  **Request Handling**: When a valid request is received from an authorized client, the transport forwards it to the `McpServer`'s internal logic via the `onmessage` handler. It replaces the request's original ID with the unique Nostr event ID to prevent ID collisions between different clients.
     - If `injectClientPubkey` is enabled, the client's public key is injected into the request's `_meta` field before being passed to the server.
 4.  **Response Handling**: When the `McpServer` sends a response, the transport's `send()` method is called. The transport looks up the original request details from the client's session, restores the original request ID, and sends the response back to the correct client, referencing the original event ID.
-5.  **Discoverability publication**: Public announcement events (kinds 11316-11320) are controlled by `isPublicServer`. Relay-list metadata (`kind:10002`) is controlled independently by `publishRelayList`.
+5.  **Discoverability publication**: Public announcement events (kinds 11316-11320) are controlled by `isAnnouncedServer`. Relay-list metadata (`kind:10002`) is controlled independently by `publishRelayList`.
 
 ## Relay List Discoverability
 
@@ -148,7 +151,7 @@ Servers can publish a NIP-65 relay list so clients can discover where the server
 
 ### Default Behavior
 
-- `isPublicServer: true` enables public announcement publication
+- `isAnnouncedServer: true` enables public announcement publication
 - `publishRelayList` defaults to `true` for both public and private servers
 - if `relayListUrls` is omitted, the SDK derives advertised relays from the configured relay handler when possible
 - `bootstrapRelayUrls` can be used to publish discoverability events to extra relays without advertising them as operational relays
@@ -219,6 +222,62 @@ The injected metadata follows this structure:
 - **Logging**: Track client activity and usage patterns
 - **Rate Limiting**: Apply rate limits on a per-client basis
 - **Personalization**: Provide client-specific responses or data
+
+## Structured Tool Outputs
+
+`NostrServerTransport` does not change the MCP tool result model, so structured outputs work the same way they do on any other MCP transport. This is especially useful when your server is meant for programmatic usage and clients should be able to depend on a stable result shape.
+
+Define an `outputSchema` on the tool and return `structuredContent` from the handler:
+
+```typescript
+import * as z from 'zod/v4';
+
+server.registerTool(
+  'get_weather',
+  {
+    description: 'Get weather information for a city',
+    inputSchema: z.object({
+      city: z.string(),
+      country: z.string(),
+    }),
+    outputSchema: z.object({
+      temperature: z.object({
+        celsius: z.number(),
+        fahrenheit: z.number(),
+      }),
+      conditions: z.enum(['sunny', 'cloudy', 'rainy', 'stormy', 'snowy']),
+      humidity: z.number().min(0).max(100),
+    }),
+  },
+  async ({ city, country }) => {
+    const structuredContent = {
+      temperature: {
+        celsius: 22,
+        fahrenheit: 71.6,
+      },
+      conditions: 'sunny' as const,
+      humidity: 45,
+    };
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Weather for ${city}, ${country}: ${structuredContent.temperature.celsius}°C and ${structuredContent.conditions}.`,
+        },
+      ],
+      structuredContent,
+    };
+  }
+);
+```
+
+Guidance:
+
+- Use `structuredContent` for machine-readable output.
+- Use `content` for human-readable output only.
+- `content` does not need to duplicate `structuredContent`.
+- If no human-readable output is needed, `content` can be `[]`.
 
 ## Next Steps
 

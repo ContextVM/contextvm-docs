@@ -17,15 +17,15 @@ For priced requests, the middleware ensures **no unpaid forwarding**.
 You price individual capabilities by `method` + `name`.
 
 ```ts
-import type { PricedCapability } from "@contextvm/sdk/payments";
+import type { PricedCapability } from '@contextvm/sdk/payments';
 
 const pricedCapabilities: PricedCapability[] = [
-  { method: "tools/call", name: "add", amount: 10, currencyUnit: "sats" },
+  { method: 'tools/call', name: 'add', amount: 10, currencyUnit: 'sats' },
   {
-    method: "resources/read",
-    name: "private://*",
+    method: 'resources/read',
+    name: 'private://*',
     amount: 5,
-    currencyUnit: "sats",
+    currencyUnit: 'sats',
   },
 ];
 ```
@@ -45,10 +45,7 @@ A `PaymentProcessor` is responsible for:
 You can configure multiple processors (multiple PMIs). The server selects a processor based on client/server PMI compatibility.
 
 ```ts
-import {
-  LnBolt11NwcPaymentProcessor,
-  withServerPayments,
-} from "@contextvm/sdk/payments";
+import { LnBolt11NwcPaymentProcessor, withServerPayments } from '@contextvm/sdk/payments';
 
 const processor = new LnBolt11NwcPaymentProcessor({
   nwcConnectionString: process.env.NWC_SERVER_CONNECTION!,
@@ -65,13 +62,9 @@ withServerPayments(transport, {
 `resolvePrice` runs on every priced request and returns the final quote.
 
 ```ts
-import type { ResolvePriceFn } from "@contextvm/sdk/payments";
+import type { ResolvePriceFn } from '@contextvm/sdk/payments';
 
-const resolvePrice: ResolvePriceFn = async ({
-  capability,
-  request,
-  clientPubkey,
-}) => {
+const resolvePrice: ResolvePriceFn = async ({ capability, request, clientPubkey }) => {
   // Example: price based on request size.
   const requestSize = JSON.stringify(request.params ?? {}).length;
   const extra = Math.ceil(requestSize / 1024);
@@ -102,12 +95,12 @@ Guidance:
 To reject a priced request without creating an invoice, return `{ reject: true, message? }` from `resolvePrice`.
 
 ```ts
-import type { ResolvePriceFn } from "@contextvm/sdk/payments";
+import type { ResolvePriceFn } from '@contextvm/sdk/payments';
 
 const resolvePrice: ResolvePriceFn = async ({ capability, clientPubkey }) => {
   const isBlocked = await isUserBlocked(clientPubkey);
   if (isBlocked) {
-    return { reject: true, message: "Access denied" };
+    return { reject: true, message: 'Access denied' };
   }
 
   return { amount: capability.amount };

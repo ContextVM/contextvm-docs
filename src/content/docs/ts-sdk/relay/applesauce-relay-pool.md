@@ -9,8 +9,6 @@ The `ApplesauceRelayPool` is an advanced implementation of the [`RelayHandler`](
 
 ## Overview
 
-The `ApplesauceRelayPool` offers enhanced features compared to the basic [`SimpleRelayPool`](/relay/simple-relay-pool):
-
 - **Automatic Connection Management**: Uses `RelayPool` for efficient connection handling
 - **Connection Monitoring**: Monitors relay connections and automatically resubscribes when connections are lost
 - **Retry Logic**: Built-in retry mechanisms for failed operations
@@ -28,15 +26,12 @@ The constructor takes a single argument:
 ## Usage Example
 
 ```typescript
-import { ApplesauceRelayPool } from "@contextvm/sdk";
-import { NostrClientTransport } from "@contextvm/sdk";
+import { ApplesauceRelayPool } from '@contextvm/sdk';
+import { NostrClientTransport } from '@contextvm/sdk';
 
 // 3. Pass the instance to a transport
 const transport = new NostrClientTransport({
-  relayHandler: new ApplesauceRelayPool([
-    "wss://relay1.com",
-    "wss://relay2.io",
-  ]),
+  relayHandler: new ApplesauceRelayPool(['wss://relay1.com', 'wss://relay2.io']),
   // ... other options
 });
 ```
@@ -103,17 +98,6 @@ The implementation includes comprehensive error handling for both publishing and
 - **Publish Errors**: Logs warnings for failed publishes but doesn't reject the Promise unless there's a critical error
 - **Subscription Errors**: Removes failed subscriptions from tracking and logs the error
 
-## Key Differences from SimpleRelayPool
-
-| Feature                      | SimpleRelayPool                      | ApplesauceRelayPool                       |
-| ---------------------------- | ------------------------------------ | ----------------------------------------- |
-| **Library**                  | `nostr-tools`                        | `applesauce-relay`                        |
-| **Connection Management**    | Manual connection tracking           | Automatic connection management           |
-| **Reconnection**             | Manual reconnection logic            | Automatic reconnection with monitoring    |
-| **Retry Logic**              | Basic retry with exponential backoff | Built-in retry mechanisms                 |
-| **Subscription Persistence** | Manual resubscription                | Automatic resubscription on reconnect     |
-| **Error Handling**           | Basic error logging                  | Comprehensive error handling with cleanup |
-
 ## When to Use ApplesauceRelayPool
 
 Consider using `ApplesauceRelayPool` when:
@@ -122,8 +106,6 @@ Consider using `ApplesauceRelayPool` when:
 - Your application requires high availability and resilience
 - You want advanced subscription management with automatic recovery
 - You're building a production application that needs to handle network interruptions gracefully
-
-For simpler use cases or when you want to minimize dependencies, the [`SimpleRelayPool`](/relay/simple-relay-pool) may be sufficient.
 
 ## Next Steps
 

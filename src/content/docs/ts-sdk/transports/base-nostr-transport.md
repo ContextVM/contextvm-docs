@@ -53,11 +53,11 @@ Ephemeral gift wraps (kind `21059`) are preferred for privacy-sensitive communic
 ### Example: Using Ephemeral Gift Wraps
 
 ```typescript
-import { NostrClientTransport, GiftWrapMode } from "@contextvm/sdk";
+import { NostrClientTransport, GiftWrapMode } from '@contextvm/sdk';
 
 const transport = new NostrClientTransport({
   signer,
-  relayHandler: ["wss://relay.damus.io"],
+  relayHandler: ['wss://relay.damus.io'],
   giftWrapMode: GiftWrapMode.EPHEMERAL,
 });
 ```
@@ -71,12 +71,9 @@ The `relayHandler` option provides flexibility in how you configure relay connec
 For advanced use cases, create and configure your own relay handler:
 
 ```typescript
-import { ApplesauceRelayPool } from "@contextvm/sdk";
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
-const relayHandler = new ApplesauceRelayPool([
-  "wss://relay.damus.io",
-  "wss://relay.primal.net",
-]);
+const relayHandler = new ApplesauceRelayPool(['wss://relay.damus.io', 'wss://relay.primal.net']);
 
 const transport = new NostrClientTransport({
   signer,
@@ -91,7 +88,7 @@ For simple use cases, pass an array of relay URLs and the transport will create 
 ```typescript
 const transport = new NostrClientTransport({
   signer,
-  relayHandler: ["wss://relay.damus.io", "wss://relay.primal.net"],
+  relayHandler: ['wss://relay.damus.io', 'wss://relay.primal.net'],
 });
 ```
 

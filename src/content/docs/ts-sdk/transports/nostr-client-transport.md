@@ -25,8 +25,7 @@ By using this transport, an MCP client can interact with a Nostr-enabled MCP ser
 To create an instance of `NostrClientTransport`, you must provide a configuration object that implements the `NostrTransportOptions` interface:
 
 ```typescript
-export interface NostrTransportOptions
-  extends Omit<BaseNostrTransportOptions, 'relayHandler'> {
+export interface NostrTransportOptions extends Omit<BaseNostrTransportOptions, 'relayHandler'> {
   relayHandler?: RelayHandler | string[];
   serverPubkey: string;
   discoveryRelayUrls?: string[];
@@ -46,18 +45,18 @@ When `discoveryRelayUrls` is omitted, the transport uses the SDK bootstrap relay
 Here's how you can use the `NostrClientTransport` with an MCP client from the `@modelcontextprotocol/sdk`:
 
 ```typescript
-import { Client } from "@modelcontextprotocol/sdk/client";
-import { NostrClientTransport } from "@contextvm/sdk";
-import { EncryptionMode } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { ApplesauceRelayPool } from "@contextvm/sdk";
+import { Client } from '@modelcontextprotocol/sdk/client';
+import { NostrClientTransport } from '@contextvm/sdk';
+import { EncryptionMode } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
 // 1. Configure the signer and relay handler
-const signer = new PrivateKeySigner("your-private-key"); // Replace with your actual private key
-const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
+const signer = new PrivateKeySigner('your-private-key'); // Replace with your actual private key
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
 
 // 2. Set the identity of the target server
-const REMOTE_SERVER = "npub1...";
+const REMOTE_SERVER = 'npub1...';
 
 // 3. Create the transport instance
 const clientNostrTransport = new NostrClientTransport({
@@ -69,15 +68,15 @@ const clientNostrTransport = new NostrClientTransport({
 
 // 4. Create and connect the MCP client
 const mcpClient = new Client({
-  name: "My Client",
-  version: "1.0.0",
+  name: 'My Client',
+  version: '1.0.0',
 });
 
 await mcpClient.connect(clientNostrTransport);
 
 // 5. Use the client to interact with the server
 const tools = await mcpClient.listTools();
-console.log("Available tools:", tools);
+console.log('Available tools:', tools);
 
 // 6. Close the connection when done
 // await mcpClient.close();
@@ -127,16 +126,12 @@ Typical flow:
 Example with discovery fallback:
 
 ```typescript
-import {
-  EncryptionMode,
-  NostrClientTransport,
-  PrivateKeySigner,
-} from "@contextvm/sdk";
+import { EncryptionMode, NostrClientTransport, PrivateKeySigner } from '@contextvm/sdk';
 
 const clientNostrTransport = new NostrClientTransport({
-  signer: new PrivateKeySigner("your-private-key"),
-  serverPubkey: "nprofile1...",
-  discoveryRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"],
+  signer: new PrivateKeySigner('your-private-key'),
+  serverPubkey: 'nprofile1...',
+  discoveryRelayUrls: ['wss://relay.damus.io', 'wss://nos.lol'],
   encryptionMode: EncryptionMode.OPTIONAL,
 });
 ```
@@ -145,8 +140,8 @@ Example using discovery with no explicit relay handler:
 
 ```typescript
 const clientNostrTransport = new NostrClientTransport({
-  signer: new PrivateKeySigner("your-private-key"),
-  serverPubkey: "npub1...",
+  signer: new PrivateKeySigner('your-private-key'),
+  serverPubkey: 'npub1...',
   encryptionMode: EncryptionMode.OPTIONAL,
 });
 ```

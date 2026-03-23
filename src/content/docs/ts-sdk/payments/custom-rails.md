@@ -35,14 +35,12 @@ import type {
   PaymentProcessor,
   PaymentProcessorCreateParams,
   PaymentProcessorVerifyParams,
-} from "@contextvm/sdk/payments";
+} from '@contextvm/sdk/payments';
 
 export class MyRailPaymentProcessor implements PaymentProcessor {
-  public readonly pmi = "my-rail-v1";
+  public readonly pmi = 'my-rail-v1';
 
-  public async createPaymentRequired(
-    params: PaymentProcessorCreateParams,
-  ): Promise<{
+  public async createPaymentRequired(params: PaymentProcessorCreateParams): Promise<{
     amount: number;
     pay_req: string;
     description?: string;
@@ -54,7 +52,7 @@ export class MyRailPaymentProcessor implements PaymentProcessor {
     return {
       amount: params.amount,
       pay_req: JSON.stringify({
-        invoiceId: "...",
+        invoiceId: '...',
         requestEventId: params.requestEventId,
       }),
       description: params.description,
@@ -63,7 +61,7 @@ export class MyRailPaymentProcessor implements PaymentProcessor {
   }
 
   public async verifyPayment(
-    params: PaymentProcessorVerifyParams,
+    params: PaymentProcessorVerifyParams
   ): Promise<{ _meta?: Record<string, unknown> }> {
     // Check provider for invoice status and fail if unpaid.
     return { _meta: { verifiedAt: Date.now() } };
@@ -83,13 +81,10 @@ Handlers must be able to pay a `pay_req` for their PMI.
 Skeleton:
 
 ```ts
-import type {
-  PaymentHandler,
-  PaymentHandlerRequest,
-} from "@contextvm/sdk/payments";
+import type { PaymentHandler, PaymentHandlerRequest } from '@contextvm/sdk/payments';
 
 export class MyRailPaymentHandler implements PaymentHandler {
-  public readonly pmi = "my-rail-v1";
+  public readonly pmi = 'my-rail-v1';
 
   public async canHandle(_req: PaymentHandlerRequest): Promise<boolean> {
     // Optional: enforce client policy (max amount, disabled rail, etc.)
