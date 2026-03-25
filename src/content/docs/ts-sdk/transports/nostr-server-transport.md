@@ -31,8 +31,12 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
   relayListUrls?: string[];
   bootstrapRelayUrls?: string[];
   allowedPublicKeys?: string[];
+  /** Optional callback for dynamic public key authorization. Returns true to allow the pubkey. */
+  isPubkeyAllowed?: (clientPubkey: string) => boolean | Promise<boolean>;
   /** List of capabilities that are excluded from public key whitelisting requirements */
   excludedCapabilities?: CapabilityExclusion[];
+  /** Optional callback for dynamic capability exclusions. Returns true to bypass pubkey authorization. */
+  isCapabilityExcluded?: (exclusion: CapabilityExclusion) => boolean | Promise<boolean>;
   /** Log level for the NostrServerTransport: 'debug' | 'info' | 'warn' | 'error' | 'silent' */
   logLevel?: LogLevel;
   /**
@@ -50,7 +54,9 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
 - **`relayListUrls`**: (Optional) Explicit relay URLs to advertise in the published relay list. If omitted, the SDK derives them from the configured relay handler when possible.
 - **`bootstrapRelayUrls`**: (Optional) Extra relays used only as publication targets for discoverability events such as `kind:11316` and `kind:10002`. These are not automatically advertised in the relay list.
 - **`allowedPublicKeys`**: (Optional) A list of client public keys that are allowed to connect. If not provided, any client can connect.
+- **`isPubkeyAllowed`**: (Optional) A dynamic authorization callback that receives a client public key and returns `true` to allow the connection. Can be async. When used with `allowedPublicKeys`, both checks must pass (AND logic).
 - **`excludedCapabilities`**: (Optional) A list of capabilities that are excluded from public key whitelisting requirements. This allows certain operations from disallowed public keys, enhancing security policy flexibility while maintaining backward compatibility.
+- **`isCapabilityExcluded`**: (Optional) A dynamic capability exclusion callback that receives a capability exclusion pattern and returns `true` to bypass pubkey authorization for that capability. Can be async. Evaluated after static `excludedCapabilities`.
 - **`injectClientPubkey`**: (Optional) If `true`, the transport will inject the client's public key into the `_meta` field of requests passed to the underlying server. Defaults to `false`.
 
 ### Capability Exclusion
@@ -82,6 +88,90 @@ Capability exclusion provides fine-grained control over access by allowing speci
 
 - **Method-only exclusion**: `{ method: 'tools/list' }` - Excludes all calls to the `tools/list` method
 - **Method + name exclusion**: `{ method: 'tools/call', name: 'add' }` - Excludes only the `add` tool from the `tools/call` method
+
+## Dynamic Authorization
+
+In addition to static configuration, you can provide dynamic authorization callbacks for more flexible access control policies.
+
+### Dynamic Public Key Authorization
+
+Use `isPubkeyAllowed` to implement runtime authorization logic:
+
+```typescript
+const transport = new NostrServerTransport({
+  signer,
+  relayHandler: relayPool,
+  // Static allowlist (optional - can be used alone or with dynamic check)
+  allowedPublicKeys: ['known-trusted-client'],
+  // Dynamic authorization callback
+  isPubkeyAllowed: async (clientPubkey) => {
+    // Check against a database, external service, or custom logic
+    const isAllowed = await checkDatabaseForAccess(clientPubkey);
+    return isAllowed;
+  },
+});
+```
+
+When both `allowedPublicKeys` and `isPubkeyAllowed` are configured, a client must pass **both** checks (AND logic) to be authorized.
+
+### Dynamic Capability Exclusions
+
+Use `isCapabilityExcluded` to dynamically determine which capabilities bypass whitelisting:
+
+```typescript
+const transport = new NostrServerTransport({
+  signer,
+  relayHandler: relayPool,
+  allowedPublicKeys: ['trusted-client'],
+  // Static exclusions
+  excludedCapabilities: [
+    { method: 'tools/list' },
+  ],
+  // Dynamic exclusion callback - evaluated after static exclusions
+  isCapabilityExcluded: async (exclusion) => {
+    // Check if this specific capability should be public
+    if (exclusion.method === 'tools/call' && exclusion.name === 'get_weather') {
+      return await isWeatherServicePublic();
+    }
+    return false;
+  },
+});
+```
+
+The dynamic callback receives the exclusion pattern being checked and returns `true` to allow the capability without pubkey authorization.
+
+### Combining Static and Dynamic Authorization
+
+You can mix static and dynamic approaches for maximum flexibility:
+
+```typescript
+const transport = new NostrServerTransport({
+  signer,
+  relayHandler: relayPool,
+  isAnnouncedServer: true,
+  // Hardcoded trusted clients
+  allowedPublicKeys: ['admin-pubkey', 'service-account-pubkey'],
+  // Dynamic check for additional clients
+  isPubkeyAllowed: async (clientPubkey) => {
+    // Check subscription status in database
+    const subscription = await db.subscriptions.findByPubkey(clientPubkey);
+    return subscription?.isActive ?? false;
+  },
+  // Public capabilities anyone can use
+  excludedCapabilities: [
+    { method: 'tools/list' },
+    { method: 'tools/call', name: 'get_status' },
+  ],
+  // Dynamic capability exclusions
+  isCapabilityExcluded: async (exclusion) => {
+    // Check feature flags for temporarily public capabilities
+    if (exclusion.method === 'tools/call') {
+      return await featureFlags.isToolPublic(exclusion.name);
+    }
+    return false;
+  },
+});
+```
 
 ## Usage Example
 
