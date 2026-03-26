@@ -29,6 +29,7 @@ export interface NostrTransportOptions extends Omit<BaseNostrTransportOptions, '
   relayHandler?: RelayHandler | string[];
   serverPubkey: string;
   discoveryRelayUrls?: string[];
+  fallbackOperationalRelayUrls?: string[];
   isStateless?: boolean;
 }
 ```
@@ -36,6 +37,7 @@ export interface NostrTransportOptions extends Omit<BaseNostrTransportOptions, '
 - **`relayHandler`** (optional): Explicit operational relays for the client. Accepts either a `RelayHandler` instance or a `string[]`. When omitted, the client can still resolve operational relays from `nprofile` hints or CEP-17 discovery.
 - **`serverPubkey`**: The target server identity. Accepts a hex pubkey, `npub`, or `nprofile`. The transport normalizes this to the server's hex public key internally.
 - **`discoveryRelayUrls`** (optional): Relay URLs used only for CEP-17 relay-list discovery when no operational relays are explicitly configured.
+- **`fallbackOperationalRelayUrls`** (optional): Non-authoritative operational relays that are probed in parallel with CEP-17 discovery when no explicit relays or `nprofile` hints are available.
 - **`isStateless`** (optional): When set to `true`, enables stateless mode for the client transport. In stateless mode, the client emulates the server's initialize response without requiring a full server initialization roundtrip. This enables faster startup and reduced network overhead. Default is `false`.
 
 When `discoveryRelayUrls` is omitted, the transport uses the SDK bootstrap relay defaults for CEP-17 discovery.
@@ -93,7 +95,8 @@ console.log('Available tools:', tools);
 1. explicit operational relays from `relayHandler`
 2. relay hints embedded in `nprofile`
 3. CEP-17 relay-list discovery via `discoveryRelayUrls`
-4. SDK bootstrap relay defaults when `discoveryRelayUrls` is omitted
+4. `fallbackOperationalRelayUrls`
+5. SDK bootstrap relay defaults when `discoveryRelayUrls` is omitted
 
 This keeps the active relay set minimal and avoids automatically merging every possible relay source.
 
@@ -119,9 +122,11 @@ Typical flow:
 
 1. If explicit operational relays are configured, the transport uses them directly.
 2. Else, if the server identity is an `nprofile` with relay hints, the transport uses those hints as the operational relay set.
-3. Else, the transport queries the server's `kind:10002` relay-list metadata using [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:33) when provided.
-4. If [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:33) is omitted, the transport falls back to the SDK bootstrap relays for the CEP-17 lookup.
-5. The transport prefers unmarked `r` tags as the operational relay set, matching the recommended ContextVM profile in [`CEP-17`](contextvm-docs/src/content/docs/spec/ceps/cep-17.md:52).
+3. Else, the transport starts CEP-17 relay-list discovery and fallback operational relay probing in parallel.
+4. If CEP-17 returns a usable `kind:10002` relay list first, that authoritative result is used.
+5. If [`fallbackOperationalRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md) proves connectivity first while discovery is still unresolved, the transport proceeds with that non-authoritative relay set.
+6. If [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:31) is omitted, the transport still uses the SDK bootstrap relays for the CEP-17 lookup.
+7. The transport prefers unmarked `r` tags as the operational relay set, matching the recommended ContextVM profile in [`CEP-17`](contextvm-docs/src/content/docs/spec/ceps/cep-17.md:52).
 
 Example with discovery fallback:
 
@@ -132,6 +137,18 @@ const clientNostrTransport = new NostrClientTransport({
   signer: new PrivateKeySigner('your-private-key'),
   serverPubkey: 'nprofile1...',
   discoveryRelayUrls: ['wss://relay.damus.io', 'wss://nos.lol'],
+  encryptionMode: EncryptionMode.OPTIONAL,
+});
+```
+
+Example with non-authoritative operational fallback:
+
+```typescript
+const clientNostrTransport = new NostrClientTransport({
+  signer: new PrivateKeySigner('your-private-key'),
+  serverPubkey: 'npub1...',
+  discoveryRelayUrls: ['wss://relay.damus.io', 'wss://nos.lol'],
+  fallbackOperationalRelayUrls: ['wss://local-relay.example.com'],
   encryptionMode: EncryptionMode.OPTIONAL,
 });
 ```
@@ -147,6 +164,14 @@ const clientNostrTransport = new NostrClientTransport({
 ```
 
 In this case the client will attempt to resolve operational relays automatically using the normal precedence rules.
+
+### Authoritative vs fallback relays
+
+- [`relayHandler`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:29) is authoritative and explicit.
+- [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:31) identifies where the client should look for CEP-17 metadata.
+- [`fallbackOperationalRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md) is non-authoritative and only exists to reduce latency when discovery is slow or unresolved.
+
+This separation keeps protocol correctness intact while still allowing practical connection recovery.
 
 ### Important distinction
 
