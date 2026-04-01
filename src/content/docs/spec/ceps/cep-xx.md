@@ -134,6 +134,8 @@ Required fields:
 
 - `completionMode`: `render`
 - `digest`
+- `totalBytes`
+- `totalChunks`
 
 Rules:
 
@@ -141,6 +143,9 @@ Rules:
 - In this CEP version, senders MUST use `completionMode: "render"`.
 - Receivers MUST reject unknown or unsupported completion modes.
 - `digest` MUST be the SHA-256 of the exact serialized JSON-RPC message string, encoded as UTF-8.
+- `totalBytes` MUST equal the exact byte length of the serialized JSON-RPC message string encoded as UTF-8.
+- `totalChunks` MUST equal the number of `chunk` frames that the sender intends to transmit before `end`.
+- Receivers MAY reject `start` immediately when `totalBytes` or `totalChunks` exceeds local policy limits.
 
 #### `chunk` Frame
 
@@ -155,6 +160,9 @@ Rules:
 - For oversized-transfer frames, MCP `progress` is the normative ordering field.
 - Each `chunk` frame MUST use a `progress` value greater than the preceding transfer frame's `progress` value.
 - The payload represented by `data` is an ordered fragment of the exact serialized logical message associated with the transfer.
+- Receivers MAY accept out-of-order arrival of valid `chunk` frames and buffer them in memory for later assembly, provided they still reconstruct the payload strictly by increasing `progress` order.
+- Receivers SHOULD enforce bounded buffering limits for out-of-order chunks and MAY abort when those limits are exceeded.
+- Receivers MAY track gaps between observed `progress` values while awaiting delayed chunks, but MUST NOT treat a gap alone as terminal failure before `end` or local timeout/policy conditions are reached.
 
 #### `accept` Frame
 
@@ -195,7 +203,8 @@ This CEP defines one completion mode: `render`.
 In `render` mode:
 
 - the chunk sequence represents one bounded logical JSON-RPC message
-- the receiver MUST buffer and reassemble chunks in `progress` order
+- the receiver MUST reassemble chunks in `progress` order
+- the receiver MAY temporarily buffer valid out-of-order `chunk` frames before assembly, subject to local bounded-memory policy
 - the receiver MUST NOT surface partial payloads upward
 - the receiver MUST materialize a synthetic final request or response only after validation succeeds
 
@@ -212,8 +221,13 @@ Rules:
 - a transfer MUST begin with `start`
 - if confirmation is required for the transfer, `accept` MUST be received before the first `chunk`
 - `progress` values for oversized-transfer frames MUST increase monotonically across the transfer
+- receivers MUST treat `progress` as the canonical assembly index, not as a guarantee of arrival order from relays
+- receivers MAY buffer valid out-of-order `chunk` frames within bounded local limits and later assemble them by `progress` order
+- receivers MAY track missing `progress` positions as provisional gaps while the transfer remains in flight
+- receivers MUST fail the transfer if the received chunk set cannot satisfy the declared `totalChunks` and `totalBytes` from `start`
 - successful completion requires `end`
 - if `end` arrives after malformed or non-monotonic transfer ordering, the transfer MUST fail
+- if `end` arrives while provisional gaps remain unresolved, the transfer MUST fail
 
 This CEP does not define selective retransmission or repair.
 
@@ -226,7 +240,10 @@ Rules:
 - the sender MUST compute the digest over the exact serialized JSON-RPC message string
 - the sender MUST encode that string as UTF-8 before hashing
 - the `start` frame MUST carry the digest value
+- the `start` frame MUST carry `totalBytes` and `totalChunks`
 - the receiver MUST reconstruct the exact serialized string in `progress` order
+- the receiver MUST verify that the reconstructed UTF-8 byte length equals `totalBytes`
+- the receiver MUST verify that exactly `totalChunks` `chunk` frames were assembled before accepting `end`
 - the receiver MUST compute SHA-256 over the reconstructed UTF-8 byte sequence
 - the receiver MUST compare the result to the advertised digest before materializing the synthetic message
 
@@ -245,7 +262,10 @@ Receivers that support this CEP:
 - MUST process frames in bounded transfer order
 - MUST reject or fail malformed frame sequences
 - MUST treat `abort` as terminal
+- MUST evaluate declared `totalBytes` and `totalChunks` against local limits before committing unbounded reassembly state
 - MUST fail a transfer if `end` is received before a valid monotonic `progress` sequence has been observed
+- SHOULD enforce a bounded out-of-order window or equivalent memory policy for unresolved chunk gaps
+- MUST fail a transfer when local timeout or bounded-buffer policy makes successful completion no longer possible
 
 Receivers MUST only surface the synthetic final request or response after digest validation succeeds.
 
@@ -278,6 +298,17 @@ Implementations:
 - SHOULD use conservative margin below common practical thresholds when deciding whether to fragment proactively
 - SHOULD prefer proactive oversized transfer when they can predict that direct publication is likely to exceed common relay acceptance limits
 - MUST NOT assume that all relays enforce the same threshold or rejection behavior
+
+### Best Practices and Risks
+
+Implementations should keep oversized transfer defensively bounded.
+
+- Receivers SHOULD enforce strict limits on concurrent reassembly state, buffered bytes, and unresolved out-of-order chunks to reduce OOM risk.
+- Receivers SHOULD bound the out-of-order buffer window and fail transfers that cannot plausibly complete within local resource policy.
+- Senders SHOULD choose chunk sizes conservatively so each resulting Nostr event remains below practical relay acceptance limits.
+- Receivers SHOULD treat declared `totalBytes` and `totalChunks` as admission-control inputs before committing memory.
+- Implementations SHOULD use hard timeouts so incomplete transfers do not retain memory indefinitely.
+- Implementations MUST assume relay delivery may be delayed, duplicated, or reordered, and MUST NOT infer successful completion until `end`, completeness checks, and digest validation all succeed.
 
 ### Example: `render` Response Transfer
 
@@ -312,7 +343,9 @@ Server `start`:
       "type": "oversized-transfer",
       "frameType": "start",
       "completionMode": "render",
-      "digest": "sha256:8d969eef6ecad3c29a3a629280e686cff8fabcd1..."
+      "digest": "sha256:8d969eef6ecad3c29a3a629280e686cff8fabcd1...",
+      "totalBytes": 49,
+      "totalChunks": 2
     }
   }
 }
@@ -388,7 +421,9 @@ Client `start`:
       "type": "oversized-transfer",
       "frameType": "start",
       "completionMode": "render",
-      "digest": "sha256:8d969eef6ecad3c29a3a629280e686cff8fabcd1..."
+      "digest": "sha256:8d969eef6ecad3c29a3a629280e686cff8fabcd1...",
+      "totalBytes": 10485760,
+      "totalChunks": 160
     }
   }
 }
