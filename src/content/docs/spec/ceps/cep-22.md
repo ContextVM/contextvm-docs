@@ -1,5 +1,5 @@
 ---
-title: CEP-XX Oversized Payload Transfer
+title: CEP-22 Oversized Payload Transfer
 description: Bounded oversized payload transfer for ContextVM using progress-notification framing
 ---
 

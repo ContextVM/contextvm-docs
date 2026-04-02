@@ -68,6 +68,10 @@ export default defineConfig({
                   slug: "spec/ceps/cep-19",
                 },
                 {
+                  label: "CEP-22: Oversized Payload Transfer",
+                  slug: "spec/ceps/cep-22",
+                },
+                {
                   label: "Informational",
                   items: [
                     {
@@ -120,6 +124,10 @@ export default defineConfig({
                 {
                   label: "Nostr Server Transport",
                   slug: "ts-sdk/transports/nostr-server-transport",
+                },
+                {
+                  label: "Oversized Transfer",
+                  slug: "ts-sdk/transports/oversized-transfer",
                 },
               ],
             },
