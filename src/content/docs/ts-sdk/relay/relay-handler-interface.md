@@ -38,30 +38,30 @@ The `RelayHandler` interface is defined in [`core/interfaces.ts`](/core/interfac
 export interface RelayHandler {
   connect(): Promise<void>;
   disconnect(relayUrls?: string[]): Promise<void>;
-  publish(event: NostrEvent): Promise<void>;
+  publish(event: NostrEvent, opts?: { abortSignal?: AbortSignal }): Promise<void>;
   subscribe(
     filters: Filter[],
     onEvent: (event: NostrEvent) => void,
-    onEose?: () => void,
-  ): Promise<void>;
+    onEose?: () => void
+  ): Promise<() => void>;
   unsubscribe(): void;
 }
 ```
 
 - `connect()`: Establishes connections to the configured relays.
 - `disconnect()`: Closes connections to all relays.
-- `subscribe(filters, onEvent)`: Creates a subscription on the connected relays, listening for events that match the provided filters and passing them to the `onEvent` callback, it also accepts an optional `onEose` callback that is called when the relay reach "end of stored events".
+- `subscribe(filters, onEvent)`: Creates a subscription on the connected relays, listening for events that match the provided filters and passing them to the `onEvent` callback. Returns an unsubscribe function for that specific subscription. It also accepts an optional `onEose` callback that is called when the relay reaches "end of stored events".
 - `unsubscribe()`: Closes all active subscriptions.
-- `publish(event)`: Publishes a Nostr event to the connected relays.
+- `publish(event)`: Publishes a Nostr event to the connected relays. Accepts an optional `AbortSignal` for cancellation.
 
 ## Implementations
 
-The SDK provides a default implementation for common use cases and allows for custom implementations for advanced scenarios.
+The SDK provides multiple relay handler implementations depending on how much control and resilience you need.
 
-- **[SimpleRelayPool](/relay/simple-relay-pool)**: The default implementation, which manages a pool of relays and handles connection and subscription logic.
+- **[ApplesauceRelayPool](/relay/applesauce-relay-pool)**: The preferred production-oriented implementation, with richer relay management features.
 - **[Custom Relay Handler](/relay/custom-relay-handler)**: For creating custom relay handlers that integrate with specific relay management systems, such as auth relays or custom caching.
 
 ## Next Steps
 
-- Learn about the default implementation: **[SimpleRelayPool](/relay/simple-relay-pool)**
+- Learn about the recommended production implementation: **[ApplesauceRelayPool](/relay/applesauce-relay-pool)**
 - Learn how to create your own: **[Custom Relay Handler](/relay/custom-relay-handler)**
