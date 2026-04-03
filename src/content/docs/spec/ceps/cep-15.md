@@ -1,5 +1,5 @@
 ---
-title: CEP-TBD Common Tool Schemas
+title: CEP-15 Common Tool Schemas
 description: Standard for defining and discovering common tool schemas using MCP _meta fields and ContextVM announcements
 ---
 
@@ -7,6 +7,7 @@ description: Standard for defining and discovering common tool schemas using MCP
 
 **Status:** Draft  
 **Type:** Standards Track
+**Author:** @Contextvm-org
 
 ## Abstract
 
@@ -29,19 +30,31 @@ Common tool schemas enable provider competition, user choice, client optimizatio
 
 ### 1. Schema identity and hash calculation
 
-A common tool schema is identified by a **deterministic hash** of its tool name and JSON Schemas.
+A common tool schema is identified by a **deterministic hash** of its tool name and normalized JSON Schemas.
 
-To ensure semantically identical tool definitions produce the same cryptographic fingerprint, this specification uses **RFC 8785 (JSON Canonicalization Scheme — JCS)** for deterministic JSON serialization.
+To ensure compatible tool definitions produce the same cryptographic fingerprint even when providers use different documentation text, this specification defines a schema-normalization step before applying **RFC 8785 (JSON Canonicalization Scheme — JCS)** for deterministic JSON serialization.
 
-#### 1.1 Hash construction
+#### 1.1 Schema normalization
+
+Before hashing, implementations **MUST** normalize `inputSchema` and `outputSchema` (if present) as follows:
+
+1. Recursively traverse each JSON Schema object
+2. Remove the JSON Schema documentation keywords `title` and `description` at every nesting level
+3. Preserve all other keywords exactly as provided
+
+This normalization applies only to the JSON Schemas included in the hash payload. It does **not** modify the actual tool definition returned by `tools/list`.
+
+This CEP intentionally excludes only `title` and `description` from schema identity. It does **not** attempt to define broad JSON Schema semantic equivalence.
+
+#### 1.2 Hash construction
 
 The schema hash is calculated as:
 
 ```javascript
 schemaHash = sha256(JCS({
   name: string,
-  inputSchema: JSONSchema,
-  outputSchema?: JSONSchema
+  inputSchema: normalizeSchema(JSONSchema),
+  outputSchema?: normalizeSchema(JSONSchema)
 }))
 ```
 
@@ -49,30 +62,9 @@ schemaHash = sha256(JCS({
 
 **Important**: If `outputSchema` is present, it **MUST** be included in the hashed payload.
 
-**Note**: The `description` and `title` fields are intentionally excluded from the hash to allow implementers freedom in how they describe their service while maintaining schema compatibility.
+**Note**: The top-level tool `title` and `description` fields are intentionally excluded from the hash, and nested JSON Schema `title` and `description` keywords are removed during normalization. This allows implementers freedom in how they document their service while maintaining schema compatibility.
 
 **Note (output schema omission)**: Servers that do not provide an `outputSchema` will naturally share a hash with other servers that also omit `outputSchema` but use the same `name` and `inputSchema`. This is not inherently unsafe, but it can reduce specificity when clients want to distinguish between tools that return structured output vs. tools that return unstructured output.
-
-#### 1.2 Example hash calculation
-
-```javascript
-import { canonicalize } from "json-canonicalize";
-import { createHash } from "crypto";
-
-const toolSchema = {
-  name: "translate_text",
-  inputSchema: {
-    /* schema definition */
-  },
-  outputSchema: {
-    /* optional schema (if present, MUST be included in the hash) */
-  },
-};
-
-const hash = createHash("sha256")
-  .update(canonicalize(toolSchema))
-  .digest("hex");
-```
 
 ### 2. Tool metadata (`_meta`) in `tools/list`
 
@@ -236,9 +228,10 @@ Clients SHOULD verify schema conformance before treating a tool as an implementa
 
 1. Receive `tools/list` response
 2. Extract tool `name`, `inputSchema`, and `outputSchema` (if present)
-3. Compute hash: `sha256(JCS({ name, inputSchema, outputSchema? }))`
-4. Compare with `_meta["io.contextvm/common-schema"].schemaHash`
-5. If hashes match, the tool conforms to the common schema
+3. Normalize schemas by recursively removing JSON Schema `title` and `description`
+4. Compute hash: `sha256(JCS({ name, inputSchema: normalizeSchema(inputSchema), outputSchema?: normalizeSchema(outputSchema) }))`
+5. Compare with `_meta["io.contextvm/common-schema"].schemaHash`
+6. If hashes match, the tool conforms to the common schema
 
 #### 4.3 Client tool invocation
 
@@ -319,7 +312,8 @@ Fully backward compatible:
 
 - Choose a clear tool name (it is part of the hash)
 - Design `inputSchema` and (optionally, but strongly recommended) `outputSchema`
-- Compute `schemaHash` using JCS + SHA-256
+- Normalize schemas by recursively removing JSON Schema `title` and `description`
+- Compute `schemaHash` using normalized schemas, JCS, and SHA-256
 - Include `schemaHash` in `_meta["io.contextvm/common-schema"].schemaHash`
 - Publish a CEP-6 announcement with `i` and `k` tags (NIP-73 compliant)
 - Optionally include `t` tags for categorization
