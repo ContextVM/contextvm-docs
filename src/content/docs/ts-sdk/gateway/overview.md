@@ -45,9 +45,7 @@ export interface NostrMCPGatewayOptions {
    * Nostr client pubkey. If provided, the gateway will isolate MCP
    * sessions per pubkey.
    */
-  createMcpClientTransport?: (ctx: {
-    clientPubkey: string;
-  }) => Transport | Promise<Transport>;
+  createMcpClientTransport?: (ctx: { clientPubkey: string }) => Transport | Promise<Transport>;
 
   /** Maximum number of per-client MCP transports to keep in memory.
    *  @default 1000
@@ -62,7 +60,7 @@ export interface NostrMCPGatewayOptions {
 
   **Note**: You must provide either `mcpClientTransport` OR `createMcpClientTransport`, but not both.
 
-- **`nostrTransportOptions`**: The full configuration object required by the `NostrServerTransport`. This includes the `signer`, `relayHandler`, and options like `isPublicServer`.
+- **`nostrTransportOptions`**: The full configuration object required by the `NostrServerTransport`. This includes the `signer`, `relayHandler`, and options like `isAnnouncedServer`.
 
 - **`createMcpClientTransport`** (optional): A factory function that creates a new MCP transport for each unique Nostr client (identified by their public key). This enables per-client session isolation. The function receives a context object containing the `clientPubkey`.
 
@@ -83,8 +81,8 @@ In this mode, all Nostr clients share a single MCP transport connection to the b
 ```typescript
 const gateway = new NostrMCPGateway({
   mcpClientTransport: new StdioClientTransport({
-    command: "bun",
-    args: ["run", "path/to/your/mcp-server.ts"],
+    command: 'bun',
+    args: ['run', 'path/to/your/mcp-server.ts'],
   }),
   nostrTransportOptions: {
     signer,
@@ -118,19 +116,19 @@ const gateway = new NostrMCPGateway({
 This example shows how to create a gateway that connects to a local MCP server (running in a separate process) and exposes it to the Nostr network.
 
 ```typescript
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { NostrMCPGateway } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { SimpleRelayPool } from "@contextvm/sdk";
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { NostrMCPGateway } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
 // 1. Configure the signer and relay handler for the Nostr transport
-const signer = new PrivateKeySigner("your-gateway-private-key");
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
+const signer = new PrivateKeySigner('your-gateway-private-key');
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
 
 // 2. Configure the transport to connect to your existing MCP server
 const clientTransport = new StdioClientTransport({
-  command: "bun",
-  args: ["run", "path/to/your/mcp-server.ts"],
+  command: 'bun',
+  args: ['run', 'path/to/your/mcp-server.ts'],
 });
 
 // 3. Create the gateway instance
@@ -145,7 +143,7 @@ const gateway = new NostrMCPGateway({
 // 4. Start the gateway
 await gateway.start();
 
-console.log("Gateway is running, exposing the MCP server to Nostr.");
+console.log('Gateway is running, exposing the MCP server to Nostr.');
 
 // To stop the gateway: await gateway.stop();
 ```
@@ -155,14 +153,14 @@ console.log("Gateway is running, exposing the MCP server to Nostr.");
 This example shows how to use per-client routing with `StreamableHTTPClientTransport` to isolate MCP sessions per Nostr client:
 
 ```typescript
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { NostrMCPGateway } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { ApplesauceRelayPool } from "@contextvm/sdk";
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { NostrMCPGateway } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
-const signer = new PrivateKeySigner("your-gateway-private-key");
-const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
-const target = "http://localhost:3000/mcp";
+const signer = new PrivateKeySigner('your-gateway-private-key');
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
+const target = 'http://localhost:3000/mcp';
 
 const gateway = new NostrMCPGateway({
   // Factory function creates a new transport for each unique client pubkey
@@ -176,7 +174,7 @@ const gateway = new NostrMCPGateway({
 });
 
 await gateway.start();
-console.log("Gateway running with per-client routing enabled.");
+console.log('Gateway running with per-client routing enabled.');
 ```
 
 ### Transport Recreation on Re-initialization
@@ -191,7 +189,7 @@ This prevents "already initialized" errors with stateful transports like Streama
 
 ```typescript
 // Example: Client reconnects - transport is automatically recreated
-const client1 = new Client({ name: "client-1", version: "1.0.0" });
+const client1 = new Client({ name: 'client-1', version: '1.0.0' });
 await client1.connect(transport1);
 await client1.listTools(); // Uses transport instance #1
 

@@ -45,7 +45,7 @@ The `@contextvm/sdk` is built around a few core concepts that enable the bridgin
 At the heart of the SDK are two key interfaces:
 
 - **`NostrSigner`**: An interface for signing Nostr events. The SDK includes a default `PrivateKeySigner`, but you can create a custom implementation to integrate with other signing mechanisms (e.g., Window.nostr for web, remote signers, etc).
-- **`RelayHandler`**: An interface for managing connections to Nostr relays. The default `SimpleRelayPool` provides basic relay management, but you can implement your own logic for more sophisticated relay selection and management.
+- **`RelayHandler`**: An interface for managing connections to Nostr relays. The SDK recommends `ApplesauceRelayPool` for production relay management, but you can implement your own logic for more sophisticated relay selection and management.
 
 These components are fundamental for creating and broadcasting Nostr events, which are the backbone of ContextVM communication.
 
@@ -57,6 +57,8 @@ The SDK provides two specialized transports to send and receive MCP messages ove
 - [`NostrServerTransport`](/ts-sdk/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr.
 
 These transports handle the serialization of MCP messages into Nostr events and manage the communication flow.
+
+On the client side, [`NostrClientTransport`](/ts-sdk/transports/nostr-client-transport) can use explicit operational relays, `nprofile` relay hints, or CEP-17 relay-list discovery. This means client configurations can now omit `relayHandler` when discovery-based resolution is desired.
 
 ### Bridging Components: Proxy and Gateway
 

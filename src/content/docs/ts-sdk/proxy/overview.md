@@ -36,22 +36,22 @@ export interface NostrMCPProxyOptions {
 ```
 
 - **`mcpHostTransport`**: An instance of a server-side MCP transport that the local client will connect to. For example, `new StdioServerTransport()`.
-- **`nostrTransportOptions`**: The full configuration object required by the `NostrClientTransport`. This includes the `signer`, `relayHandler`, and the remote `serverPubkey`.
+- **`nostrTransportOptions`**: The full configuration object required by the `NostrClientTransport`. This includes the `signer` and the remote `serverPubkey`, and may also include `relayHandler` when you want explicit control over the operational relay set.
 
 ## Usage Example
 
 This example demonstrates how to create a proxy that listens for a local client over standard I/O and connects to a remote server over Nostr.
 
 ```typescript
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { NostrMCPProxy } from "@contextvm/sdk";
-import { PrivateKeySigner } from "@contextvm/sdk";
-import { SimpleRelayPool } from "@contextvm/sdk";
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { NostrMCPProxy } from '@contextvm/sdk';
+import { PrivateKeySigner } from '@contextvm/sdk';
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
 // 1. Configure the signer and relay handler for the Nostr connection
-const signer = new PrivateKeySigner("your-private-key");
-const relayPool = new SimpleRelayPool(["wss://relay.damus.io"]);
-const REMOTE_SERVER_PUBKEY = "remote-server-public-key";
+const signer = new PrivateKeySigner('your-private-key');
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
+const REMOTE_SERVER_PUBKEY = 'remote-server-public-key';
 
 // 2. Configure the transport for the local client
 // In this case, a stdio transport that the local client can connect to
@@ -70,12 +70,14 @@ const proxy = new NostrMCPProxy({
 // 4. Start the proxy
 await proxy.start();
 
-console.log("Proxy is running. Connect your local MCP client.");
+console.log('Proxy is running. Connect your local MCP client.');
 
 // To stop the proxy: await proxy.stop();
 ```
 
 In this setup, a separate MCP client process could connect to this proxy's `StdioServerTransport` and it would be transparently communicating with the remote server on Nostr.
+
+> **Note**: `relayHandler` is optional on the underlying `NostrClientTransport`. Include it when you want explicit relay control; omit it when you want the SDK to resolve relays dynamically from server hints and discovery metadata.
 
 ## Next Steps
 

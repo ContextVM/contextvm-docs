@@ -34,6 +34,8 @@ Servers that support ephemeral gift wraps MUST advertise support by including th
 - Server initialization responses, and/or
 - Public server announcements (see CEP-6).
 
+Servers SHOULD also include this tag on the first direct response sent to a client session when that response does not itself carry the initialize result. This keeps support discovery available to stateless clients that never observe a real initialize handshake.
+
 Example (tags only):
 
 ```json
