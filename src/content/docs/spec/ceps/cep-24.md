@@ -62,7 +62,7 @@ Tag intent:
 
 ### Reply to a Comment
 
-Replies MUST reference the parent comment event and use comment-kind context (`1111`).
+Replies MUST reference the parent comment event with lowercase `e`, `k` (set to `1111`), and `p` tags representing the parent comment context, while keeping the uppercase `A`, `K` (set to `11316`), and `P` tags pointed to the root server announcement.
 
 ```json
 {
@@ -79,6 +79,8 @@ Replies MUST reference the parent comment event and use comment-kind context (`1
 }
 ```
 
+*Note: Dual-tagging of `A` and `a` is only applicable to top-level comments where the root and parent are the same. For replies, the parent is a comment event, so the reply MUST use an `e` tag for the parent reference and an `A` tag for the root announcement.*
+
 ### Discovery Filter
 
 Clients discovering reviews for a specific server SHOULD query with:
@@ -87,11 +89,11 @@ Clients discovering reviews for a specific server SHOULD query with:
 {
   "kinds": [1111],
   "#K": ["11316"],
-  "#a": ["11316:<server-pubkey>:"]
+  "#A": ["11316:<server-pubkey>:"]
 }
 ```
 
-Clients MAY additionally query lowercase-only variants where needed for compatibility with relay/client behavior.
+Clients SHOULD query using the uppercase `#A` target tag to discover both top-level reviews and threaded replies. To ensure maximum compatibility with older implementations that might only use lowercase tags for top-level comments, clients MAY optionally include `#a` in their query filters.
 
 ## Moderation Considerations
 
@@ -118,6 +120,10 @@ This CEP is additive:
 - no new ContextVM-specific review kind is introduced
 - clients that already support NIP-22 comments can adopt this targeting convention incrementally
 - servers without review support continue to operate unchanged
+
+## Reference Implementation
+
+A reference implementation for server review UI and data fetching can be found in the [ContextVM site repository](https://github.com/ContextVM/contextvm-site).
 
 ## Dependencies
 

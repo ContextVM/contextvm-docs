@@ -27,7 +27,7 @@ Not all servers want a social presence. Therefore, profile publication is explic
 
 ### NIP-01 Metadata Content
 
-When publishing server profile metadata, implementations MUST use `kind:0` and a JSON `content` payload compatible with NIP-01 metadata conventions.
+When publishing server profile metadata, implementations MUST use `kind:0`. The `content` field MUST be a string containing stringified JSON compatible with NIP-01 metadata conventions.
 
 Common fields include:
 
@@ -95,6 +95,10 @@ This CEP is additive and introduces no breaking changes:
 - Servers not publishing `kind:0` continue to work unchanged
 - Existing CEP-6 discovery remains valid
 - Clients can progressively enhance rendering when `kind:0` is present
+
+## Reference Implementation
+
+A reference implementation of this metadata publishing can be found in the [ContextVM SDK announcement manager](https://github.com/ContextVM/sdk/blob/master/src/transport/nostr-server/announcement-manager.ts).
 
 ## Dependencies
 
