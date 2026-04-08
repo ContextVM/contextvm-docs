@@ -1,0 +1,89 @@
+---
+import Select from '@astrojs/starlight/components/Select.astro';
+---
+
+<starlight-theme-select>
+  {/* Keep width aligned with the upstream Starlight component. */}
+  <Select
+    icon="laptop"
+    label={Astro.locals.t('themeSelect.accessibleLabel')}
+    options={[
+      { label: Astro.locals.t('themeSelect.dark'), selected: false, value: 'dark' },
+      { label: Astro.locals.t('themeSelect.light'), selected: false, value: 'light' },
+      { label: Astro.locals.t('themeSelect.auto'), selected: true, value: 'auto' },
+    ]}
+    width="6.25em"
+  />
+</starlight-theme-select>
+
+{/* Inlined to avoid FOUC. Uses global scope from ThemeProvider. */}
+<script is:inline>
+  StarlightThemeProvider.updatePickers();
+</script>
+
+<script>
+  type Theme = 'auto' | 'dark' | 'light';
+
+  const storageKey = 'starlight-theme';
+  const mediaQuery = matchMedia('(prefers-color-scheme: light)');
+
+  const parseTheme = (theme: unknown): Theme =>
+    theme === 'auto' || theme === 'dark' || theme === 'light' ? theme : 'auto';
+
+  const loadTheme = (): Theme => {
+    if (typeof localStorage === 'undefined') return 'auto';
+    try {
+      return parseTheme(localStorage.getItem(storageKey));
+    } catch {
+      return 'auto';
+    }
+  };
+
+  const storeTheme = (theme: Theme): void => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(storageKey, theme);
+    } catch {
+      // Ignore storage errors in restricted/private contexts.
+    }
+  };
+
+  const getPreferredColorScheme = (): Theme => (mediaQuery.matches ? 'light' : 'dark');
+
+  const onThemeChange = (theme: Theme): void => {
+    StarlightThemeProvider.updatePickers(theme);
+    if (typeof StarlightThemeProvider.applyDocumentTheme === 'function') {
+      StarlightThemeProvider.applyDocumentTheme(theme);
+    } else {
+      document.documentElement.dataset.theme =
+        theme === 'auto' ? getPreferredColorScheme() : theme;
+    }
+    storeTheme(theme);
+  };
+
+  const handleSystemThemeChange = (): void => {
+    if (loadTheme() === 'auto') onThemeChange('auto');
+  };
+
+  if ('addEventListener' in mediaQuery) {
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+  } else if ('addListener' in mediaQuery) {
+    mediaQuery.addListener(handleSystemThemeChange);
+  }
+
+  class StarlightThemeSelect extends HTMLElement {
+    constructor() {
+      super();
+      onThemeChange(loadTheme());
+      this.querySelector('select')?.addEventListener('change', (e) => {
+        if (e.currentTarget instanceof HTMLSelectElement) {
+          onThemeChange(parseTheme(e.currentTarget.value));
+        }
+      });
+    }
+  }
+
+  if (!customElements.get('starlight-theme-select')) {
+    customElements.define('starlight-theme-select', StarlightThemeSelect);
+  }
+</script>
