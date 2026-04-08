@@ -94,5 +94,15 @@ import IconLinkCard from '../../components/IconLinkCard.astro';
     .hero .actions .sl-link-button.minimal:focus-visible svg {
       transform: translateX(0.2rem);
     }
+
+    .hero .actions .sl-link-button.minimal + .sl-link-button.minimal {
+      margin-inline-start: 0.75rem;
+    }
+
+    @media (max-width: 50rem) {
+      .hero .actions .sl-link-button.minimal + .sl-link-button.minimal {
+        margin-inline-start: 1rem;
+      }
+    }
   }
 `}</style>
