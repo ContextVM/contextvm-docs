@@ -1,9 +1,9 @@
 ---
-title: CEP-24 Server Reviews via NIP-22
+title: CEP-24 Server Reviews
 description: Standard server reviews using kind 1111 comments on kind 11316 announcements
 ---
 
-# Server Reviews via NIP-22
+# Server Reviews
 
 **Status:** Draft
 **Author:** @contextvm-org
@@ -92,26 +92,6 @@ Clients discovering reviews for a specific server SHOULD query with:
   "#A": ["11316:<server-pubkey>:"]
 }
 ```
-
-Clients SHOULD query using the uppercase `#A` target tag to discover both top-level reviews and threaded replies. To ensure maximum compatibility with older implementations that might only use lowercase tags for top-level comments, clients MAY optionally include `#a` in their query filters.
-
-## Moderation Considerations
-
-Review consumers SHOULD apply moderation controls, including:
-
-- trust-scoring or reputation weighting
-- user-level muting and blocklists
-- report flows and abuse handling
-
-Raw chronological display without moderation signals is discouraged for production UX.
-
-## Spam Resistance
-
-Implementations SHOULD apply anti-spam controls to review ingestion and ranking:
-
-- validate that `a`/`A` tags correctly reference `11316:<server-pubkey>:`
-- apply NIP-13 proof-of-work thresholds where appropriate
-- incorporate Web-of-Trust or local trust scoring before amplification
 
 ## Backward Compatibility
 
