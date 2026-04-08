@@ -69,3 +69,21 @@ import IconLinkCard from '../../components/IconLinkCard.astro';
     target="_self"
   />
 </CardGrid>
+
+<style is:global>{`
+  @layer starlight.components {
+    .hero .actions .sl-link-button.minimal {
+      color: var(--sl-color-white);
+      text-decoration: none;
+      text-underline-offset: 0.2em;
+      transition: color 0.2s ease, text-decoration-color 0.2s ease;
+    }
+
+    .hero .actions .sl-link-button.minimal:hover,
+    .hero .actions .sl-link-button.minimal:focus-visible {
+      color: #c084fc;
+      text-decoration: underline;
+      text-decoration-color: currentColor;
+    }
+  }
+`}</style>
