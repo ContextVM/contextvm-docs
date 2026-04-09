@@ -160,3 +160,25 @@ A reference implementation can be found in the [ContextVM SDK server transport i
 ## Dependencies
 
 - [CEP-4: Encryption Support](/spec/ceps/cep-4)
+
+## Related Concepts
+
+### Server Identity vs. Server Announcements
+
+CEP-6 announcement events (kinds 11316–11320) describe a server's **capabilities** —
+what MCP tools, resources, and prompts it exposes, and how to connect to it. They are
+machine-readable and optimized for client discovery.
+
+A server's **identity** — its human-readable name, description, logo, operator
+details, and social links — is a separate concern. It belongs in a Nostr **kind 0**
+(profile metadata) event following NIP-01 conventions. Public updates and changelogs
+are best published as **kind 1** short text notes following NIP-10.
+
+Separating these concerns means:
+- Capability announcements can update frequently (e.g., when tools change) without
+  touching the server's persistent public identity
+- Servers can maintain a stable social presence independent of their MCP capabilities
+- Clients can render richer server listings by combining both data sources
+
+See [Issue #23](https://github.com/ContextVM/contextvm-docs/issues/23) for the
+proposed CEP-XX standardizing server profile metadata and public communication channels.
