@@ -10,6 +10,8 @@ hero:
     - text: Get Started
       link: getting-started/quick-overview/
       icon: right-arrow
+      attrs:
+        class: hero-get-started-cta
     - text: View on GitHub
       link: https://github.com/contextvm/ts-sdk
       icon: external
@@ -22,6 +24,9 @@ hero:
 
 import { CardGrid } from '@astrojs/starlight/components';
 import IconLinkCard from '../../components/IconLinkCard.astro';
+import HeroGetStartedCTAStyles from '../../components/HeroGetStartedCTAStyles.astro';
+
+<HeroGetStartedCTAStyles />
 
 ## Core Concepts
 
