@@ -15,6 +15,16 @@ This CEP proposes a public server discovery mechanism for ContextVM using Nostr 
 
 This CEP also defines the discovery tag set that servers MAY replay on the first direct response sent to a client session. Public announcements remain the canonical public discoverability mechanism, while direct-response replay improves interoperability for stateless or announcement-agnostic clients.
 
+## Publishing Your Server
+
+To have your server appear in ContextVM server listings, publish a kind `11316` 
+announcement event to a Nostr relay that ContextVM listens to.
+
+The fastest way is the CVMI CLI:
+
+```bash
+npx cvmi serve -- <your-server-command>
+```
 ## Specification
 
 ### Overview
@@ -83,11 +93,15 @@ The `content` field contains structured server information following the [MCP sp
 
 The `tags` field provides additional metadata for discoverability:
 
-- **name**: Human-readable server name
-- **about**: Server description
-- **picture**: URL to server icon/avatar
-- **website**: Server website URL
-- **support_encryption**: Indicates server supports encrypted messages
+| Tag | Type | Description | Impact if omitted |
+|---|---|---|---|
+| `name` | string | Display name for your server | Falls back to `serverInfo.name` from capabilities, often a raw technical identifier |
+| `about` | string | What your server does | No description shown in listings, users cannot evaluate your server without clicking in |
+| `picture` | string (URL) | Avatar or icon | A colour block generated from your pubkey is shown instead |
+| `website` | string (URL) | Your homepage or docs | No link shown, users have no way to learn more or verify who runs this server |
+| `support_encryption` | flag | Include this tag if your server supports NIP-44 encryption | Server appears as unencrypted regardless of actual capability |
+
+None of these tags are required by the protocol. Servers that omit `name` and `about` will appear with significantly reduced context in discovery interfaces.
 
 These discovery tags are not limited to public announcement events. Servers MAY also include the same standard and custom discovery tags on the first direct response sent to a client session so that stateless clients can learn server metadata and transport capabilities without first fetching public announcements.
 
