@@ -18,7 +18,10 @@ When a server replies with `notifications/payment_required`, the payments layer:
 A `PaymentHandler` implements one PMI (one payment rail). The built-in handler supports Lightning BOLT11 over NWC.
 
 ```ts
-import { LnBolt11NwcPaymentHandler, withClientPayments } from '@contextvm/sdk/payments';
+import {
+  LnBolt11NwcPaymentHandler,
+  withClientPayments,
+} from '@contextvm/sdk/payments';
 
 const handler = new LnBolt11NwcPaymentHandler({
   nwcConnectionString: process.env.NWC_CLIENT_CONNECTION!,
@@ -62,7 +65,10 @@ This is designed for:
 - headless "Code Mode" policies (budgets / allowlists)
 
 ```ts
-import { withClientPayments, type PaymentHandlerRequest } from '@contextvm/sdk/payments';
+import {
+  withClientPayments,
+  type PaymentHandlerRequest,
+} from '@contextvm/sdk/payments';
 
 const paidTransport = withClientPayments(baseTransport, {
   handlers: [handler],

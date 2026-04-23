@@ -73,7 +73,10 @@ For advanced use cases, create and configure your own relay handler:
 ```typescript
 import { ApplesauceRelayPool } from '@contextvm/sdk';
 
-const relayHandler = new ApplesauceRelayPool(['wss://relay.damus.io', 'wss://relay.primal.net']);
+const relayHandler = new ApplesauceRelayPool([
+  'wss://relay.damus.io',
+  'wss://relay.primal.net',
+]);
 
 const transport = new NostrClientTransport({
   signer,

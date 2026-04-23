@@ -131,7 +131,11 @@ import type { ResolvePriceFn } from '@contextvm/sdk/payments';
 
 const usedCapabilities = new Set<string>(); // Track used capabilities per user
 
-const resolvePrice: ResolvePriceFn = async ({ capability, clientPubkey, request }) => {
+const resolvePrice: ResolvePriceFn = async ({
+  capability,
+  clientPubkey,
+  request,
+}) => {
   const key = `${clientPubkey}:${capability.method}:${capability.name}`;
 
   if (usedCapabilities.has(key)) {

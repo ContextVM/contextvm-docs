@@ -25,7 +25,10 @@ By using this transport, an MCP client can interact with a Nostr-enabled MCP ser
 To create an instance of `NostrClientTransport`, you must provide a configuration object that implements the `NostrTransportOptions` interface:
 
 ```typescript
-export interface NostrTransportOptions extends Omit<BaseNostrTransportOptions, 'relayHandler'> {
+export interface NostrTransportOptions extends Omit<
+  BaseNostrTransportOptions,
+  'relayHandler'
+> {
   relayHandler?: RelayHandler | string[];
   serverPubkey: string;
   discoveryRelayUrls?: string[];
@@ -131,7 +134,11 @@ Typical flow:
 Example with discovery fallback:
 
 ```typescript
-import { EncryptionMode, NostrClientTransport, PrivateKeySigner } from '@contextvm/sdk';
+import {
+  EncryptionMode,
+  NostrClientTransport,
+  PrivateKeySigner,
+} from '@contextvm/sdk';
 
 const clientNostrTransport = new NostrClientTransport({
   signer: new PrivateKeySigner('your-private-key'),

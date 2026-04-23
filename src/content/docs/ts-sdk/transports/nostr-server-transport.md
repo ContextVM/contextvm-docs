@@ -37,7 +37,9 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
   /** List of capabilities that are excluded from public key whitelisting requirements */
   excludedCapabilities?: CapabilityExclusion[];
   /** Optional callback for dynamic capability exclusions. Returns true to bypass pubkey authorization. */
-  isCapabilityExcluded?: (exclusion: CapabilityExclusion) => boolean | Promise<boolean>;
+  isCapabilityExcluded?: (
+    exclusion: CapabilityExclusion,
+  ) => boolean | Promise<boolean>;
   /** Log level for the NostrServerTransport: 'debug' | 'info' | 'warn' | 'error' | 'silent' */
   logLevel?: LogLevel;
   /**
@@ -199,9 +201,7 @@ const transport = new NostrServerTransport({
   relayHandler: relayPool,
   allowedPublicKeys: ['trusted-client'],
   // Static exclusions
-  excludedCapabilities: [
-    { method: 'tools/list' },
-  ],
+  excludedCapabilities: [{ method: 'tools/list' }],
   // Dynamic exclusion callback - evaluated after static exclusions
   isCapabilityExcluded: async (exclusion) => {
     // Check if this specific capability should be public
@@ -340,11 +340,11 @@ This separation helps keep the published relay list focused while still improvin
 
 The transport now exposes three independent publication surfaces:
 
-| Purpose | Event kind(s) | Controlled by |
-| --- | --- | --- |
+| Purpose                            | Event kind(s)   | Controlled by       |
+| ---------------------------------- | --------------- | ------------------- |
 | ContextVM capability announcements | `11316`-`11320` | `isAnnouncedServer` |
-| Relay discoverability | `10002` | `publishRelayList` |
-| Nostr profile identity | `0` | `profileMetadata` |
+| Relay discoverability              | `10002`         | `publishRelayList`  |
+| Nostr profile identity             | `0`             | `profileMetadata`   |
 
 This allows release-time configurations such as:
 
@@ -455,7 +455,7 @@ server.registerTool(
       ],
       structuredContent,
     };
-  }
+  },
 );
 ```
 

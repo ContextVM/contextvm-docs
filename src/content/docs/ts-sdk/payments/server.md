@@ -45,7 +45,10 @@ A `PaymentProcessor` is responsible for:
 You can configure multiple processors (multiple PMIs). The server selects a processor based on client/server PMI compatibility.
 
 ```ts
-import { LnBolt11NwcPaymentProcessor, withServerPayments } from '@contextvm/sdk/payments';
+import {
+  LnBolt11NwcPaymentProcessor,
+  withServerPayments,
+} from '@contextvm/sdk/payments';
 
 const processor = new LnBolt11NwcPaymentProcessor({
   nwcConnectionString: process.env.NWC_SERVER_CONNECTION!,
@@ -64,7 +67,11 @@ withServerPayments(transport, {
 ```ts
 import type { ResolvePriceFn } from '@contextvm/sdk/payments';
 
-const resolvePrice: ResolvePriceFn = async ({ capability, request, clientPubkey }) => {
+const resolvePrice: ResolvePriceFn = async ({
+  capability,
+  request,
+  clientPubkey,
+}) => {
   // Example: price based on request size.
   const requestSize = JSON.stringify(request.params ?? {}).length;
   const extra = Math.ceil(requestSize / 1024);

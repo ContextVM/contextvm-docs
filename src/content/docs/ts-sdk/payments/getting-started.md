@@ -35,7 +35,10 @@ export const pricedCapabilities: PricedCapability[] = [
 Create a processor, then wrap your server transport.
 
 ```ts
-import { LnBolt11NwcPaymentProcessor, withServerPayments } from '@contextvm/sdk/payments';
+import {
+  LnBolt11NwcPaymentProcessor,
+  withServerPayments,
+} from '@contextvm/sdk/payments';
 import { NostrServerTransport } from '@contextvm/sdk/transport';
 
 const baseTransport = new NostrServerTransport({
@@ -65,7 +68,10 @@ Server behavior for priced requests:
 Create a handler and wrap your client transport.
 
 ```ts
-import { LnBolt11NwcPaymentHandler, withClientPayments } from '@contextvm/sdk/payments';
+import {
+  LnBolt11NwcPaymentHandler,
+  withClientPayments,
+} from '@contextvm/sdk/payments';
 import { NostrClientTransport } from '@contextvm/sdk/transport';
 
 const baseTransport = new NostrClientTransport({

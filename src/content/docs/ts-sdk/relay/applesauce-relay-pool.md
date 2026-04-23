@@ -31,7 +31,10 @@ import { NostrClientTransport } from '@contextvm/sdk';
 
 // 3. Pass the instance to a transport
 const transport = new NostrClientTransport({
-  relayHandler: new ApplesauceRelayPool(['wss://relay1.com', 'wss://relay2.io']),
+  relayHandler: new ApplesauceRelayPool([
+    'wss://relay1.com',
+    'wss://relay2.io',
+  ]),
   // ... other options
 });
 ```

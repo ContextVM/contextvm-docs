@@ -65,13 +65,13 @@ const transport = new NostrClientTransport({
 
 ### Options
 
-| Option | Default | Meaning |
-|--------|---------|---------|
-| `enabled` | `true` | Enables automatic CEP-22 oversized transfer support |
-| `thresholdBytes` | `48_000` | Size at which the sender proactively switches to oversized transfer |
-| `chunkSizeBytes` | `48_000` | Maximum payload bytes placed in each emitted chunk |
-| `acceptTimeoutMs` | `30000` on the client | How long to wait for `accept` when handshake is required |
-| `policy` | built-in safe defaults | Receiver-side limits for bytes, chunks, concurrency, ordering window, and timeout |
+| Option            | Default                | Meaning                                                                           |
+| ----------------- | ---------------------- | --------------------------------------------------------------------------------- |
+| `enabled`         | `true`                 | Enables automatic CEP-22 oversized transfer support                               |
+| `thresholdBytes`  | `48_000`               | Size at which the sender proactively switches to oversized transfer               |
+| `chunkSizeBytes`  | `48_000`               | Maximum payload bytes placed in each emitted chunk                                |
+| `acceptTimeoutMs` | `30000` on the client  | How long to wait for `accept` when handshake is required                          |
+| `policy`          | built-in safe defaults | Receiver-side limits for bytes, chunks, concurrency, ordering window, and timeout |
 
 ## How to Think About the Options
 
@@ -98,13 +98,13 @@ These defaults are appropriate for most consumers. Adjust them only if your depl
 
 If an oversized transfer fails, the transport may surface one of these errors:
 
-| Error | Description |
-|-------|-------------|
-| `OversizedTransferAbortError` | The remote side aborted the transfer |
-| `OversizedTransferPolicyError` | The transfer exceeded local safety limits |
-| `OversizedTransferDigestError` | Reassembled payload integrity validation failed |
+| Error                              | Description                                                      |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| `OversizedTransferAbortError`      | The remote side aborted the transfer                             |
+| `OversizedTransferPolicyError`     | The transfer exceeded local safety limits                        |
+| `OversizedTransferDigestError`     | Reassembled payload integrity validation failed                  |
 | `OversizedTransferReassemblyError` | The transfer completed with missing or inconsistent payload data |
-| `OversizedTransferSequenceError` | The transfer violated CEP-22 frame ordering rules |
+| `OversizedTransferSequenceError`   | The transfer violated CEP-22 frame ordering rules                |
 
 ## Recommendations
 

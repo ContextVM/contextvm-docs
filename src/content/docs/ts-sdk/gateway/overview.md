@@ -45,7 +45,9 @@ export interface NostrMCPGatewayOptions {
    * Nostr client pubkey. If provided, the gateway will isolate MCP
    * sessions per pubkey.
    */
-  createMcpClientTransport?: (ctx: { clientPubkey: string }) => Transport | Promise<Transport>;
+  createMcpClientTransport?: (ctx: {
+    clientPubkey: string;
+  }) => Transport | Promise<Transport>;
 
   /** Maximum number of per-client MCP transports to keep in memory.
    *  @default 1000

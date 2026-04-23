@@ -65,7 +65,7 @@ async function main() {
     },
     async ({ message }) => ({
       content: [{ type: 'text', text: `Tool echo: ${message}` }],
-    })
+    }),
   );
 
   // 4. Configure the Nostr Server Transport

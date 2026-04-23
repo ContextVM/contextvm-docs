@@ -7,7 +7,9 @@ const githubPagesBase = '/contextvm-docs';
 
 // https://astro.build/config
 export default defineConfig({
-  site: isGitHubPages ? 'https://contextvm.github.io/contextvm-docs' : 'https://docs.contextvm.org',
+  site: isGitHubPages
+    ? 'https://contextvm.github.io/contextvm-docs'
+    : 'https://docs.contextvm.org',
   base: isGitHubPages ? githubPagesBase : '/',
   integrations: [
     starlight({
@@ -38,7 +40,9 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Getting Started',
-          items: [{ label: 'Quick Overview', slug: 'getting-started/quick-overview' }],
+          items: [
+            { label: 'Quick Overview', slug: 'getting-started/quick-overview' },
+          ],
         },
         {
           label: 'Specification',
@@ -66,18 +70,24 @@ export default defineConfig({
                   slug: 'spec/ceps/cep-19',
                 },
                 {
-                  label: "CEP-22: Oversized Payload Transfer",
-                  slug: "spec/ceps/cep-22",
+                  label: 'CEP-22: Oversized Payload Transfer',
+                  slug: 'spec/ceps/cep-22',
                 },
                 {
-                  label: "Informational",
+                  label:
+                    'CEP-23: Server Profile Metadata and Social Communications',
+                  slug: 'spec/ceps/cep-23',
+                },
+                {
+                  label: 'Informational',
                   items: [
                     {
                       label: 'CEP-16: Client Public Key Injection',
                       slug: 'spec/ceps/informational/cep-16',
                     },
                     {
-                      label: 'CEP-21: Payment Method Identifier (PMI) Recommendations',
+                      label:
+                        'CEP-21: Payment Method Identifier (PMI) Recommendations',
                       slug: 'spec/ceps/informational/cep-21',
                     },
                   ],
@@ -123,8 +133,8 @@ export default defineConfig({
                   slug: 'ts-sdk/transports/nostr-server-transport',
                 },
                 {
-                  label: "Oversized Transfer",
-                  slug: "ts-sdk/transports/oversized-transfer",
+                  label: 'Oversized Transfer',
+                  slug: 'ts-sdk/transports/oversized-transfer',
                 },
               ],
             },

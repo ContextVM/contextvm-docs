@@ -72,14 +72,19 @@ Replies MUST reference the parent comment event with lowercase `e`, `k` (set to 
     ["A", "11316:<server-pubkey>:", "<relay-hint>"],
     ["K", "11316"],
     ["P", "<server-pubkey>", "<relay-hint>"],
-    ["e", "<parent-comment-event-id>", "<relay-hint>", "<parent-author-pubkey>"],
+    [
+      "e",
+      "<parent-comment-event-id>",
+      "<relay-hint>",
+      "<parent-author-pubkey>"
+    ],
     ["k", "1111"],
     ["p", "<parent-author-pubkey>", "<relay-hint>"]
   ]
 }
 ```
 
-*Note: Dual-tagging of `A` and `a` is only applicable to top-level comments where the root and parent are the same. For replies, the parent is a comment event, so the reply MUST use an `e` tag for the parent reference and an `A` tag for the root announcement.*
+_Note: Dual-tagging of `A` and `a` is only applicable to top-level comments where the root and parent are the same. For replies, the parent is a comment event, so the reply MUST use an `e` tag for the parent reference and an `A` tag for the root announcement._
 
 ### Discovery Filter
 
