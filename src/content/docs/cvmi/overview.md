@@ -16,6 +16,7 @@ CVMI serves as your Swiss army knife for working with ContextVM. It simplifies c
 - **Managing skills** - Install and organize ContextVM skills that help you build and interact with the protocol
 - **Running gateways** - Expose MCP servers to the Nostr network
 - **Using proxies** - Connect to remote MCP servers through Nostr as if they were local
+- **Generating clients** - Compile remote ContextVM tool schemas into type-safe TypeScript clients
 
 ## Key Features
 
@@ -26,6 +27,7 @@ CVMI consolidates multiple tools into a single CLI interface, making it easy to:
 - Install skills interactively or programmatically
 - Expose local or remote MCP servers as Nostr gateways
 - Use remote Nostr-based MCP servers through a local stdio proxy
+- Generate reusable TypeScript clients with [`cvmi cn`](../cvmi/commands)
 
 ### Skills System
 
@@ -50,6 +52,14 @@ Connect to remote Nostr-based MCP servers as if they were local:
 - Bridges Nostr transport to stdio for clients that don't natively support Nostr
 - Perfect for integrating with existing MCP clients
 
+### Client Generation (`cvmi cn`)
+
+Generate strongly typed TypeScript clients directly from a live ContextVM server:
+
+- Initialize a project for generated clients
+- Fetch server capabilities from Nostr and turn them into TypeScript APIs
+- Regenerate clients as remote servers evolve
+
 ## Use Cases
 
 ### When to Use CVMI
@@ -57,6 +67,7 @@ Connect to remote Nostr-based MCP servers as if they were local:
 - **Developing with ContextVM** - Install skills to learn best practices and access reference implementations
 - **Exposing MCP Servers** - Use `cvmi serve` to make your MCP server available over Nostr
 - **Connecting to Remote Servers** - Use `cvmi use` to connect to Nostr-based MCP servers from standard MCP clients
+- **Building Applications** - Use `cvmi cn` to generate reusable clients for app codebases
 - **Protocol Exploration** - Quickly experiment with ContextVM capabilities without writing code
 
 ## Relationship to Other Tools
