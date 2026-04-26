@@ -63,6 +63,8 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
 - **`isCapabilityExcluded`**: (Optional) A dynamic capability exclusion callback that receives a capability exclusion pattern and returns `true` to bypass pubkey authorization for that capability. Can be async. Evaluated after static `excludedCapabilities`.
 - **`injectClientPubkey`**: (Optional) If `true`, the transport will inject the client's public key into the `_meta` field of requests passed to the underlying server. Defaults to `false`.
 
+Incoming server requests also receive `_meta.requestEventId`, which is the inbound signed Nostr event id used internally for request correlation. This is always injected for inbound requests that have `params`, independently of `injectClientPubkey`.
+
 ## CEP-23 Server Profile Publication
 
 `serverInfo` and `profileMetadata` serve different purposes:
@@ -312,7 +314,8 @@ console.log('MCP server is running and available on Nostr.');
 1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isAnnouncedServer` is `true`, it publishes public announcement events. Independently, if `publishRelayList` is enabled, it also publishes relay-list metadata. If `profileMetadata` is configured, it publishes a CEP-23 `kind:0` profile event.
 2.  **Incoming Events**: The transport listens for events from clients. For each client, it maintains a `ClientSession`.
 3.  **Request Handling**: When a valid request is received from an authorized client, the transport forwards it to the `McpServer`'s internal logic via the `onmessage` handler. It replaces the request's original ID with the unique Nostr event ID to prevent ID collisions between different clients.
-    - If `injectClientPubkey` is enabled, the client's public key is injected into the request's `_meta` field before being passed to the server.
+    - The inbound request event id is injected into the request's `_meta.requestEventId` field before being passed to the server.
+    - If `injectClientPubkey` is enabled, the client's public key is also injected into the request's `_meta.clientPubkey` field before being passed to the server.
 4.  **Response Handling**: When the `McpServer` sends a response, the transport's `send()` method is called. The transport looks up the original request details from the client's session, restores the original request ID, and sends the response back to the correct client, referencing the original event ID.
 5.  **Discoverability publication**: Public announcement events (kinds 11316-11320) are controlled by `isAnnouncedServer`. Relay-list metadata (`kind:10002`) is controlled independently by `publishRelayList`. Profile metadata (`kind:0`) is controlled independently by `profileMetadata`.
 
@@ -393,11 +396,12 @@ The injected metadata follows this structure:
   "id": 1,
   "method": "tools/call",
   "params": {
+    "_meta": {
+      "requestEventId": "<inbound-request-event-id>",
+      "clientPubkey": "<client-public-key-hex>"
+    },
     "name": "example_tool",
     "arguments": {}
-  },
-  "_meta": {
-    "clientPubkey": "<client-public-key-hex>"
   }
 }
 ```
@@ -409,6 +413,93 @@ The injected metadata follows this structure:
 - **Logging**: Track client activity and usage patterns
 - **Rate Limiting**: Apply rate limits on a per-client basis
 - **Personalization**: Provide client-specific responses or data
+
+## Accessing the Inbound Signed Nostr Request Event
+
+The server transport now exposes the inbound signed Nostr request event through a lightweight lookup API.
+
+### How it works
+
+1. The transport stores the inner signed Nostr event for the lifetime of the active correlated request.
+2. The transport injects `_meta.requestEventId` into the inbound MCP request.
+3. Server code can use that id to resolve the signed event when needed.
+4. The stored request context is removed automatically when the correlated request finishes or is evicted.
+
+This keeps the MCP payload small while still allowing advanced use cases such as signature verification, tag inspection, provenance checks, and request auditing.
+
+### Public API
+
+Import [`getNostrRequestEvent`](https://example.invalid) from `@contextvm/sdk`:
+
+```typescript
+import { getNostrRequestEvent } from '@contextvm/sdk';
+```
+
+Use `_meta.requestEventId` from the inbound request to retrieve the signed event.
+
+### Example: inspect the signed request event in a tool handler
+
+```typescript
+import * as z from 'zod';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { getNostrRequestEvent } from '@contextvm/sdk';
+
+const server = new McpServer({
+  name: 'demo-server',
+  version: '1.0.0',
+});
+
+server.registerTool(
+  'inspect_request',
+  {
+    description: 'Inspect the inbound signed Nostr request event',
+    inputSchema: z
+      .object({
+        _meta: z
+          .object({
+            requestEventId: z.string().optional(),
+            clientPubkey: z.string().optional(),
+          })
+          .optional(),
+      })
+      .passthrough(),
+  },
+  async (args) => {
+    const requestEventId = args._meta?.requestEventId;
+    if (!requestEventId) {
+      throw new Error('Missing requestEventId');
+    }
+
+    const event = getNostrRequestEvent(requestEventId);
+    if (!event) {
+      throw new Error('Signed request event is no longer available');
+    }
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Request ${event.id} was signed by ${event.pubkey}`,
+        },
+      ],
+      structuredContent: {
+        eventId: event.id,
+        pubkey: event.pubkey,
+        createdAt: event.created_at,
+        kind: event.kind,
+        tags: event.tags,
+      },
+    };
+  },
+);
+```
+
+### Notes
+
+- `_meta.requestEventId` is available on inbound requests with `params`.
+- [`getNostrRequestEvent`](../../../../../../src/transport/nostr-request-context.ts:46) is browser-safe and does not rely on Node.js APIs.
+- The returned event is the inner signed request event carrying the MCP payload.
+- The event is only guaranteed to exist while the correlated request is active.
 
 ## Structured Tool Outputs
 
