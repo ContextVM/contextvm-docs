@@ -79,6 +79,10 @@ export default defineConfig({
                   slug: 'spec/ceps/cep-23',
                 },
                 {
+                  label: 'CEP-24: Server Reviews',
+                  slug: 'spec/ceps/cep-24',
+                },
+                {
                   label: 'Informational',
                   items: [
                     {
