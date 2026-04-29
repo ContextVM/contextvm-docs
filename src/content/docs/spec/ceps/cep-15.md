@@ -34,19 +34,53 @@ A common tool schema is identified by a **deterministic hash** of its tool name 
 
 To ensure compatible tool definitions produce the same cryptographic fingerprint even when providers use different documentation text, this specification defines a schema-normalization step before applying **RFC 8785 (JSON Canonicalization Scheme — JCS)** for deterministic JSON serialization.
 
-#### 1.1 Schema normalization
+#### 1.1 Hash payload boundary
+
+The schema hash is computed from a payload that contains only:
+
+1. `name`
+2. normalized `inputSchema`
+3. normalized `outputSchema` (if present)
+
+All other top-level MCP tool fields are excluded from the hashed payload.
+
+This keeps schema identity focused on the portable structural contract of the tool rather than tool-level documentation or server-specific metadata.
+
+#### 1.2 Schema normalization
 
 Before hashing, implementations **MUST** normalize `inputSchema` and `outputSchema` (if present) as follows:
 
-1. Recursively traverse each JSON Schema object
-2. Remove the JSON Schema documentation keywords `title` and `description` at every nesting level
-3. Preserve all other keywords exactly as provided
+1. If the schema uses `$ref`, produce a self-contained schema representation before hashing.
+2. Recursively traverse each JSON Schema object
+3. Remove the following annotation and metadata keywords at every nesting level when present:
+   - `title`
+   - `description`
+   - `examples`
+   - `default`
+   - `deprecated`
+   - `readOnly`
+   - `writeOnly`
+4. Remove vendor-extension fields whose keys begin with `x-` at every nesting level
+5. Preserve all other keywords exactly as provided
 
 This normalization applies only to the JSON Schemas included in the hash payload. It does **not** modify the actual tool definition returned by `tools/list`.
 
-This CEP intentionally excludes only `title` and `description` from schema identity. It does **not** attempt to define broad JSON Schema semantic equivalence.
+This CEP defines deterministic structural identity for common tool schemas. It does **not** attempt to define full JSON Schema semantic equivalence.
 
-#### 1.2 Hash construction
+#### 1.3 `$ref` handling
+
+If `inputSchema` or `outputSchema` uses `$ref`, implementations **MUST** hash a self-contained schema representation rather than the unresolved `$ref` strings alone.
+
+For hash calculation:
+
+- implementations **MUST NOT** depend on live network resolution of remote references
+- schemas used for hashing **MUST** be self-contained
+- `$ref` values, if present in the hashed representation, **MUST** resolve within that self-contained representation
+- implementations **MAY** preserve local references within the self-contained representation so long as the representation remains deterministic and complete for hashing
+
+Implementations SHOULD bundle schemas into a self-contained representation before applying the normalization rules above and RFC 8785 canonicalization.
+
+#### 1.4 Hash construction
 
 The schema hash is calculated as:
 
@@ -62,7 +96,7 @@ schemaHash = sha256(JCS({
 
 **Important**: If `outputSchema` is present, it **MUST** be included in the hashed payload.
 
-**Note**: The top-level tool `title` and `description` fields are intentionally excluded from the hash, and nested JSON Schema `title` and `description` keywords are removed during normalization. This allows implementers freedom in how they document their service while maintaining schema compatibility.
+**Note**: Top-level tool fields other than `name`, `inputSchema`, and `outputSchema` are intentionally excluded from the hash. Within JSON Schema content, documentation, annotation, and vendor-extension fields listed in the normalization rules are removed before hashing. This allows implementers freedom in how they document or annotate their service while maintaining schema compatibility.
 
 **Note (output schema omission)**: Servers that do not provide an `outputSchema` will naturally share a hash with other servers that also omit `outputSchema` but use the same `name` and `inputSchema`. This is not inherently unsafe, but it can reduce specificity when clients want to distinguish between tools that return structured output vs. tools that return unstructured output.
 
@@ -131,6 +165,13 @@ Servers that implement a common tool schema MUST include the schema hash in the 
 Servers MAY publish CEP-6 public announcements to advertise which common tool schemas they implement.
 
 This CEP uses NIP-73 compliant `i` and `k` tags to enable schema discovery and ecosystem integration (e.g., NIP-22 comments, NIP-25 reactions, voting on schemas). Schema identity comes solely from `schemaHash`.
+
+Because a CEP-6 tools announcement reuses the same underlying `tools/list` payload in the event `content`, common-schema references SHOULD be carried consistently in both delivery paths: direct `tools/list` responses transported over ContextVM events and CEP-6 tools announcements. In practice:
+
+- tool entries in the shared `content` payload SHOULD include the same common-schema metadata in `_meta`
+- the enclosing ContextVM event SHOULD include the corresponding `i` and `k` tags in both a direct `tools/list` response and a CEP-6 tools announcement
+
+This keeps the direct-response path and the public-announcement path semantically aligned while preserving the same schema identity across both.
 
 #### 3.1 Implemented schema marker (NIP-73 `i` and `k` tags)
 
@@ -226,12 +267,14 @@ Recommended client behavior is a two-step flow:
 
 Clients SHOULD verify schema conformance before treating a tool as an implementation of a common schema.
 
-1. Receive `tools/list` response
+1. Receive a `tools/list` payload, either from a direct response or from a CEP-6 tools announcement
 2. Extract tool `name`, `inputSchema`, and `outputSchema` (if present)
-3. Normalize schemas by recursively removing JSON Schema `title` and `description`
-4. Compute hash: `sha256(JCS({ name, inputSchema: normalizeSchema(inputSchema), outputSchema?: normalizeSchema(outputSchema) }))`
-5. Compare with `_meta["io.contextvm/common-schema"].schemaHash`
-6. If hashes match, the tool conforms to the common schema
+3. If the schema uses `$ref`, produce a self-contained representation without live remote resolution
+4. Normalize schemas by removing the annotation, metadata, and `x-*` fields.
+5. Compute hash from a payload containing only `name`, normalized `inputSchema`, and normalized `outputSchema` (if present): `sha256(JCS({ name, inputSchema: normalizeSchema(inputSchema), outputSchema?: normalizeSchema(outputSchema) }))`
+6. Compare with `_meta["io.contextvm/common-schema"].schemaHash`
+7. If event-level `i` tags are present, clients MAY additionally verify that the advertised hash matches the corresponding per-tool `_meta` value
+8. If hashes match, the tool conforms to the common schema
 
 #### 4.3 Client tool invocation
 
@@ -312,10 +355,12 @@ Fully backward compatible:
 
 - Choose a clear tool name (it is part of the hash)
 - Design `inputSchema` and (optionally, but strongly recommended) `outputSchema`
-- Normalize schemas by recursively removing JSON Schema `title` and `description`
-- Compute `schemaHash` using normalized schemas, JCS, and SHA-256
+- Ensure schemas are self-contained for hashing and do not rely on live remote `$ref` resolution
+- Normalize schemas using the rules in Section 1.2
+- Compute `schemaHash` from `{ name, inputSchema, outputSchema? }` using normalized schemas, JCS, and SHA-256
 - Include `schemaHash` in `_meta["io.contextvm/common-schema"].schemaHash`
-- Publish a CEP-6 announcement with `i` and `k` tags (NIP-73 compliant)
+- When delivering the tool list over ContextVM events, include matching `i` and `k` tags on the enclosing event
+- Publish CEP-6 tools announcements with the same tool payload and matching `i` and `k` tags (NIP-73 compliant)
 - Optionally include `t` tags for categorization
 
 ### For client developers
@@ -340,28 +385,45 @@ Fully backward compatible:
 
 ### 1. A server implements the weather schema
 
-`tools/list` includes the schema hash:
+The `tools/list` response includes the schema hash in the tool entry and the corresponding common-schema discovery tags on the enclosing ContextVM event:
 
 ```json
 {
-  "name": "get_weather",
-  "inputSchema": {
-    "properties": {
-      "location": { "type": "string" }
-    },
-    "required": ["location"]
-  },
-  "outputSchema": {
-    "properties": {
-      "temperature": { "type": "number" }
-    },
-    "required": ["temperature"]
-  },
-  "_meta": {
-    "io.contextvm/common-schema": {
-      "schemaHash": "f8e7d6c5b4a3..."
+  "kind": 25910,
+  "pubkey": "<server-pubkey>",
+  "content": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "tools": [
+        {
+          "name": "get_weather",
+          "inputSchema": {
+            "properties": {
+              "location": { "type": "string" }
+            },
+            "required": ["location"]
+          },
+          "outputSchema": {
+            "properties": {
+              "temperature": { "type": "number" }
+            },
+            "required": ["temperature"]
+          },
+          "_meta": {
+            "io.contextvm/common-schema": {
+              "schemaHash": "f8e7d6c5b4a3..."
+            }
+          }
+        }
+      ]
     }
-  }
+  },
+  "tags": [
+    ["e", "<tools-list-request-event-id>"],
+    ["i", "f8e7d6c5b4a3...", "get_weather"],
+    ["k", "io.contextvm/common-schema"]
+  ]
 }
 ```
 
@@ -371,6 +433,30 @@ Fully backward compatible:
 {
   "kind": 11317,
   "pubkey": "<server-pubkey>",
+  "content": {
+    "tools": [
+      {
+        "name": "get_weather",
+        "inputSchema": {
+          "properties": {
+            "location": { "type": "string" }
+          },
+          "required": ["location"]
+        },
+        "outputSchema": {
+          "properties": {
+            "temperature": { "type": "number" }
+          },
+          "required": ["temperature"]
+        },
+        "_meta": {
+          "io.contextvm/common-schema": {
+            "schemaHash": "f8e7d6c5b4a3..."
+          }
+        }
+      }
+    ]
+  },
   "tags": [
     ["i", "f8e7d6c5b4a3...", "get_weather"],
     ["k", "io.contextvm/common-schema"],
