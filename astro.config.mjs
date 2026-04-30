@@ -94,6 +94,11 @@ export default defineConfig({
                         'CEP-21: Payment Method Identifier (PMI) Recommendations',
                       slug: 'spec/ceps/informational/cep-21',
                     },
+                    {
+                      label:
+                        'CEP-35: Stateless Session Discovery and Capability Learning',
+                      slug: 'spec/ceps/informational/cep-35',
+                    },
                   ],
                 },
               ],
