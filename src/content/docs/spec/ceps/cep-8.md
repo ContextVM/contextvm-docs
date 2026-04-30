@@ -152,6 +152,8 @@ Pricing information is advertised using the `cap` tag in server announcements an
 
 The `cap` tag indicates that using the `get_weather` tool costs 100 satoshis, allowing clients to display pricing to users.
 
+When `cap` tags are attached to a capability list response, they describe the pricing surface of that specific response payload. They are response-local discovery metadata for the listed capabilities, not by themselves a replacement for the peer's general session discovery baseline as defined in [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35).
+
 ### Payment Method Identifiers (PMI)
 
 The protocol supports multiple payment methods through Payment Method Identifiers (PMI) that follow the W3C Payment Method Identifiers specification.
@@ -242,6 +244,8 @@ Servers can discover PMI support through:
 ##### Stateless operation
 
 In stateless operation (no prior initialization), clients that want to use paid capabilities SHOULD include one or more `pmi` tags in the request event so the server can select a compatible payment method.
+
+When sent on the first direct client-to-server message of a session, these `pmi` tags participate in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). When sent on later requests, they are interpreted in the context of those requests unless another CEP explicitly defines stronger session-update semantics.
 
 ### Payment Flow
 
@@ -490,4 +494,5 @@ A reference implementation of this CEP is available in the [ContextVM TypeScript
 
 - [CEP-4: Encryption Support](/spec/ceps/cep-4)
 - [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
+- [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35)
 - [W3C Payment Method Identifiers](https://www.w3.org/TR/payment-method-id/)
