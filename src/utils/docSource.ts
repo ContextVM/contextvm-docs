@@ -12,7 +12,10 @@ function normalizeDocPathToSlug(path: string) {
 }
 
 const docSourceBySlug = Object.fromEntries(
-  Object.entries(docSourceModules).map(([path, source]) => [normalizeDocPathToSlug(path), source])
+  Object.entries(docSourceModules).map(([path, source]) => [
+    normalizeDocPathToSlug(path),
+    source,
+  ]),
 );
 
 export function getDocSourceBySlug(slug: string) {

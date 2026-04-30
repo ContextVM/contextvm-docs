@@ -1,11 +1,11 @@
 ---
 title: Commands
-description: Reference guide for all CVMI commands including add, serve, use, and future roadmap commands.
+description: Reference guide for CVMI commands including add, serve, use, and cn.
 ---
 
 # Commands
 
-CVMI provides a set of commands for managing skills, running gateways, and connecting to remote servers.
+CVMI provides commands for managing skills, running gateways, connecting to remote servers, and generating typed clients from ContextVM servers.
 
 ## `cvmi add`
 
@@ -139,17 +139,128 @@ The `use` command is particularly useful when:
 - You want to connect to a remote server published on Nostr
 - You're testing or debugging Nostr-based MCP servers
 
+## `cvmi cn`
+
+Generate type-safe TypeScript clients from a ContextVM server. The `cn` command group is useful when you want an application-facing client instead of using the gateway or stdio proxy flows.
+
+### Usage
+
+```bash
+npx cvmi cn <command> [options]
+```
+
+### Subcommands
+
+| Subcommand         | Description |
+| ------------------ | ----------- |
+| `init`             | Initialize `cn` in the current project |
+| `add <pubkey>`     | Connect to a server and generate a client file |
+| `update [pubkey]`  | Refresh one generated client or all added clients |
+
+### `cvmi cn init`
+
+Set up a project for generated ContextVM clients.
+
+```bash
+npx cvmi cn init
+```
+
+This command:
+
+- verifies that you are inside a valid project directory
+- creates a project-level `.cvmi-cn.json` file for client generation settings
+- creates the configured output directory for generated clients
+- warns if the required ContextVM SDK dependency is not installed
+
+### `cvmi cn add <pubkey>`
+
+Connect to a ContextVM server by public key, inspect its tools, and generate a typed client.
+
+```bash
+npx cvmi cn add <serverPubkey>
+```
+
+During generation, CVMI lets you:
+
+- review discovered server metadata and tools
+- override the default generated client class name
+- print the generated code without saving it
+- save the generated file into the configured source directory
+
+### `cvmi cn update [pubkey]`
+
+Refresh a previously added client.
+
+```bash
+npx cvmi cn update
+npx cvmi cn update <serverPubkey>
+```
+
+When no pubkey is provided, CVMI prompts you to update one generated client or all configured clients.
+
+### Example workflow
+
+```bash
+# initialize the current project
+npx cvmi cn init
+
+# generate a typed client for a server
+npx cvmi cn add npub1...
+
+# later, refresh all generated clients
+npx cvmi cn update
+```
+
 ## Roadmap
 
 The following commands are planned for future releases:
 
-### `cvmi cn` (Coming Soon)
+## `cvmi call`
 
-Compile a server to code (ctxcn). This will allow you to compile ContextVM configurations into deployable code bundles.
+Inspect a remote ContextVM server or invoke one of its tools directly from the terminal.
 
-### `cvmi call` (Coming Soon)
+### Usage
 
-Call methods from a server directly from the command line. Useful for testing and scripting server interactions.
+```bash
+npx cvmi call <server>
+npx cvmi call <server> <tool> [key=value ...] [options]
+```
+
+### Arguments
+
+| Argument | Description |
+| -------- | ----------- |
+| `server` | Server alias, `npub1...`, or hex public key |
+| `tool`   | Optional tool name to invoke |
+
+### What `cvmi call` does
+
+- lists a server's available tools when only the server is provided
+- shows per-tool input information to help with invocation
+- invokes a tool directly from the command line using `key=value` arguments
+- supports fast inspection and scripting without generating a client first
+
+### Examples
+
+```bash
+# inspect a server and list its tools
+npx cvmi call npub1...
+
+# invoke a tool with named arguments
+npx cvmi call npub1... search query="weather in madeira"
+
+# use a configured alias instead of a raw pubkey
+npx cvmi call weather search city=Funchal
+```
+
+### When to use `cvmi call`
+
+`cvmi call` is a good fit when you want to:
+
+- quickly inspect a remote server's capabilities
+- manually test a tool without writing app code
+- script one-off calls from the shell
+- validate a server before generating a reusable client with `cvmi cn`
 
 ### `cvmi inspect` (Coming Soon)
 

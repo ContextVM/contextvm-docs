@@ -7,7 +7,9 @@ const githubPagesBase = '/contextvm-docs';
 
 // https://astro.build/config
 export default defineConfig({
-  site: isGitHubPages ? 'https://contextvm.github.io/contextvm-docs' : 'https://docs.contextvm.org',
+  site: isGitHubPages
+    ? 'https://contextvm.github.io/contextvm-docs'
+    : 'https://docs.contextvm.org',
   base: isGitHubPages ? githubPagesBase : '/',
   integrations: [
     starlight({
@@ -32,11 +34,15 @@ export default defineConfig({
       ],
       components: {
         PageTitle: './src/components/starlight/PageTitle.astro',
+        ThemeProvider: './src/components/starlight/ThemeProvider.astro',
+        ThemeSelect: './src/components/starlight/ThemeSelect.astro',
       },
       sidebar: [
         {
           label: 'Getting Started',
-          items: [{ label: 'Quick Overview', slug: 'getting-started/quick-overview' }],
+          items: [
+            { label: 'Quick Overview', slug: 'getting-started/quick-overview' },
+          ],
         },
         {
           label: 'Specification',
@@ -64,6 +70,19 @@ export default defineConfig({
                   slug: 'spec/ceps/cep-19',
                 },
                 {
+                  label: 'CEP-22: Oversized Payload Transfer',
+                  slug: 'spec/ceps/cep-22',
+                },
+                {
+                  label:
+                    'CEP-23: Server Profile Metadata and Social Communications',
+                  slug: 'spec/ceps/cep-23',
+                },
+                {
+                  label: 'CEP-24: Server Reviews',
+                  slug: 'spec/ceps/cep-24',
+                },
+                {
                   label: 'Informational',
                   items: [
                     {
@@ -71,7 +90,8 @@ export default defineConfig({
                       slug: 'spec/ceps/informational/cep-16',
                     },
                     {
-                      label: 'CEP-21: Payment Method Identifier (PMI) Recommendations',
+                      label:
+                        'CEP-21: Payment Method Identifier (PMI) Recommendations',
                       slug: 'spec/ceps/informational/cep-21',
                     },
                   ],
@@ -115,6 +135,10 @@ export default defineConfig({
                 {
                   label: 'Nostr Server Transport',
                   slug: 'ts-sdk/transports/nostr-server-transport',
+                },
+                {
+                  label: 'Oversized Transfer',
+                  slug: 'ts-sdk/transports/oversized-transfer',
                 },
               ],
             },

@@ -39,6 +39,35 @@ CVMI uses the following environment variable prefixes for configuration:
 | `CVMI_GATEWAY_*` | Legacy alias for `CVMI_SERVE_*`            |
 | `CVMI_USE_*`     | Settings for the `use` command (proxy)     |
 | `CVMI_PROXY_*`   | Legacy alias for `CVMI_USE_*`              |
+| `CVMI_CN_*`      | Settings for the `cn` command group        |
+
+### `cvmi cn` Project Configuration
+
+The `cn` command group uses a dedicated project file named `.cvmi-cn.json`. This file is created by `cvmi cn init` and stores client-generation settings such as:
+
+- `source` — output directory for generated clients
+- `relays` — relay URLs used to connect to ContextVM servers
+- `addedClients` — tracked server pubkeys for later updates
+
+Example:
+
+```json
+{
+  "source": "src/ctxcn",
+  "relays": ["wss://relay.contextvm.org"],
+  "addedClients": ["npub1..."]
+}
+```
+
+### `cvmi cn` Private Key
+
+For `cvmi cn`, set the private key through the `CVMI_CN_PRIVATE_KEY` environment variable instead of persisting it to `.cvmi-cn.json`.
+
+```bash
+CVMI_CN_PRIVATE_KEY=nsec1... npx cvmi cn add npub1...
+```
+
+CVMI resolves `CVMI_CN_PRIVATE_KEY` at runtime and keeps it out of the persisted `cn` project config.
 
 ### Additional Serve Environment Variables
 

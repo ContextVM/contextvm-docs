@@ -1,0 +1,39 @@
+---
+---
+
+<style is:global>
+  .hero .actions .sl-link-button.hero-get-started-cta {
+    font-size: var(--sl-text-base);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    padding: 0.75rem 1.5rem;
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--sl-color-accent) 0%, var(--sl-color-accent-high) 100%);
+    color: var(--sl-color-black);
+    box-shadow: 0 10px 24px hsla(224, 90%, 60%, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.22s ease, filter 0.22s ease;
+  }
+
+  .hero .actions .sl-link-button.hero-get-started-cta:hover,
+  .hero .actions .sl-link-button.hero-get-started-cta:focus-visible {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 16px 34px hsla(224, 90%, 60%, 0.45);
+    filter: saturate(1.08);
+    color: var(--sl-color-black);
+  }
+
+  .hero .actions .sl-link-button.hero-get-started-cta :global(svg) {
+    transition: transform 0.2s ease;
+  }
+
+  .hero .actions .sl-link-button.hero-get-started-cta:hover :global(svg),
+  .hero .actions .sl-link-button.hero-get-started-cta:focus-visible :global(svg) {
+    transform: translateX(2px);
+  }
+
+  @media (min-width: 50rem) {
+    .hero .actions .sl-link-button.hero-get-started-cta {
+      padding: 1rem 1.85rem;
+    }
+  }
+</style>

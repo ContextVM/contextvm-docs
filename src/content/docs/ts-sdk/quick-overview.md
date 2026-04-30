@@ -54,11 +54,19 @@ These components are fundamental for creating and broadcasting Nostr events, whi
 The SDK provides two specialized transports to send and receive MCP messages over the Nostr network:
 
 - [`NostrClientTransport`](/ts-sdk/transports/nostr-client-transport): Used by MCP clients to connect to remote MCP servers exposed via Nostr.
-- [`NostrServerTransport`](/ts-sdk/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr.
+- [`NostrServerTransport`](/ts-sdk/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr, publish relay discoverability metadata, and optionally publish CEP-23 `kind:0` server profiles.
 
 These transports handle the serialization of MCP messages into Nostr events and manage the communication flow.
 
 On the client side, [`NostrClientTransport`](/ts-sdk/transports/nostr-client-transport) can use explicit operational relays, `nprofile` relay hints, or CEP-17 relay-list discovery. This means client configurations can now omit `relayHandler` when discovery-based resolution is desired.
+
+On the server side, [`NostrServerTransport`](/ts-sdk/transports/nostr-server-transport) now separates three publication concerns:
+
+- ContextVM capability announcements for protocol discovery;
+- relay-list publication for reachability discovery;
+- optional CEP-23 `kind:0` profile metadata for Nostr-native identity rendering.
+
+This allows operators to publish a profile without making the server fully announced, or to keep discovery metadata minimal while still presenting a recognizable Nostr identity.
 
 ### Bridging Components: Proxy and Gateway
 

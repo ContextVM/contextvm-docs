@@ -10,6 +10,8 @@ hero:
     - text: Get Started
       link: getting-started/quick-overview/
       icon: right-arrow
+      attrs:
+        class: hero-get-started-cta
     - text: View on GitHub
       link: https://github.com/contextvm/ts-sdk
       icon: external
@@ -22,6 +24,9 @@ hero:
 
 import { CardGrid } from '@astrojs/starlight/components';
 import IconLinkCard from '../../components/IconLinkCard.astro';
+import HeroGetStartedCTAStyles from '../../components/HeroGetStartedCTAStyles.astro';
+
+<HeroGetStartedCTAStyles />
 
 ## Core Concepts
 
@@ -56,16 +61,53 @@ import IconLinkCard from '../../components/IconLinkCard.astro';
   />
   <IconLinkCard
     title="Payments"
-    icon="credit-card"
+    icon="nostr"
     href="ts-sdk/payments/overview/"
     description="Add CEP-8 payments to servers and clients with Lightning, NWC, and custom rails"
     target="_blank"
   />
   <IconLinkCard
     title="CVMI CLI"
-    icon="terminal"
+    icon="laptop"
     href="cvmi/overview/"
     description="Use the CVMI CLI tool - the swiss army knife for ContextVM development"
     target="_self"
   />
 </CardGrid>
+
+<style is:global>{`
+  @layer starlight.components {
+    .hero .actions .sl-link-button.minimal {
+      color: var(--sl-color-white);
+      text-decoration: none;
+      text-underline-offset: 0.2em;
+      transition: color 0.2s ease, text-decoration-color 0.2s ease;
+    }
+
+    .hero .actions .sl-link-button.minimal svg {
+      transition: transform 0.2s ease;
+    }
+
+    .hero .actions .sl-link-button.minimal:hover,
+    .hero .actions .sl-link-button.minimal:focus-visible {
+      color: #c084fc;
+      text-decoration: underline;
+      text-decoration-color: currentColor;
+    }
+
+    .hero .actions .sl-link-button.minimal:hover svg,
+    .hero .actions .sl-link-button.minimal:focus-visible svg {
+      transform: translateX(0.2rem);
+    }
+
+    .hero .actions .sl-link-button.minimal + .sl-link-button.minimal {
+      margin-inline-start: 0.75rem;
+    }
+
+    @media (max-width: 50rem) {
+      .hero .actions .sl-link-button.minimal + .sl-link-button.minimal {
+        margin-inline-start: 1rem;
+      }
+    }
+  }
+`}</style>
