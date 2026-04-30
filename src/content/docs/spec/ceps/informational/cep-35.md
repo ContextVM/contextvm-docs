@@ -13,7 +13,7 @@ description: Informational guidance for session-scoped discovery exchange, state
 
 This CEP documents stateless session behavior already used in ContextVM implementations and provides a single behavioral source of truth for session-scoped discovery exchange and capability learning.
 
-It clarifies how discovery tags are exchanged on the first message roundtrip of a session, how clients and servers learn each other's capabilities during stateless operation, and how implementations should preserve unknown discovery tags for extensibility.
+It clarifies how discovery tags are exchanged during the first direct message roundtrip of a session, how clients and servers learn each other's capabilities during stateless operation, and how implementations should preserve unknown discovery tags for extensibility.
 
 This CEP is informational. It does not introduce new tags, event kinds, or transport primitives. It standardizes interoperable behavior around existing discovery surfaces defined elsewhere in the specification.
 
@@ -33,7 +33,7 @@ This CEP consolidates those expectations into one concise document so implementa
 This CEP defines:
 
 - stateless session discovery behavior
-- first-message discovery exchange semantics
+- first-message exchange semantics for direct session messages
 - role-oriented behavior for clients and servers
 - capability learning from inbound discovery tags
 - preservation of unknown discovery tags for extensibility
@@ -59,11 +59,17 @@ This CEP does **not** define:
 
 In stateless operation, discovery is a session-scoped first-message exchange rather than a first-response-only rule.
 
+More precisely, discovery is exchanged on the first direct message sent by each side in a session, forming the first direct message roundtrip for that session.
+
 - A client SHOULD include its transport capability and negotiation tags on the first direct message it sends in a session.
 - A server SHOULD include its discovery tags on the first direct message it sends in the same session.
 - After that initial exchange, both sides SHOULD omit repeated common discovery tags unless a specific feature definition says otherwise.
 
+This rule is role-oriented, not initialize-oriented. A server-to-client message that is not an initialize response may still carry the server's first session discovery tags, and a client-to-server message that is not an initialize request may still carry the client's first session discovery and negotiation tags.
+
 This model allows each side to learn peer capabilities during the first message roundtrip, regardless of whether the session began with an explicit initialization flow.
+
+The first direct message sent by each side establishes that side's session discovery baseline.
 
 ### Server behavior
 
@@ -96,7 +102,15 @@ Implementations SHOULD learn peer capabilities from inbound discovery tags whene
 
 Learning is not restricted to a successful initialize response. If a first direct message carries valid discovery tags, implementations MAY treat those tags as the current session discovery surface for that peer.
 
-If later messages in the same session provide additional discovery tags, implementations MAY merge them into previously learned state.
+If later messages in the same session provide additional discovery tags, implementations MAY interpret them for the context of that message.
+
+Unless a feature-specific CEP states otherwise, discovery tags carried on later direct messages SHOULD NOT be assumed to replace or extend the peer's general learned session discovery baseline.
+
+This means the default model is:
+
+- first direct message exchange establishes session-level discovery baseline
+- later feature-specific tags are interpreted as message-local or response-local metadata
+- only feature-specific CEPs that say otherwise define later tags as updates to learned session discovery state
 
 ## Tag Handling Rules
 
@@ -111,11 +125,13 @@ Examples include tags related to:
 - payment method compatibility
 - server identity metadata
 
-###[sic] Unknown tags
+### Unknown tags
 
 Implementations SHOULD preserve unknown discovery tags rather than discard them.
 
-Only routing tags or tags that are clearly unrelated to discovery need to be excluded from the learned discovery surface.
+At minimum, routing tags such as `p` and `e` SHOULD be excluded from the learned discovery surface.
+
+Implementations MAY also exclude additional tags that are clearly unrelated to discovery as a matter of local policy.
 
 This preserves forward compatibility and allows custom protocols to build on the same stateless discovery exchange.
 
@@ -127,6 +143,8 @@ Implementations SHOULD expose both:
 - raw discovery tags for applications that need custom behavior
 
 Providing raw access ensures that discovery remains extensible even when an implementation does not understand every tag it observes.
+
+Negotiation tags are related but distinct. This CEP describes when such tags are first exchanged during stateless operation, but feature-specific CEPs may define whether some negotiation tags continue to appear after the initial exchange.
 
 ## Relationship to Existing CEPs
 
