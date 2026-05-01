@@ -9,7 +9,7 @@ description: Open-ended stream transfer for ContextVM using progress-notificatio
 
 This CEP defines an additive transport profile for open-ended streaming over ContextVM. It reuses MCP `notifications/progress` as the transfer envelope and uses the request `progressToken` as the stream identifier.
 
-Unlike bounded oversized-payload transfer in [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md), this CEP defines a long-lived stream model where ordered fragments may continue until the sender explicitly closes or aborts the stream. The stream payload itself is the primary output; no rendered synthetic final JSON-RPC message is required.
+Unlike bounded oversized-payload transfer in [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md), this CEP defines a long-lived stream model where ordered fragments may continue until the sender explicitly closes or aborts the stream. The stream payload itself is the primary incremental output, but it does not replace the final JSON-RPC response for the originating request.
 
 This CEP is intended for cases where data is naturally incremental, long-lived, or unbounded, and where representing the result as one reassembled MCP request or response would be artificial or inefficient.
 
@@ -26,12 +26,12 @@ Some use cases are different in nature:
 - progressive delivery where partial consumption is desirable
 - cases where no single final rendered payload is the right abstraction
 
-This CEP defines an open-ended stream-transfer profile that:
+This CEP defines an open-ended stream profile that:
 
 - reuses the existing single-kind ContextVM transport model
 - reuses MCP `notifications/progress` as the stream envelope
 - uses the request `progressToken` as the stream identifier
-- supports ordered `start`, `accept`, `chunk`, `close`, and `abort` frames
+- supports ordered `start`, `accept`, `chunk`, `ping`, `pong`, `close`, and `abort` frames
 - treats the stream itself as the payload rather than a bounded reassembly artifact
 - allows receivers to process fragments incrementally as they arrive
 
@@ -57,7 +57,7 @@ Advertisement surfaces:
 
 Support semantics:
 
-- `support_open_stream` indicates support for the open-ended stream-transfer profile defined by this CEP.
+- `support_open_stream` indicates support for the open-ended stream profile defined by this CEP.
 
 ### Request-Level Activation
 
@@ -84,6 +84,8 @@ The sender:
 - MUST terminate the stream with either `close` or `abort`
 - MUST NOT silently stop transmission without a terminal frame unless transport failure prevents completion
 
+Multiple streams MAY exist concurrently between the same peers, but each active stream MUST use a distinct `progressToken`. A sender MUST NOT send a second `start` for a stream that is already active under the same `progressToken`.
+
 ### Progress Notification Framing
 
 Open-ended stream frames are carried inside MCP `notifications/progress` params. The MCP envelope remains valid and additive; ContextVM defines additional frame semantics inside the params object.
@@ -107,7 +109,7 @@ Example conceptual envelope:
 }
 ```
 
-The sender MUST use `progress` values that increase monotonically across the stream, consistent with MCP progress rules.
+The sender MUST use `progress` values that increase monotonically across the stream, consistent with MCP progress rules. `progress` orders all stream frames, including control frames, and MUST NOT be interpreted as a chunk counter.
 
 ### Frame Types
 
@@ -123,7 +125,7 @@ This CEP defines seven frame types:
 
 #### Common Fields
 
-All open-stream-transfer frames MUST include a ContextVM-specific transport object with:
+All open-stream frames MUST include a ContextVM-specific transport object with:
 
 - `type`: MUST be `open-stream`
 - `frameType`: one of `start`, `accept`, `chunk`, `ping`, `pong`, `close`, `abort`
@@ -161,6 +163,16 @@ Rules:
 - A sender that is required to wait for confirmation MUST NOT send `chunk` frames before receiving `accept`.
 - `accept` SHOULD remain minimal and does not negotiate additional stream parameters in v1.
 
+##### When `accept` Is Required
+
+`accept` is conditional bootstrap confirmation, not a universal requirement.
+
+This mirrors the `accept` semantics defined in [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md), so implementations can reuse the same conceptual model for conditional bootstrap confirmation and avoid semantic drift between the two transfer profiles.
+
+- If the sender already knows that the receiver supports this CEP for the exchange through prior negotiation, explicit capability advertisement, or other valid context for the exchange, it MAY send `chunk` frames immediately after `start`.
+- If support is not yet known for the exchange, the sender MUST wait for `accept` before sending the first `chunk` frame.
+- In stateless bootstrap flows where no prior support knowledge exists, `accept` is required before the first `chunk`.
+
 #### `chunk` Frame
 
 The `chunk` frame carries one ordered fragment of stream payload.
@@ -168,12 +180,15 @@ The `chunk` frame carries one ordered fragment of stream payload.
 Required fields:
 
 - `data`: chunk payload
+- `chunkIndex`: contiguous chunk index
 
 Rules:
 
-- For open-stream-transfer frames, MCP `progress` is the normative stream-ordering field.
+- For open-stream frames, MCP `progress` is the normative stream-ordering field for all frames.
 - Each `chunk` frame MUST use a `progress` value greater than the preceding stream frame's `progress` value.
+- `chunkIndex` MUST start at `0` for the first `chunk` frame in the stream and increase contiguously by `1` for each subsequent `chunk` frame.
 - The payload represented by `data` is one ordered fragment of stream output.
+- Receivers MUST use `chunkIndex`, not `progress`, to validate chunk contiguity and payload completeness.
 
 #### `ping` Frame
 
@@ -187,6 +202,7 @@ Rules:
 
 - Either peer MAY send `ping` on an active stream.
 - `nonce` MUST identify the probe uniquely within the stream.
+- Receivers SHOULD enforce a local maximum nonce size of `64 bytes` and MAY reject, ignore, or abort on oversized nonces.
 - `ping` carries no stream payload.
 
 #### `pong` Frame
@@ -202,6 +218,8 @@ Rules:
 - A receiver of `ping` MUST respond with `pong` for the same stream unless the stream has already terminated.
 - `pong.nonce` MUST match the triggering `ping.nonce`.
 - `pong` acknowledges peer responsiveness only and does not acknowledge delivery or processing of stream payload.
+- Implementations MAY apply local anti-abuse policy to `ping` handling, including ignoring, coalescing, rate-limiting, or aborting on redundant consecutive `ping` frames.
+- Implementations SHOULD treat only the first valid `ping` in a consecutive run of `ping` frames as requiring a `pong`; later consecutive `ping` frames MAY be ignored until another valid non-keepalive stream frame is observed.
 
 #### `close` Frame
 
@@ -236,8 +254,11 @@ Rules:
 
 - a stream MUST begin with `start`
 - if confirmation is required for the stream, `accept` MUST be received before the first `chunk`
-- `progress` values for open-stream-transfer frames MUST increase monotonically across the stream
+- `progress` values for open-stream frames MUST increase monotonically across the stream
+- receivers MUST treat `progress` as the canonical frame-ordering field, not as a chunk count
+- `chunk` frames MUST include contiguous `chunkIndex` values beginning at `0`
 - `pong` MUST correspond to an earlier `ping` on the same stream
+- a second `start` received for an already active `progressToken` MUST cause the stream to fail
 - successful completion requires `close`
 - if `close` arrives after malformed or non-monotonic ordering, the stream MUST fail
 
@@ -259,7 +280,8 @@ Receivers that support this CEP:
 - MUST process frames in stream order
 - MUST reject or fail malformed frame sequences
 - MUST treat `abort` as terminal
-- MUST fail a stream if `close` is received before a valid monotonic `progress` sequence has been observed
+- MUST allow a valid zero-chunk stream in which `close` follows `start` without any `chunk` frames
+- MUST fail a stream if `close` is received before `start` or after malformed ordering
 
 Receivers MAY expose stream fragments to applications incrementally as they arrive.
 
@@ -275,9 +297,21 @@ In stateless operation:
 
 For stateless client-to-server streaming where the client has not previously learned server support, the client MUST send `start` first and wait for `accept` before sending `chunk` frames.
 
+### Request Completion Semantics
+
+Open-ended streaming supplements the lifecycle of the originating JSON-RPC request; it does not replace it.
+
+Rules:
+
+- A stream associated with a request MUST still conclude with exactly one final JSON-RPC response for that request.
+- `close` indicates that no more stream frames will be sent, but it does not itself satisfy the JSON-RPC request/response lifecycle.
+- After sending `close`, the sender MUST send the final JSON-RPC success response for the originating request.
+- If a stream associated with a request is terminated with `abort`, the sender SHOULD send a final JSON-RPC error response when it is still able to do so.
+- Implementations MUST NOT synthesize successful final JSON-RPC responses locally solely from receipt of `close`.
+
 ### Timeout and Keepalive Semantics
 
-Receipt of any valid open-stream-transfer frame counts as stream activity.
+Receipt of any valid open-stream frame counts as stream activity.
 
 Implementations MUST maintain an idle timeout for each active stream.
 
@@ -286,9 +320,21 @@ Rules:
 - receipt of `start`, `accept`, `chunk`, `ping`, `pong`, `close`, or `abort` MUST reset the idle timeout
 - if no valid frame is received before the idle timeout expires, the peer MUST send `ping`
 - the receiver of `ping` MUST respond with `pong` carrying the same `nonce`
+- implementations MAY apply local anti-abuse policy to keepalive traffic, including ignoring or rejecting redundant consecutive `ping` frames and rejecting oversized `nonce` values
 - if the probing peer does not receive a matching `pong` before its probe timeout expires, it MUST treat the stream as failed
 - a peer that fails the stream due to probe timeout SHOULD send `abort` if it is still able to transmit
 - implementations SHOULD enforce a hard maximum timeout or other resource policy for long-lived streams
+
+### Relay Rate and Flow-Control Guidance
+
+Nostr relays may impose different event-rate, buffering, or publication policies.
+
+Implementations:
+
+- MUST NOT assume that all relays accept the same sustained event rate
+- SHOULD throttle frame emission conservatively enough to respect expected relay policies
+- MAY apply local policy to abort, defer, or deprioritize streams that exceed relay-safety limits
+- MUST NOT assume that this CEP provides transport-level backpressure signaling in v1
 
 ### Example: Server-to-Client Open Stream
 
@@ -338,8 +384,9 @@ Server sends stream fragments:
     "progressToken": "req-123",
     "progress": 2,
     "cvm": {
-      "type": "open-stream-transfer",
+      "type": "open-stream",
       "frameType": "chunk",
+      "chunkIndex": 0,
       "data": "Hello"
     }
   }
@@ -356,6 +403,7 @@ Server sends stream fragments:
     "cvm": {
       "type": "open-stream",
       "frameType": "chunk",
+      "chunkIndex": 1,
       "data": " world"
     }
   }
@@ -376,6 +424,24 @@ Server closes the stream:
       "type": "open-stream",
       "frameType": "close"
     }
+  }
+}
+```
+
+Server returns the final JSON-RPC response for the originating request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Stream completed successfully"
+      }
+    ],
+    "isError": false
   }
 }
 ```
@@ -419,7 +485,7 @@ Server confirms support:
 }
 ```
 
-After `accept`, the client sends `chunk` frames and eventually terminates the stream with `close` or `abort`.
+After `accept`, the client sends `chunk` frames and eventually terminates the stream with `close` or `abort`. If the stream is associated with a JSON-RPC request, the exchange still concludes with the final JSON-RPC response for that request.
 
 ## Backward Compatibility
 
