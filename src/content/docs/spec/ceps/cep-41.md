@@ -145,11 +145,19 @@ Required fields:
 
 - `mode`: `stream`
 
+Optional fields:
+
+- `contentType`
+- `contentEncoding`
+
 Rules:
 
 - If `mode` is omitted, receivers MAY reject the stream; senders SHOULD always provide it.
 - In this CEP version, senders MUST use `mode: "stream"`.
 - Receivers MUST reject unknown or unsupported stream modes.
+- `contentType`, when present, SHOULD identify the media type of the logical stream payload.
+- `contentEncoding`, when present, SHOULD identify how `data` string fragments are encoded for interpretation by the application.
+- `contentType` and `contentEncoding` are advisory metadata only and do not define stream correctness.
 
 #### `accept` Frame
 
@@ -229,10 +237,16 @@ Rules:
 
 The `close` frame signals successful sender-side closure of the stream.
 
+Optional fields:
+
+- `lastChunkIndex`
+
 Rules:
 
 - `close` is required for successful stream completion.
 - `close` indicates that no further `chunk` frames will be sent for the stream.
+- If the stream included one or more `chunk` frames, `close.lastChunkIndex` MUST equal the greatest `chunkIndex` sent for the stream.
+- If the stream included no `chunk` frames, `close.lastChunkIndex` MUST be omitted.
 
 #### `abort` Frame
 
@@ -255,6 +269,8 @@ Rules:
 
 Receivers MUST validate stream ordering using MCP `progress`.
 
+To fail a stream means to treat it as unsuccessfully terminated, release local state for it, and NOT treat it as successfully completed. A peer that fails a stream SHOULD send `abort` with an advisory `reason` when it is still able to transmit.
+
 Rules:
 
 - a stream MUST begin with `start`
@@ -268,6 +284,9 @@ Rules:
 - `pong` MUST correspond to an earlier `ping` on the same stream
 - a second `start` received for an already active `progressToken` MUST cause the stream to fail
 - successful completion requires `close`
+- if `close.lastChunkIndex` is present, receivers MUST treat it as the completeness bound for the stream payload
+- when `close` is received and one or more `chunk` frames were sent, successful completion requires receipt of every `chunkIndex` from `0` through `lastChunkIndex`
+- if gaps remain when `close` is received, receivers MAY wait a bounded local grace period for delayed chunks or MAY fail immediately under local policy
 - if `close` arrives after malformed or non-monotonic ordering, the stream MUST fail
 
 This CEP does not define replay, selective retransmission, or repair.
@@ -511,6 +530,7 @@ This CEP introduces no breaking changes:
 - [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
 - [CEP-19: Ephemeral Gift Wraps](/spec/ceps/cep-19)
 - [CEP-22: Oversized Payload Transfer](/spec/ceps/cep-22)
+- [CEP-35: Discoverability Patterns for ContextVM Capabilities](/spec/ceps/informational/cep-35)
 
 ## Reference Implementation
 
