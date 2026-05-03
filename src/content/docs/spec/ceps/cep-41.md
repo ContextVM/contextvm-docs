@@ -179,7 +179,7 @@ The `chunk` frame carries one ordered fragment of stream payload.
 
 Required fields:
 
-- `data`: chunk payload
+- `data`: chunk payload fragment
 - `chunkIndex`: contiguous chunk index
 
 Rules:
@@ -187,8 +187,11 @@ Rules:
 - For open-stream frames, MCP `progress` is the normative stream-ordering field for all frames.
 - Each `chunk` frame MUST use a `progress` value greater than the preceding stream frame's `progress` value.
 - `chunkIndex` MUST start at `0` for the first `chunk` frame in the stream and increase contiguously by `1` for each subsequent `chunk` frame.
-- The payload represented by `data` is one ordered fragment of stream output.
+- `data` carries one ordered fragment of the stream payload, following the same chunk-payload semantics as [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md).
 - Receivers MUST use `chunkIndex`, not `progress`, to validate chunk contiguity and payload completeness.
+- Receivers MAY buffer valid out-of-order `chunk` frames within bounded local limits and process them once the contiguous `chunkIndex` sequence resumes.
+- Receivers MAY track missing `chunkIndex` values as provisional gaps while the stream remains active.
+- Receivers SHOULD enforce bounded buffering or equivalent local resource policy for unresolved chunk gaps.
 
 #### `ping` Frame
 
@@ -218,8 +221,9 @@ Rules:
 - A receiver of `ping` MUST respond with `pong` for the same stream unless the stream has already terminated.
 - `pong.nonce` MUST match the triggering `ping.nonce`.
 - `pong` acknowledges peer responsiveness only and does not acknowledge delivery or processing of stream payload.
-- Implementations MAY apply local anti-abuse policy to `ping` handling, including ignoring, coalescing, rate-limiting, or aborting on redundant consecutive `ping` frames.
-- Implementations SHOULD treat only the first valid `ping` in a consecutive run of `ping` frames as requiring a `pong`; later consecutive `ping` frames MAY be ignored until another valid non-keepalive stream frame is observed.
+- A `pong` with an unknown, duplicate, expired, or already-satisfied `nonce` is invalid for keepalive matching and MUST NOT be treated as evidence of stream liveness.
+- Receivers MAY ignore invalid `pong` frames and MAY apply local logging or anti-abuse policy to them.
+- Implementations MAY apply local anti-abuse policy to `ping` handling, including ignoring, coalescing, rate-limiting, or aborting on excessive keepalive traffic.
 
 #### `close` Frame
 
@@ -243,6 +247,7 @@ Rules:
 - Either peer MAY send `abort`.
 - Receivers MUST treat `abort` as terminal for the stream.
 - `reason` is advisory only.
+- A peer MAY send `abort` when local policy determines that successful continuation is no longer acceptable or no longer plausible, including resource exhaustion, excessive unresolved gaps, timeout, or anti-abuse conditions.
 
 ### Validation Rules
 
@@ -257,6 +262,9 @@ Rules:
 - `progress` values for open-stream frames MUST increase monotonically across the stream
 - receivers MUST treat `progress` as the canonical frame-ordering field, not as a chunk count
 - `chunk` frames MUST include contiguous `chunkIndex` values beginning at `0`
+- receivers MAY buffer valid out-of-order `chunk` frames within bounded local limits while awaiting missing earlier `chunkIndex` values
+- receivers MAY treat missing `chunkIndex` positions as provisional gaps while the stream remains active
+- receivers MUST NOT treat a gap alone as terminal failure while the stream remains active, except under local timeout or resource policy
 - `pong` MUST correspond to an earlier `ping` on the same stream
 - a second `start` received for an already active `progressToken` MUST cause the stream to fail
 - successful completion requires `close`
@@ -282,6 +290,7 @@ Receivers that support this CEP:
 - MUST treat `abort` as terminal
 - MUST allow a valid zero-chunk stream in which `close` follows `start` without any `chunk` frames
 - MUST fail a stream if `close` is received before `start` or after malformed ordering
+- MAY terminate a stream with `abort` when local timeout, buffering, relay-safety, or anti-abuse policy makes continued processing unacceptable
 
 Receivers MAY expose stream fragments to applications incrementally as they arrive.
 
@@ -320,7 +329,7 @@ Rules:
 - receipt of `start`, `accept`, `chunk`, `ping`, `pong`, `close`, or `abort` MUST reset the idle timeout
 - if no valid frame is received before the idle timeout expires, the peer MUST send `ping`
 - the receiver of `ping` MUST respond with `pong` carrying the same `nonce`
-- implementations MAY apply local anti-abuse policy to keepalive traffic, including ignoring or rejecting redundant consecutive `ping` frames and rejecting oversized `nonce` values
+- implementations MAY apply local anti-abuse policy to keepalive traffic, including rate-limiting, coalescing, ignoring, or rejecting excessive `ping` traffic and rejecting oversized `nonce` values
 - if the probing peer does not receive a matching `pong` before its probe timeout expires, it MUST treat the stream as failed
 - a peer that fails the stream due to probe timeout SHOULD send `abort` if it is still able to transmit
 - implementations SHOULD enforce a hard maximum timeout or other resource policy for long-lived streams
@@ -447,6 +456,8 @@ Server returns the final JSON-RPC response for the originating request:
 ```
 
 ### Example: Stateless Client-to-Server Stream Bootstrap
+
+The following example shows the stream bootstrap phase only. As in [`Request-Level Activation`](#request-level-activation), the initiating JSON-RPC request for this exchange has already been sent and already supplied the `progressToken`.
 
 Client announces intent to begin a stream:
 
