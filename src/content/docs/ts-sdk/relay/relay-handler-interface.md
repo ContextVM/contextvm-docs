@@ -48,6 +48,7 @@ export interface RelayHandler {
     onEose?: () => void,
   ): Promise<() => void>;
   unsubscribe(): void;
+  getRelayUrls(): string[];
 }
 ```
 
@@ -56,6 +57,7 @@ export interface RelayHandler {
 - `subscribe(filters, onEvent)`: Creates a subscription on the connected relays, listening for events that match the provided filters and passing them to the `onEvent` callback. Returns an unsubscribe function for that specific subscription. It also accepts an optional `onEose` callback that is called when the relay reaches "end of stored events".
 - `unsubscribe()`: Closes all active subscriptions.
 - `publish(event)`: Publishes a Nostr event to the connected relays. Accepts an optional `AbortSignal` for cancellation.
+- `getRelayUrls()`: Returns the current list of relay URLs that the handler is connected to.
 
 ## Implementations
 

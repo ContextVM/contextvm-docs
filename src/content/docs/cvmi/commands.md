@@ -151,11 +151,11 @@ npx cvmi cn <command> [options]
 
 ### Subcommands
 
-| Subcommand         | Description |
-| ------------------ | ----------- |
-| `init`             | Initialize `cn` in the current project |
-| `add <pubkey>`     | Connect to a server and generate a client file |
-| `update [pubkey]`  | Refresh one generated client or all added clients |
+| Subcommand        | Description                                       |
+| ----------------- | ------------------------------------------------- |
+| `init`            | Initialize `cn` in the current project            |
+| `add <pubkey>`    | Connect to a server and generate a client file    |
+| `update [pubkey]` | Refresh one generated client or all added clients |
 
 ### `cvmi cn init`
 
@@ -228,10 +228,10 @@ npx cvmi call <server> <tool> [key=value ...] [options]
 
 ### Arguments
 
-| Argument | Description |
-| -------- | ----------- |
+| Argument | Description                                 |
+| -------- | ------------------------------------------- |
 | `server` | Server alias, `npub1...`, or hex public key |
-| `tool`   | Optional tool name to invoke |
+| `tool`   | Optional tool name to invoke                |
 
 ### What `cvmi call` does
 

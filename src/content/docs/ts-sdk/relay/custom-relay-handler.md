@@ -74,6 +74,11 @@ class MyRelayHandler implements RelayHandler {
     this.subscriptions.forEach((sub) => sub.closer?.close());
     this.subscriptions = [];
   }
+
+  getRelayUrls(): string[] {
+    // Return the current relay URLs
+    return this.relayUrls;
+  }
 }
 ```
 

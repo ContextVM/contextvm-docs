@@ -47,6 +47,12 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
    * @default false
    */
   injectClientPubkey?: boolean;
+  /**
+   * Whether to inject the inbound Nostr request event ID into the `_meta` field
+   * of incoming request messages.
+   * @default false
+   */
+  injectRequestEventId?: boolean;
 }
 ```
 
@@ -62,6 +68,7 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
 - **`excludedCapabilities`**: (Optional) A list of capabilities that are excluded from public key whitelisting requirements. This allows certain operations from disallowed public keys, enhancing security policy flexibility while maintaining backward compatibility.
 - **`isCapabilityExcluded`**: (Optional) A dynamic capability exclusion callback that receives a capability exclusion pattern and returns `true` to bypass pubkey authorization for that capability. Can be async. Evaluated after static `excludedCapabilities`.
 - **`injectClientPubkey`**: (Optional) If `true`, the transport will inject the client's public key into the `_meta` field of requests passed to the underlying server. Defaults to `false`.
+- **`injectRequestEventId`**: (Optional) If `true`, the transport will inject the inbound Nostr request event ID into the `_meta` field of incoming request messages. This enables middleware and tools to access the original Nostr event that triggered the request, including the event's pubkey and full event data through `getNostrRequestEvent()`. Defaults to `false`.
 
 ## CEP-23 Server Profile Publication
 
@@ -294,6 +301,7 @@ const serverNostrTransport = new NostrServerTransport({
     { method: 'tools/call', name: 'get_weather' }, // Allow any client to call get_weather tool
   ],
   injectClientPubkey: true, // Enable client public key injection
+  injectRequestEventId: true, // Enable request event ID injection
 });
 
 // 4. Connect the server
@@ -313,6 +321,7 @@ console.log('MCP server is running and available on Nostr.');
 2.  **Incoming Events**: The transport listens for events from clients. For each client, it maintains a `ClientSession`.
 3.  **Request Handling**: When a valid request is received from an authorized client, the transport forwards it to the `McpServer`'s internal logic via the `onmessage` handler. It replaces the request's original ID with the unique Nostr event ID to prevent ID collisions between different clients.
     - If `injectClientPubkey` is enabled, the client's public key is injected into the request's `_meta` field before being passed to the server.
+    - If `injectRequestEventId` is enabled, the inbound Nostr event ID is injected into `_meta.requestEventId`, allowing tools and middleware to retrieve the full event via `getNostrRequestEvent()`.
 4.  **Response Handling**: When the `McpServer` sends a response, the transport's `send()` method is called. The transport looks up the original request details from the client's session, restores the original request ID, and sends the response back to the correct client, referencing the original event ID.
 5.  **Discoverability publication**: Public announcement events (kinds 11316-11320) are controlled by `isAnnouncedServer`. Relay-list metadata (`kind:10002`) is controlled independently by `publishRelayList`. Profile metadata (`kind:0`) is controlled independently by `profileMetadata`.
 
@@ -397,7 +406,8 @@ The injected metadata follows this structure:
     "arguments": {}
   },
   "_meta": {
-    "clientPubkey": "<client-public-key-hex>"
+    "clientPubkey": "<client-public-key-hex>",
+    "requestEventId": "<nostr-event-id-hex>"
   }
 }
 ```
@@ -410,6 +420,60 @@ The injected metadata follows this structure:
 - **Rate Limiting**: Apply rate limits on a per-client basis
 - **Personalization**: Provide client-specific responses or data
 
+## Request Event ID Injection
+
+When the `injectRequestEventId` option is enabled, the transport injects the inbound Nostr request event ID into `_meta.requestEventId` on incoming request messages. Tool implementations can then use `getNostrRequestEvent()` to retrieve the full signed Nostr event, including the sender's pubkey and all event metadata.
+
+### Accessing the Full Request Event Inside a Tool
+
+```typescript
+import {
+  NostrServerTransport,
+  PrivateKeySigner,
+  ApplesauceRelayPool,
+} from '@contextvm/sdk';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+
+const signer = new PrivateKeySigner('your-server-private-key');
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
+const transport = new NostrServerTransport({
+  signer,
+  relayHandler: relayPool,
+  injectRequestEventId: true,
+});
+
+const server = new McpServer({ name: 'demo-server', version: '1.0.0' });
+
+server.registerTool(
+  'whoami',
+  {
+    description: 'Returns the public key of the client that invoked this tool.',
+    inputSchema: {},
+  },
+  async (_args, extra) => {
+    const requestEventId = extra._meta?.requestEventId;
+    if (requestEventId) {
+      const requestEvent = transport.getNostrRequestEvent(requestEventId);
+      if (requestEvent) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Called by ${requestEvent.pubkey} at timestamp ${requestEvent.created_at}`,
+            },
+          ],
+        };
+      }
+    }
+    return {
+      content: [{ type: 'text', text: 'unknown caller' }],
+    };
+  },
+);
+
+await server.connect(transport);
+```
+
 ## Structured Tool Outputs
 
 `NostrServerTransport` does not change the MCP tool result model, so structured outputs work the same way they do on any other MCP transport. This is especially useful when your server is meant for programmatic usage and clients should be able to depend on a stable result shape.
@@ -417,8 +481,6 @@ The injected metadata follows this structure:
 Define an `outputSchema` on the tool and return `structuredContent` from the handler:
 
 ```typescript
-import * as z from 'zod/v4';
-
 server.registerTool(
   'get_weather',
   {
