@@ -22,6 +22,7 @@ ContextVM pricing for capabilities is implemented through a standardized mechani
 1. **Pricing Tags**: Servers advertise pricing information using the `cap` tag
 2. **Payment Method Identifiers (PMI)**: Both parties advertise supported payment methods using the `pmi` tag
 3. **Payment Notifications**: Servers notify clients of payment requirements through the `notifications/payment_required` notification, and MAY acknowledge outcomes with `notifications/payment_accepted` / `notifications/payment_rejected`
+4. **Payment Interaction Negotiation**: Clients MAY advertise a preferred session-level payment interaction semantic using the `payment_interaction` tag
 
 When a capability requires payment, the server acts as the payment processor (generating and validating payment requests) while the client acts as the payment handler (executing payments for supported payment methods). Clients can discover supported payment methods beforehand through PMI discovery, enabling informed decisions before initiating requests.
 
@@ -34,6 +35,7 @@ This CEP defines:
 - How servers advertise **reference pricing** for capabilities.
 - How clients and servers advertise supported payment methods.
 - A minimal notification-based flow for requesting and acknowledging payments.
+- An optional session-level negotiation surface for how payment-gated invocations are exposed to clients.
 
 This CEP does **not** define:
 
@@ -87,6 +89,27 @@ The `direct_payment` tag is an optional optimization for bearer-asset payment me
 ```json
 ["direct_payment", "<pmi>", "<payload>"]
 ```
+
+#### `payment_interaction` Tag (optional)
+
+The `payment_interaction` tag is an optional negotiation tag used by clients to advertise the preferred payment interaction semantic for the current session.
+
+```json
+["payment_interaction", "<mode>"]
+```
+
+Where `<mode>` is one of:
+
+- `transparent`: The default CEP-8 behavior. Payment handling is treated as transport/client middleware behavior. After payment is verified, the server MAY continue fulfilling the original invocation.
+- `explicit_gating`: Payment must be surfaced as a gate for the current session. After payment is verified, the server SHOULD treat the original invocation as not fulfilled and require a subsequent invocation to consume the paid authorization.
+
+##### Notes
+
+- `payment_interaction` is a negotiation tag, not a pricing tag.
+- Clients SHOULD send at most one `payment_interaction` tag on the first direct client-to-server message of a session.
+- When present on that first direct message, it participates in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35).
+- If omitted, `transparent` is the default.
+- Servers MAY advertise supported interaction semantics in initialization responses or public announcements using the same tag format.
 
 #### `change` Tag (optional)
 
@@ -191,6 +214,30 @@ Using standardized PMIs provides:
 
 PMI discovery allows clients and servers to determine compatibility with payment methods, similar to encryption support discovery in [CEP-4](/spec/ceps/cep-4).
 
+### Payment Interaction Negotiation
+
+CEP-8 defines an optional session-level negotiation surface for how payment-gated invocations should behave from the client's perspective.
+
+The transport primitive remains notification-based in both cases. The negotiated interaction affects how the server treats the original invocation after payment is verified.
+
+#### Advertisement and learning
+
+- Clients MAY advertise a preferred interaction using the `payment_interaction` tag.
+- Servers MAY advertise supported interaction semantics in initialization responses, first direct responses, or public announcements.
+- In stateless operation, `payment_interaction` follows the first-message exchange and capability-learning rules described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35).
+
+#### Session-level semantics
+
+This CEP defines `payment_interaction` as a session-level negotiation tag.
+
+- When a client includes `payment_interaction` on the first direct client-to-server message of a session, that value expresses the client's preferred payment interaction semantic for the session.
+- After the first-message exchange, implementations SHOULD omit repeated `payment_interaction` tags unless a future CEP defines stronger update semantics.
+- If no compatible explicit preference is negotiated, implementations MUST fall back to `transparent` behavior.
+- `transparent` means payment may be handled without surfacing an unfulfilled invocation to higher-level logic.
+- `explicit_gating` means payment is surfaced as an unfulfilled, payment-gated outcome and the paid result is returned only on a subsequent invocation.
+
+Servers MAY advertise support for `explicit_gating` in discovery, initialization responses, or public announcements. Clients that want `explicit_gating` in stateless operation SHOULD request it on the first direct invocation event of the session.
+
 #### PMI Advertisement
 
 Servers advertise supported PMIs using the `pmi` tag in initialization responses or public announcements:
@@ -229,6 +276,27 @@ Clients advertise their supported PMIs in initialization requests:
 }
 ```
 
+Clients that prefer explicit payment gating for the session MAY include `payment_interaction` alongside `pmi` tags on the first direct message they send:
+
+```json
+{
+  "kind": 25910,
+  "content": {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "method": "initialize",
+    "params": {
+      // Initialization parameters
+    }
+  },
+  "tags": [
+    ["p", "<server-pubkey>"],
+    ["pmi", "bitcoin-lightning-bolt11"],
+    ["payment_interaction", "explicit_gating"]
+  ]
+}
+```
+
 #### Discovery Methods
 
 Clients can discover PMI support through:
@@ -240,12 +308,15 @@ Clients can discover PMI support through:
 Servers can discover PMI support through:
 
 1. **Client Initialization Request**: Check `pmi` tags in client initialization request
+2. **First direct client message in stateless operation**: Check `pmi` and `payment_interaction` tags on the first request event of the session
 
 ##### Stateless operation
 
 In stateless operation (no prior initialization), clients that want to use paid capabilities SHOULD include one or more `pmi` tags in the request event so the server can select a compatible payment method.
 
 When sent on the first direct client-to-server message of a session, these `pmi` tags participate in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). When sent on later requests, they are interpreted in the context of those requests unless another CEP explicitly defines stronger session-update semantics.
+
+Clients that prefer `explicit_gating` SHOULD also include `payment_interaction` on that first direct request so the server can apply the session's negotiated payment interaction behavior from the start.
 
 ### Payment Flow
 
@@ -312,6 +383,78 @@ The client processes the payment and the server verifies it. When the client rec
 If the client included one or more `pmi` tags in the original request, the server SHOULD send at most one `notifications/payment_required` notification using a PMI from the intersection of client- and server-supported PMIs.
 
 If the client did not advertise any PMIs (for example, in a purely stateless request), the server MAY send multiple `notifications/payment_required` notifications (for example, one per supported PMI). Clients MAY ignore any or all payment requests.
+
+#### 3a. Interaction behavior
+
+Server and client behavior depends on the negotiated `payment_interaction` semantic for the session.
+
+##### `transparent` behavior
+
+In `transparent` mode, payment handling is treated as transport/client middleware behavior.
+
+- After payment is verified, the server MAY continue fulfilling the original invocation.
+- The payment flow may remain invisible to higher-level agent logic.
+- This is the default CEP-8 behavior.
+
+##### `explicit_gating` behavior
+
+In `explicit_gating` mode, payment is treated as an invocation gate for the session.
+
+- When the server determines that payment is required, it MUST emit `notifications/payment_required` and MUST NOT fulfill the triggering invocation.
+- The original invocation becomes payment-gated and remains unfulfilled unless the client later sends a subsequent invocation.
+- Clients SHOULD surface this state to higher-level application, user, or agent logic as a structured error-like result.
+- When a JSON-RPC error object is used by the client runtime, clients SHOULD use code `-32042` with message `Payment Required`.
+- The surfaced error data SHOULD include the payment details from `notifications/payment_required`, including `amount`, `pmi`, `pay_req`, optional `description`, optional `ttl`, and optional `_meta`.
+- If payment is later verified, the server MUST NOT treat that verification as automatic completion of the original invocation.
+- Instead, the server SHOULD create redeemable paid authorization state bound to the verified payment scope.
+- The server MAY emit `notifications/payment_accepted` to acknowledge that payment was accepted, but in `explicit_gating` mode that notification does not fulfill the original invocation.
+- To obtain the capability result, the client MUST send a subsequent invocation.
+- On that subsequent invocation, the server SHOULD check for matching paid authorization, consume it atomically if valid, and then fulfill the invocation.
+
+This behavior is intended for clients that want payment to be surfaced explicitly to higher-level application or agent logic while preserving CEP-8's notification-based transport primitive.
+
+##### `explicit_gating` lifecycle
+
+The `explicit_gating` lifecycle is:
+
+1. The client negotiates `payment_interaction=explicit_gating` on the first direct message of the session.
+2. The client invokes a priced capability.
+3. The server evaluates the request, determines that payment is required, and emits `notifications/payment_required` correlated to the request event.
+4. The server does not send the capability result for that invocation.
+5. The client maps the payment requirement into a structured surfaced failure or gated result for higher-level logic.
+6. A user, application, or agent decides whether to satisfy the payment request.
+7. If payment is attempted, the server verifies it according to the selected PMI.
+8. If verification succeeds, the server may emit `notifications/payment_accepted` and records redeemable paid authorization state.
+9. The original invocation remains unfulfilled and is not resumed automatically.
+10. The client sends a subsequent invocation for the paid capability.
+11. The server validates that the subsequent invocation matches the recorded authorization scope.
+12. The server consumes that authorization and returns the capability result on the subsequent invocation.
+
+##### Client surfaced error shape
+
+In `explicit_gating` mode, clients SHOULD expose the payment gate as structured invocation failure rather than as an opaque string.
+
+Conceptually, the surfaced object is:
+
+```json
+{
+  "code": -32042,
+  "message": "Payment Required",
+  "data": {
+    "amount": 100,
+    "pmi": "bitcoin-lightning-bolt11",
+    "pay_req": "lnbc...",
+    "description": "Payment for tool execution",
+    "ttl": 600,
+    "retry_after_payment": true,
+    "_meta": {
+      "note": "Optional PMI-specific metadata"
+    }
+  }
+}
+```
+
+This error shape is client-side presentation guidance for request/response runtimes. The CEP-8 wire primitive remains `notifications/payment_required`.
 
 #### 4. Payment Accepted Notification
 
@@ -389,6 +532,8 @@ Once payment is verified, the server processes the capability request and respon
 }
 ```
 
+In `explicit_gating` mode, this capability result is typically returned on the subsequent invocation that consumes the satisfied payment authorization, not on the original invocation that triggered `notifications/payment_required`.
+
 ### Payment Request Notification Fields
 
 The `notifications/payment_required` notification `params` object contains:
@@ -421,6 +566,8 @@ The `notifications/payment_accepted` notification `params` object contains:
 - `_meta` (optional): Additional acceptance metadata object. Use for PMI-specific or implementation-specific fields.
 
 If the server returns change for a bearer-asset direct payment, it SHOULD include a [`change` tag](#change-tag-optional) on the event. In that case, `amount` is the final amount charged for the request.
+
+In `explicit_gating` mode, `notifications/payment_accepted` acknowledges successful payment verification and optional gate creation. It does not mean the original invocation has been fulfilled.
 
 ### Payment Rejected Notification Fields
 
@@ -476,6 +623,10 @@ For bearer-asset PMIs, servers SHOULD treat `notifications/payment_rejected` as 
 Payment-related notifications MUST include an `e` tag referencing the original request event id.
 
 Clients MAY retry publishing the same request event (same event id) to achieve idempotent semantics. Servers SHOULD treat duplicate request events with the same id as retries and MUST NOT charge more than once for the same request.
+
+In `explicit_gating` mode, successful payment verification SHOULD create a redeemable payment authorization whose scope is defined by server policy. At minimum, servers SHOULD bind that authorization to the requesting client and the priced capability. Servers SHOULD also bind it to a quote, challenge, or equivalent server-side payment record. Servers MAY bind more narrowly, for example to a quoted amount, request shape, capability arguments, payment rail, or expiry.
+
+Unless server policy explicitly defines otherwise, this authorization SHOULD be single-use. Servers SHOULD consume that authorization atomically when fulfilling the subsequent paid invocation, MUST prevent concurrent double-consumption, and MUST NOT use payment acceptance alone as fulfillment of the original invocation.
 
 ## Backward Compatibility
 
