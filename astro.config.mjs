@@ -62,6 +62,10 @@ export default defineConfig({
                   slug: 'spec/ceps/cep-8',
                 },
                 {
+                  label: 'CEP-15: Common Tool Schemas',
+                  slug: 'spec/ceps/cep-15',
+                },
+                {
                   label: 'CEP-17: Server Relay List Metadata',
                   slug: 'spec/ceps/cep-17',
                 },
