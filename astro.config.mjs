@@ -128,6 +128,10 @@ export default defineConfig({
                   slug: 'ts-sdk/signer/nostr-signer-interface',
                 },
                 { label: 'Encryption', slug: 'ts-sdk/core/encryption' },
+                {
+                  label: 'Common Tool Schemas',
+                  slug: 'ts-sdk/core/common-tool-schemas',
+                },
               ],
             },
             {
