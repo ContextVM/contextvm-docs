@@ -24,6 +24,7 @@ The transport is configured via the `NostrServerTransportOptions` interface:
 ```typescript
 export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
   serverInfo?: ServerInfo;
+  profileMetadata?: ProfileMetadata;
   /** @deprecated Use isAnnouncedServer instead. */
   isPublicServer?: boolean;
   isAnnouncedServer?: boolean;
@@ -36,7 +37,9 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
   /** List of capabilities that are excluded from public key whitelisting requirements */
   excludedCapabilities?: CapabilityExclusion[];
   /** Optional callback for dynamic capability exclusions. Returns true to bypass pubkey authorization. */
-  isCapabilityExcluded?: (exclusion: CapabilityExclusion) => boolean | Promise<boolean>;
+  isCapabilityExcluded?: (
+    exclusion: CapabilityExclusion,
+  ) => boolean | Promise<boolean>;
   /** Log level for the NostrServerTransport: 'debug' | 'info' | 'warn' | 'error' | 'silent' */
   logLevel?: LogLevel;
   /**
@@ -44,10 +47,17 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
    * @default false
    */
   injectClientPubkey?: boolean;
+  /**
+   * Whether to inject the inbound Nostr request event ID into the `_meta` field
+   * of incoming request messages.
+   * @default false
+   */
+  injectRequestEventId?: boolean;
 }
 ```
 
 - **`serverInfo`**: (Optional) Information about the server (`name`, `picture`, `website`) to be used in public announcements.
+- **`profileMetadata`**: (Optional) NIP-01 `kind:0` metadata for the server profile. When provided, the transport publishes a signed `kind:0` event at startup as defined by CEP-23.
 - **`isAnnouncedServer`**: (Optional) If `true`, the transport publishes public announcement events for relay-based discovery. Defaults to `false`.
 - **`isPublicServer`**: (Deprecated) Legacy alias for `isAnnouncedServer`.
 - **`publishRelayList`**: (Optional) If `true`, the transport publishes a NIP-65 relay list (`kind:10002`) even when `isAnnouncedServer` is `false`. Defaults to `true`.
@@ -58,6 +68,80 @@ export interface NostrServerTransportOptions extends BaseNostrTransportOptions {
 - **`excludedCapabilities`**: (Optional) A list of capabilities that are excluded from public key whitelisting requirements. This allows certain operations from disallowed public keys, enhancing security policy flexibility while maintaining backward compatibility.
 - **`isCapabilityExcluded`**: (Optional) A dynamic capability exclusion callback that receives a capability exclusion pattern and returns `true` to bypass pubkey authorization for that capability. Can be async. Evaluated after static `excludedCapabilities`.
 - **`injectClientPubkey`**: (Optional) If `true`, the transport will inject the client's public key into the `_meta` field of requests passed to the underlying server. Defaults to `false`.
+- **`injectRequestEventId`**: (Optional) If `true`, the transport will inject the inbound Nostr request event ID into the `_meta` field of incoming request messages. This enables middleware and tools to access the original Nostr event that triggered the request, including the event's pubkey and full event data through `getNostrRequestEvent()`. Defaults to `false`.
+
+## CEP-23 Server Profile Publication
+
+`serverInfo` and `profileMetadata` serve different purposes:
+
+- **`serverInfo`** powers ContextVM discovery and initialize semantics.
+- **`profileMetadata`** powers an optional Nostr social/profile identity via `kind:0`.
+
+This separation matters because some servers want to be discoverable over ContextVM without maintaining a public social profile, while others want both.
+
+### `ProfileMetadata`
+
+The `profileMetadata` object is serialized as JSON and published as a NIP-01 `kind:0` event.
+
+```typescript
+export interface ProfileMetadata {
+  name?: string;
+  about?: string;
+  picture?: string;
+  banner?: string;
+  website?: string;
+  nip05?: string;
+  lud16?: string;
+  [key: string]: unknown;
+}
+```
+
+### Publication behavior
+
+- Publication is **opt-in** and only happens when `profileMetadata` is provided.
+- `kind:0` publication is independent from `isAnnouncedServer`.
+- A server can publish profile metadata even when it does **not** publish public announcement events.
+- The profile event is sent through the same discoverability publication path as relay-list and announcement events, so `bootstrapRelayUrls` also help distribute profile metadata in local or non-WebSocket relay environments.
+
+### Example: announced server with a public profile
+
+```typescript
+const transport = new NostrServerTransport({
+  signer,
+  relayHandler: relayPool,
+  isAnnouncedServer: true,
+  publishRelayList: true,
+  profileMetadata: {
+    name: 'My Awesome MCP Server',
+    about: 'Public MCP provider on Nostr',
+    picture: 'https://example.com/avatar.png',
+    website: 'https://example.com',
+    nip05: 'server@example.com',
+  },
+  serverInfo: {
+    name: 'My Awesome MCP Server',
+    website: 'https://example.com',
+  },
+});
+```
+
+### Example: private server with profile publication only
+
+```typescript
+const transport = new NostrServerTransport({
+  signer,
+  relayHandler: relayPool,
+  isAnnouncedServer: false,
+  profileMetadata: {
+    name: 'Private Profile Server',
+    about: 'Publishes a CEP-23 profile without public capability announcements',
+    website: 'https://example.com/private-server',
+  },
+  bootstrapRelayUrls: ['wss://relay.damus.io'],
+});
+```
+
+In this configuration, the server remains outside the public capability-announcement flow but still publishes a canonical Nostr profile that clients and operators can render.
 
 ### Capability Exclusion
 
@@ -124,9 +208,7 @@ const transport = new NostrServerTransport({
   relayHandler: relayPool,
   allowedPublicKeys: ['trusted-client'],
   // Static exclusions
-  excludedCapabilities: [
-    { method: 'tools/list' },
-  ],
+  excludedCapabilities: [{ method: 'tools/list' }],
   // Dynamic exclusion callback - evaluated after static exclusions
   isCapabilityExcluded: async (exclusion) => {
     // Check if this specific capability should be public
@@ -203,6 +285,12 @@ const serverNostrTransport = new NostrServerTransport({
   isAnnouncedServer: true,
   publishRelayList: true,
   bootstrapRelayUrls: ['wss://relay.damus.io', 'wss://nos.lol'],
+  profileMetadata: {
+    name: 'My Awesome MCP Server',
+    about: 'Public MCP provider on Nostr',
+    picture: 'https://example.com/avatar.png',
+    website: 'https://example.com',
+  },
   serverInfo: {
     name: 'My Awesome MCP Server',
     website: 'https://example.com',
@@ -213,6 +301,7 @@ const serverNostrTransport = new NostrServerTransport({
     { method: 'tools/call', name: 'get_weather' }, // Allow any client to call get_weather tool
   ],
   injectClientPubkey: true, // Enable client public key injection
+  injectRequestEventId: true, // Enable request event ID injection
 });
 
 // 4. Connect the server
@@ -228,12 +317,13 @@ console.log('MCP server is running and available on Nostr.');
 
 ## How It Works
 
-1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isAnnouncedServer` is `true`, it publishes public announcement events. Independently, if `publishRelayList` is enabled, it also publishes relay-list metadata.
+1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isAnnouncedServer` is `true`, it publishes public announcement events. Independently, if `publishRelayList` is enabled, it also publishes relay-list metadata. If `profileMetadata` is configured, it publishes a CEP-23 `kind:0` profile event.
 2.  **Incoming Events**: The transport listens for events from clients. For each client, it maintains a `ClientSession`.
 3.  **Request Handling**: When a valid request is received from an authorized client, the transport forwards it to the `McpServer`'s internal logic via the `onmessage` handler. It replaces the request's original ID with the unique Nostr event ID to prevent ID collisions between different clients.
     - If `injectClientPubkey` is enabled, the client's public key is injected into the request's `_meta` field before being passed to the server.
+    - If `injectRequestEventId` is enabled, the inbound Nostr event ID is injected into `_meta.requestEventId`, allowing tools and middleware to retrieve the full event via `getNostrRequestEvent()`.
 4.  **Response Handling**: When the `McpServer` sends a response, the transport's `send()` method is called. The transport looks up the original request details from the client's session, restores the original request ID, and sends the response back to the correct client, referencing the original event ID.
-5.  **Discoverability publication**: Public announcement events (kinds 11316-11320) are controlled by `isAnnouncedServer`. Relay-list metadata (`kind:10002`) is controlled independently by `publishRelayList`.
+5.  **Discoverability publication**: Public announcement events (kinds 11316-11320) are controlled by `isAnnouncedServer`. Relay-list metadata (`kind:10002`) is controlled independently by `publishRelayList`. Profile metadata (`kind:0`) is controlled independently by `profileMetadata`.
 
 ## Relay List Discoverability
 
@@ -254,6 +344,22 @@ Operational relays and discoverability relays do not always need to be identical
 - **Bootstrap relays** are additional relays used to make the server easier to discover
 
 This separation helps keep the published relay list focused while still improving network visibility.
+
+## Discoverability event matrix
+
+The transport now exposes three independent publication surfaces:
+
+| Purpose                            | Event kind(s)   | Controlled by       |
+| ---------------------------------- | --------------- | ------------------- |
+| ContextVM capability announcements | `11316`-`11320` | `isAnnouncedServer` |
+| Relay discoverability              | `10002`         | `publishRelayList`  |
+| Nostr profile identity             | `0`             | `profileMetadata`   |
+
+This allows release-time configurations such as:
+
+- fully public servers that publish all three surfaces;
+- private servers that only publish relay metadata;
+- private or semi-private servers that publish a `kind:0` profile without publishing capability announcements.
 
 ## Session Management
 
@@ -300,7 +406,8 @@ The injected metadata follows this structure:
     "arguments": {}
   },
   "_meta": {
-    "clientPubkey": "<client-public-key-hex>"
+    "clientPubkey": "<client-public-key-hex>",
+    "requestEventId": "<nostr-event-id-hex>"
   }
 }
 ```
@@ -313,6 +420,60 @@ The injected metadata follows this structure:
 - **Rate Limiting**: Apply rate limits on a per-client basis
 - **Personalization**: Provide client-specific responses or data
 
+## Request Event ID Injection
+
+When the `injectRequestEventId` option is enabled, the transport injects the inbound Nostr request event ID into `_meta.requestEventId` on incoming request messages. Tool implementations can then use `getNostrRequestEvent()` to retrieve the full signed Nostr event, including the sender's pubkey and all event metadata.
+
+### Accessing the Full Request Event Inside a Tool
+
+```typescript
+import {
+  NostrServerTransport,
+  PrivateKeySigner,
+  ApplesauceRelayPool,
+} from '@contextvm/sdk';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+
+const signer = new PrivateKeySigner('your-server-private-key');
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
+const transport = new NostrServerTransport({
+  signer,
+  relayHandler: relayPool,
+  injectRequestEventId: true,
+});
+
+const server = new McpServer({ name: 'demo-server', version: '1.0.0' });
+
+server.registerTool(
+  'whoami',
+  {
+    description: 'Returns the public key of the client that invoked this tool.',
+    inputSchema: {},
+  },
+  async (_args, extra) => {
+    const requestEventId = extra._meta?.requestEventId;
+    if (requestEventId) {
+      const requestEvent = transport.getNostrRequestEvent(requestEventId);
+      if (requestEvent) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Called by ${requestEvent.pubkey} at timestamp ${requestEvent.created_at}`,
+            },
+          ],
+        };
+      }
+    }
+    return {
+      content: [{ type: 'text', text: 'unknown caller' }],
+    };
+  },
+);
+
+await server.connect(transport);
+```
+
 ## Structured Tool Outputs
 
 `NostrServerTransport` does not change the MCP tool result model, so structured outputs work the same way they do on any other MCP transport. This is especially useful when your server is meant for programmatic usage and clients should be able to depend on a stable result shape.
@@ -320,8 +481,6 @@ The injected metadata follows this structure:
 Define an `outputSchema` on the tool and return `structuredContent` from the handler:
 
 ```typescript
-import * as z from 'zod/v4';
-
 server.registerTool(
   'get_weather',
   {
@@ -358,7 +517,7 @@ server.registerTool(
       ],
       structuredContent,
     };
-  }
+  },
 );
 ```
 

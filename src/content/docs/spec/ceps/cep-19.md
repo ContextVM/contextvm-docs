@@ -34,7 +34,7 @@ Servers that support ephemeral gift wraps MUST advertise support by including th
 - Server initialization responses, and/or
 - Public server announcements (see CEP-6).
 
-Servers SHOULD also include this tag on the first direct response sent to a client session when that response does not itself carry the initialize result. This keeps support discovery available to stateless clients that never observe a real initialize handshake.
+Servers SHOULD also include this tag on the first direct server-to-client message sent in a session when that message does not itself carry the initialize result. This keeps support discovery available to stateless clients that never observe a real initialize handshake and aligns with the session-scoped first-message exchange described in CEP-35.
 
 Example (tags only):
 
@@ -107,3 +107,4 @@ A reference implementation is available in the [ContextVM SDK](https://github.co
 
 - [CEP-4: Encryption Support](/spec/ceps/cep-4)
 - [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
+- [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35)

@@ -57,7 +57,7 @@ class MyRelayHandler implements RelayHandler {
   async subscribe(
     filters: Filter[],
     onEvent: (event: NostrEvent) => void,
-    onEose?: () => void
+    onEose?: () => void,
   ): Promise<void> {
     // Create the subscription (non-blocking)
     const closer = this.pool.subscribeMany(relayUrls, filters, {
@@ -73,6 +73,11 @@ class MyRelayHandler implements RelayHandler {
     // Close all active subscriptions
     this.subscriptions.forEach((sub) => sub.closer?.close());
     this.subscriptions = [];
+  }
+
+  getRelayUrls(): string[] {
+    // Return the current relay URLs
+    return this.relayUrls;
   }
 }
 ```

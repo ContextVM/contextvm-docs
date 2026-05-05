@@ -1,0 +1,58 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+---
+
+{/* This is intentionally inlined to avoid FOUC. */}
+<script is:inline>
+  window.StarlightThemeProvider = (() => {
+    const storageKey = 'starlight-theme';
+
+    const parseTheme = (theme) =>
+      theme === 'auto' || theme === 'dark' || theme === 'light' ? theme : 'auto';
+
+    const readStoredTheme = () => {
+      if (typeof localStorage === 'undefined') return 'auto';
+      try {
+        return parseTheme(localStorage.getItem(storageKey));
+      } catch {
+        return 'auto';
+      }
+    };
+
+    const getPreferredColorScheme = () =>
+      window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+
+    const applyDocumentTheme = (theme) => {
+      const resolvedTheme = parseTheme(theme) === 'auto' ? getPreferredColorScheme() : parseTheme(theme);
+      document.documentElement.dataset.theme = resolvedTheme === 'light' ? 'light' : 'dark';
+    };
+
+    applyDocumentTheme(readStoredTheme());
+
+    return {
+      updatePickers(theme = readStoredTheme()) {
+        const normalizedTheme = parseTheme(theme);
+        document.querySelectorAll('starlight-theme-select').forEach((picker) => {
+          const select = picker.querySelector('select');
+          if (select) select.value = normalizedTheme;
+          /** @type {HTMLTemplateElement | null} */
+          const tmpl = document.querySelector('#theme-icons');
+          const newIcon = tmpl && tmpl.content.querySelector('.' + normalizedTheme);
+          if (newIcon) {
+            const oldIcon = picker.querySelector('svg.label-icon');
+            if (oldIcon) {
+              oldIcon.replaceChildren(...newIcon.cloneNode(true).childNodes);
+            }
+          }
+        });
+      },
+      applyDocumentTheme,
+    };
+  })();
+</script>
+
+<template id="theme-icons">
+  <Icon name="sun" class="light" />
+  <Icon name="moon" class="dark" />
+  <Icon name="laptop" class="auto" />
+</template>
