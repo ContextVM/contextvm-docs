@@ -525,4 +525,4 @@ This CEP introduces no breaking changes:
 
 ## Reference Implementation
 
-A reference implementation is intended for the ContextVM SDK transport layer.
+A reference implementation can be found in the ContextVM TS SDK.
