@@ -116,6 +116,33 @@ If your application already has its own request correlation or tracing scheme, y
 
 This is why the helper is usually preferable to assembling the request metadata and session correlation manually.
 
+## Enabling Open Stream on Transports
+
+To use CEP-41 across the Nostr transports, enable `openStream` on both the server and the client transport.
+
+This is the shape exercised by the end-to-end tests in [`src/transport/call-tool-stream.e2e.test.ts`](src/transport/call-tool-stream.e2e.test.ts):
+
+```typescript
+const serverTransport = new NostrServerTransport({
+  signer: new PrivateKeySigner(serverPrivateKey),
+  relayHandler: relayHandler,
+  openStream: {
+    enabled: true,
+  },
+});
+
+const clientTransport = new NostrClientTransport({
+  signer: new PrivateKeySigner(clientPrivateKey),
+  relayHandler: relayHandler,
+  serverPubkey: serverPublicKey,
+  openStream: {
+    enabled: true,
+  },
+});
+```
+
+You can also provide policy overrides through [`OpenStreamTransportPolicy`](src/transport/open-stream-policy.ts:4).
+
 ## Reading Stream Chunks
 
 [`OpenStreamSession`](src/transport/open-stream/session.ts) implements `AsyncIterable`, so you can iterate over stream fragments using `for await`.
@@ -153,20 +180,31 @@ The writer automatically:
 - includes `lastChunkIndex` on `close` when chunks were emitted
 - preserves CEP-41 start/chunk/close ordering for normal writes
 
-### Minimal producer example
+### Full minimal producer example
 
 ```typescript
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import {
   NostrServerTransport,
-  OpenStreamWriter,
   PrivateKeySigner,
 } from '@contextvm/sdk';
 
 const server = new McpServer({
   name: 'streaming-server',
   version: '1.0.0',
+});
+
+const transport = new NostrServerTransport({
+  signer: new PrivateKeySigner('your-private-key'),
+  relayHandler: ['wss://relay.example.com'],
+  openStream: {
+    enabled: true,
+  },
+  serverInfo: {
+    name: 'streaming-server',
+  },
 });
 
 server.registerTool(
@@ -178,23 +216,15 @@ server.registerTool(
       prompt: z.string(),
     },
   },
-  async ({ prompt }, extra) => {
-    const progressToken = extra?._meta?.progressToken;
+  async ({ prompt }, extra): Promise<CallToolResult> => {
+    const stream = (extra._meta as { stream?: { write(data: string): Promise<void>; close(): Promise<void>; } } | undefined)
+      ?.stream;
 
-    if (typeof progressToken === 'string') {
-      const writer = new OpenStreamWriter({
-        progressToken,
-        contentType: 'text/plain',
-        publishFrame: async (frame) => {
-          await transport.sendProgressNotification(frame);
-          return undefined;
-        },
-      });
-
-      await writer.write(`Starting: ${prompt}\n`);
-      await writer.write('Step 1 complete\n');
-      await writer.write('Step 2 complete\n');
-      await writer.close();
+    if (stream) {
+      await stream.write(`Starting: ${prompt}\n`);
+      await stream.write('Step 1 complete\n');
+      await stream.write('Step 2 complete\n');
+      await stream.close();
     }
 
     return {
@@ -208,27 +238,22 @@ server.registerTool(
   },
 );
 
-const transport = new NostrServerTransport({
-  signer: new PrivateKeySigner('your-private-key'),
-  relayHandler: ['wss://relay.example.com'],
-  serverInfo: {
-    name: 'streaming-server',
-  },
-});
-
 await server.connect(transport);
 ```
 
 This example shows the full producer-side shape:
 
 - an MCP server created with [`McpServer`](/ts-sdk/transports/open-stream.md:144)
-- a registered tool that checks for `_meta.progressToken`
-- an `OpenStreamWriter` that publishes CEP-41 frames while the tool is running
+- a [`NostrServerTransport`](src/transport/nostr-server-transport.ts) with `openStream.enabled`
+- a registered tool that reads the injected stream writer from `extra._meta.stream`
+- a server-managed [`OpenStreamWriter`](src/transport/open-stream/writer.ts:26) that publishes CEP-41 frames while the tool is running
 - a normal final MCP return value after the stream is closed
 
-In this flow, `OpenStreamWriter.write()` implicitly calls `OpenStreamWriter.start()` the first time it is needed.
+This matches the transport implementation in [`src/transport/nostr-server-transport.ts`](src/transport/nostr-server-transport.ts), where the server creates the writer internally and injects it into `_meta.stream` for tool handlers.
 
-The exact method used to publish the progress notification depends on the surrounding transport integration. The important part is that the producer emits valid CEP-41 progress frames during execution and still returns the final MCP tool result afterward.
+In this flow, [`OpenStreamWriter.write()`](src/transport/open-stream/writer.ts:66) implicitly calls [`OpenStreamWriter.start()`](src/transport/open-stream/writer.ts:51) the first time it is needed.
+
+The important part is that the producer emits valid CEP-41 progress frames during execution and still returns the final MCP tool result afterward.
 
 ## Live Streams and Event Sources
 
@@ -241,34 +266,56 @@ The pattern is the same:
 3. call [`close()`](src/transport/open-stream/writer.ts:112) when the upstream source ends normally
 4. call [`abort()`](src/transport/open-stream/writer.ts:129) when the upstream source fails or local policy requires termination
 
-### Example: bridging a websocket feed
+### Example: bridging a websocket feed from a tool handler
 
 ```typescript
-const writer = new OpenStreamWriter({
-  progressToken,
-  contentType: 'application/json',
-  publishFrame: async (frame) => {
-    await transport.sendProgressNotification(frame);
-    return undefined;
+server.registerTool(
+  'subscribe_to_feed',
+  {
+    title: 'Subscribe to feed',
+    description: 'Bridges an upstream websocket feed into CEP-41 chunks',
+    inputSchema: {
+      url: z.string().url(),
+    },
   },
-});
+  async ({ url }, extra): Promise<CallToolResult> => {
+    const stream = (extra._meta as {
+      stream?: {
+        write(data: string): Promise<void>;
+        close(): Promise<void>;
+        abort(reason?: string): Promise<void>;
+      };
+    } | undefined)?.stream;
 
-const socket = new WebSocket('wss://example.com/feed');
+    if (!stream) {
+      return {
+        content: [{ type: 'text', text: 'Open stream was not enabled for this request.' }],
+        isError: true,
+      };
+    }
 
-socket.addEventListener('message', async (event) => {
-  await writer.write(String(event.data));
-});
+    const socket = new WebSocket(url);
 
-socket.addEventListener('close', async () => {
-  await writer.close();
-});
+    socket.addEventListener('message', async (event) => {
+      await stream.write(String(event.data));
+    });
 
-socket.addEventListener('error', async () => {
-  await writer.abort('Upstream websocket failed');
-});
+    socket.addEventListener('close', async () => {
+      await stream.close();
+    });
+
+    socket.addEventListener('error', async () => {
+      await stream.abort('Upstream websocket failed');
+    });
+
+    return {
+      content: [{ type: 'text', text: `Subscribed to ${url}` }],
+    };
+  },
+);
 ```
 
-For this style of usage, think of CEP-41 as the transport-safe envelope for incremental application events. The stream chunks are the live payload, while the final MCP response still communicates the final request outcome.
+For this style of usage, think of CEP-41 as the transport-safe envelope for incremental application events. The stream chunks are the live payload, while the final MCP response still communicates the request outcome.
 
 ## Receiver and Registry
 
