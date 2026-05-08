@@ -140,6 +140,10 @@ export default defineConfig({
                   label: 'Oversized Transfer',
                   slug: 'ts-sdk/transports/oversized-transfer',
                 },
+                {
+                  label: 'Open Stream',
+                  slug: 'ts-sdk/transports/open-stream',
+                },
               ],
             },
             {

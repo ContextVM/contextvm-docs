@@ -184,12 +184,25 @@ The writer automatically:
 
 ```typescript
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import {
   NostrServerTransport,
+  type OpenStreamWriter,
   PrivateKeySigner,
 } from '@contextvm/sdk';
+
+function getOpenStreamWriter(extra: {
+  _meta?: Record<string, unknown>;
+}): OpenStreamWriter {
+  const stream = (extra._meta as { stream?: OpenStreamWriter } | undefined)
+    ?.stream;
+
+  if (!stream) {
+    throw new Error('Expected open stream writer in _meta.stream');
+  }
+
+  return stream;
+}
 
 const server = new McpServer({
   name: 'streaming-server',
@@ -216,16 +229,14 @@ server.registerTool(
       prompt: z.string(),
     },
   },
-  async ({ prompt }, extra): Promise<CallToolResult> => {
-    const stream = (extra._meta as { stream?: { write(data: string): Promise<void>; close(): Promise<void>; } } | undefined)
-      ?.stream;
+  async ({ prompt }, extra) => {
+    const stream = getOpenStreamWriter(extra);
 
-    if (stream) {
-      await stream.write(`Starting: ${prompt}\n`);
-      await stream.write('Step 1 complete\n');
-      await stream.write('Step 2 complete\n');
-      await stream.close();
-    }
+    await stream.start();
+    await stream.write(`Starting: ${prompt}\n`);
+    await stream.write('Step 1 complete\n');
+    await stream.write('Step 2 complete\n');
+    await stream.close();
 
     return {
       content: [
@@ -269,6 +280,19 @@ The pattern is the same:
 ### Example: bridging a websocket feed from a tool handler
 
 ```typescript
+function getOpenStreamWriter(extra: {
+  _meta?: Record<string, unknown>;
+}): OpenStreamWriter {
+  const stream = (extra._meta as { stream?: OpenStreamWriter } | undefined)
+    ?.stream;
+
+  if (!stream) {
+    throw new Error('Expected open stream writer in _meta.stream');
+  }
+
+  return stream;
+}
+
 server.registerTool(
   'subscribe_to_feed',
   {
@@ -278,21 +302,8 @@ server.registerTool(
       url: z.string().url(),
     },
   },
-  async ({ url }, extra): Promise<CallToolResult> => {
-    const stream = (extra._meta as {
-      stream?: {
-        write(data: string): Promise<void>;
-        close(): Promise<void>;
-        abort(reason?: string): Promise<void>;
-      };
-    } | undefined)?.stream;
-
-    if (!stream) {
-      return {
-        content: [{ type: 'text', text: 'Open stream was not enabled for this request.' }],
-        isError: true,
-      };
-    }
+  async ({ url }, extra) => {
+    const stream = getOpenStreamWriter(extra);
 
     const socket = new WebSocket(url);
 
