@@ -83,6 +83,10 @@ export default defineConfig({
                   slug: 'spec/ceps/cep-24',
                 },
                 {
+                  label: 'CEP-41: Open-Ended Stream Transfer',
+                  slug: 'spec/ceps/cep-41',
+                },
+                {
                   label: 'Informational',
                   items: [
                     {
