@@ -87,6 +87,10 @@ export default defineConfig({
                   slug: 'spec/ceps/cep-24',
                 },
                 {
+                  label: 'CEP-41: Open-Ended Stream Transfer',
+                  slug: 'spec/ceps/cep-41',
+                },
+                {
                   label: 'Informational',
                   items: [
                     {
@@ -152,6 +156,10 @@ export default defineConfig({
                 {
                   label: 'Oversized Transfer',
                   slug: 'ts-sdk/transports/oversized-transfer',
+                },
+                {
+                  label: 'Open Stream',
+                  slug: 'ts-sdk/transports/open-stream',
                 },
               ],
             },
