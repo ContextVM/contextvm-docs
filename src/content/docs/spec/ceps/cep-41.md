@@ -1,9 +1,9 @@
 ---
-title: CEP-XX Open-Ended Stream Transfer
-description: Open-ended stream transfer for ContextVM using progress-notification framing
+title: CEP-41 Open-Ended Streams
+description: Open-ended streams for ContextVM using progress-notification framing
 ---
 
-# Open-Ended Stream Transfer
+# Open-Ended Streams
 
 ## Abstract
 
