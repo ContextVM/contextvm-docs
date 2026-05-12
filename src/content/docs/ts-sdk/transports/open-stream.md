@@ -116,6 +116,8 @@ If your application already has its own request correlation or tracing scheme, y
 
 This is why the helper is usually preferable to assembling the request metadata and session correlation manually.
 
+For consistency with other progress-based transport features such as [Oversized Transfer](/ts-sdk/transports/oversized-transfer), remember that high-level MCP TypeScript SDK usage can usually create the request `progressToken` automatically when `onprogress` is used, while low-level manual requests must provide that token explicitly. On the MCP TypeScript SDK low-level `client.request()` path, `resetTimeoutOnProgress: true` also depends on `onprogress` being provided.
+
 ## Enabling Open Stream on Transports
 
 To use CEP-41 across the Nostr transports, enable `openStream` on both the server and the client transport.
