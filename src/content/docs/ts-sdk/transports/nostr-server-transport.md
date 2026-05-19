@@ -374,6 +374,7 @@ const transport = withCommonToolSchemas(
   }),
   {
     tools: [{ name: 'translate_text' }],
+    categories: ['translation', 'language-tools'],
   },
 );
 
@@ -386,9 +387,12 @@ For each opted-in tool, the SDK:
 
 - computes the CEP-15 schema hash from the tool name plus normalized `inputSchema` and `outputSchema`;
 - injects `_meta['io.contextvm/common-schema'].schemaHash` into `tools/list` responses;
-- adds matching `i` and `k` tags to tools-list announcement events when the server is announced.
+- adds matching `i` and `k` tags to tools-list announcement events when the server is announced;
+- adds optional CEP-15 `t` category tags to announced tools-list events when `categories` are configured.
 
 Use this for tools that are intended to match a shared public contract across providers. Bespoke tools should remain outside the common-schema configuration.
+
+`categories` apply at the announcement-event level, which matches CEP-15 semantics. They are intended for best-effort browsing and filtering rather than schema verification. The SDK trims whitespace, drops empty entries, and deduplicates repeated categories before publishing `t` tags.
 
 ### Notes
 

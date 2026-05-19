@@ -64,6 +64,7 @@ const transport = withCommonToolSchemas(
   }),
   {
     tools: [{ name: 'translate_text' }],
+    categories: ['translation', 'language-tools'],
   },
 );
 
@@ -74,7 +75,10 @@ This is the recommended path because the SDK will automatically:
 
 - compute the CEP-15 schema hash;
 - inject `_meta['io.contextvm/common-schema'].schemaHash` into `tools/list` results;
-- add matching `i` and `k` tags to announced tools lists.
+- add matching `i` and `k` tags to announced tools lists;
+- add optional CEP-15 `t` tags for announcement-level categories when `categories` are configured.
+
+`categories` are lightweight discoverability hints for announced `tools/list` events. The SDK trims whitespace, removes empty values, and deduplicates repeated categories while preserving the original order of the remaining entries.
 
 For more transport-specific context, see [Nostr Server Transport](/ts-sdk/transports/nostr-server-transport#cep-15-common-tool-schemas).
 
