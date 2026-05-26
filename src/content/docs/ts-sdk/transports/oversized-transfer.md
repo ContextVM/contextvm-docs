@@ -22,6 +22,66 @@ With defaults:
 
 This means most consumers do not need to configure anything unless they want stricter limits or different relay-size margins.
 
+## Request Activation and `progressToken`
+
+CEP-22 oversized transfer is request-scoped. It is only available for a logical exchange when the originating MCP request includes a `progressToken`, as described in [CEP-22: Oversized Payload Transfer](/spec/ceps/cep-22).
+
+In practice, this matters most on the client side:
+
+- if you use the MCP TypeScript SDK in the normal high-level way and provide an `onprogress` callback, the SDK assigns the `progressToken` automatically
+- if you build raw JSON-RPC requests manually or bypass the usual MCP client helpers, you must ensure a `progressToken` is present yourself
+- when no `progressToken` is present, oversized transfer cannot activate for that request, so the exchange falls back to ordinary non-fragmented behavior
+
+For the MCP TypeScript SDK's low-level `client.request()` path specifically, `resetTimeoutOnProgress: true` only works when an `onprogress` callback is provided. In that code path the SDK registers the progress handler and manages the request `progressToken` automatically.
+
+This is why oversized transfer usually works transparently for normal MCP client calls, but low-level transport integrations must still understand the request-level activation rule.
+
+### Recommended MCP client usage
+
+When you expect a request may run for a while or may trigger CEP-22 fragmentation, prefer enabling progress handling explicitly:
+
+```typescript
+const result = await client.callTool(
+  {
+    name: 'long-task',
+    arguments: {},
+  },
+  CallToolResultSchema,
+  {
+    onprogress: (progress) => {
+      console.log(
+        `${progress.progress}/${progress.total}: ${progress.message}`,
+      );
+    },
+    timeout: 30_000,
+    resetTimeoutOnProgress: true,
+  },
+);
+```
+
+With this pattern:
+
+- the MCP TypeScript SDK creates the `progressToken` automatically
+- the application receives ordinary MCP progress updates when they are emitted
+- ContextVM transports can also use the same MCP progress channel for CEP-22 transfer frames
+
+### Why `resetTimeoutOnProgress: true` is strongly recommended
+
+CEP-22 frames are carried over MCP `notifications/progress`. That means a valid oversized transfer is itself ongoing request activity, not idle time.
+
+Setting `resetTimeoutOnProgress: true` is therefore strongly recommended because it allows each valid progress notification to extend the request timeout window. Without that, a client may time out a healthy oversized transfer simply because the response is arriving as multiple progress-framed transfer messages before the final JSON-RPC result.
+
+When using the MCP TypeScript SDK, remember that this timeout-reset behavior is tied to `onprogress`. In practice, use both together.
+
+### Low-level transport usage
+
+If you are working below the usual MCP client helpers, such as constructing raw requests for [`NostrClientTransport`](/ts-sdk/transports/nostr-client-transport), treat `progressToken` as part of the activation contract for CEP-22.
+
+- High-level MCP SDK usage with `onprogress` usually handles this automatically.
+- Manual raw requests must include the token explicitly in request metadata.
+- If you omit it, the transport cannot correlate an oversized transfer session for that exchange.
+- For low-level MCP TS SDK `client.request()` calls, `resetTimeoutOnProgress: true` should be paired with `onprogress`; providing your own raw token alone does not enable the SDK-managed timeout reset path.
+
 ## When You Would Change It
 
 Most projects should keep the default behavior.
@@ -110,6 +170,8 @@ If an oversized transfer fails, the transport may surface one of these errors:
 
 - Leave oversized transfer enabled unless you have a specific reason not to.
 - Keep defaults unless you know your relay environment needs different thresholds.
+- Prefer high-level MCP client calls with `onprogress` so the SDK can assign a `progressToken` automatically.
+- Set `resetTimeoutOnProgress: true` for requests that may emit progress or trigger CEP-22 oversized transfer.
 - Tighten `policy` values if you operate in a more adversarial or resource-constrained environment.
 - Refer to [CEP-22: Oversized Payload Transfer](/spec/ceps/cep-22) for protocol-level behavior.
 

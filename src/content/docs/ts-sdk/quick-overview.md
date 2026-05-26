@@ -30,6 +30,7 @@ The SDK is organized into several modules, each providing a specific set of func
 - **[Core](/ts-sdk/core/interfaces)**: Contains fundamental definitions, constants, interfaces, and utilities (e.g., encryption, serialization).
 - **[Logging](/ts-sdk/core/logging)**: SDK logging conventions, configuration and best practices (Pino-based).
 - **[Transports](/ts-sdk/transports/base-nostr-transport)**: Critical for communication, this module provides `NostrClientTransport` and `NostrServerTransport` implementations for enabling MCP over Nostr.
+- **[Common Tool Schemas](/ts-sdk/core/common-tool-schemas)**: Utilities and transport integration for publishing CEP-15 common tool schema metadata.
 - **[Signer](/ts-sdk/signer/nostr-signer-interface)**: Provides cryptographic signing capabilities required for Nostr events
 - **[Relay](/ts-sdk/relay/relay-handler-interface)**: Manages Nostr relay connections, abstracting the complexity of relay interactions.
 - **[Proxy](/ts-sdk/proxy/overview)**: A client-side MCP server that connects to other servers through Nostr, exposing their capabilities locally, specially useful for clients that don't natively support Nostr transport.
@@ -55,6 +56,8 @@ The SDK provides two specialized transports to send and receive MCP messages ove
 
 - [`NostrClientTransport`](/ts-sdk/transports/nostr-client-transport): Used by MCP clients to connect to remote MCP servers exposed via Nostr.
 - [`NostrServerTransport`](/ts-sdk/transports/nostr-server-transport): Used by MCP servers to expose their capabilities through Nostr, publish relay discoverability metadata, and optionally publish CEP-23 `kind:0` server profiles.
+
+Server transports can also publish [CEP-15](/spec/ceps/cep-15) common tool schema metadata for interoperable tool discovery across providers.
 
 These transports handle the serialization of MCP messages into Nostr events and manage the communication flow.
 

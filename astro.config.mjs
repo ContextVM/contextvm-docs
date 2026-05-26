@@ -62,6 +62,10 @@ export default defineConfig({
                   slug: 'spec/ceps/cep-8',
                 },
                 {
+                  label: 'CEP-15: Common Tool Schemas',
+                  slug: 'spec/ceps/cep-15',
+                },
+                {
                   label: 'CEP-17: Server Relay List Metadata',
                   slug: 'spec/ceps/cep-17',
                 },
@@ -81,6 +85,10 @@ export default defineConfig({
                 {
                   label: 'CEP-24: Server Reviews',
                   slug: 'spec/ceps/cep-24',
+                },
+                {
+                  label: 'CEP-41: Open-Ended Stream Transfer',
+                  slug: 'spec/ceps/cep-41',
                 },
                 {
                   label: 'Informational',
@@ -124,6 +132,10 @@ export default defineConfig({
                   slug: 'ts-sdk/signer/nostr-signer-interface',
                 },
                 { label: 'Encryption', slug: 'ts-sdk/core/encryption' },
+                {
+                  label: 'Common Tool Schemas',
+                  slug: 'ts-sdk/core/common-tool-schemas',
+                },
               ],
             },
             {
@@ -144,6 +156,10 @@ export default defineConfig({
                 {
                   label: 'Oversized Transfer',
                   slug: 'ts-sdk/transports/oversized-transfer',
+                },
+                {
+                  label: 'Open Stream',
+                  slug: 'ts-sdk/transports/open-stream',
                 },
               ],
             },

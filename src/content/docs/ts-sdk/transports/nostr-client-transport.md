@@ -117,6 +117,17 @@ This keeps the active relay set minimal and avoids automatically merging every p
     - If the message is a **response** (correlated by the original event ID), it is passed to the MCP client to resolve the pending request.
     - If the message is a **notification**, it is emitted through the `onmessage` handler.
 
+## Progress Tokens and Request-Scoped Transport Features
+
+Some transport features are activated per request, not just per transport instance.
+
+- [Oversized Transfer](/ts-sdk/transports/oversized-transfer) uses the MCP request `progressToken` as the CEP-22 transfer identifier.
+- [Open Stream](/ts-sdk/transports/open-stream) uses the MCP request `progressToken` as the CEP-41 stream identifier.
+
+When you use the MCP TypeScript SDK through high-level request APIs and provide an `onprogress` callback, the SDK usually creates that token automatically. When you construct raw requests manually, you must provide the token yourself if you want request-scoped progress-based transport features to activate.
+
+For requests that may receive progress notifications over a longer period, `resetTimeoutOnProgress: true` is the recommended client-side setting. On the MCP TypeScript SDK low-level `client.request()` path, that timeout-reset behavior is effective when `onprogress` is also provided.
+
 ## Server Discovery and Relay Selection
 
 The client transport accepts a known [`serverPubkey`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:28) in multiple forms and can now resolve operational relays automatically when needed.

@@ -315,6 +315,94 @@ console.log('MCP server is running and available on Nostr.');
 
 > **Note**: The `relayHandler` option also accepts a `string[]` of relay URLs, in which case an `ApplesauceRelayPool` will be created automatically. See the [Base Nostr Transport](/transports/base-nostr-transport) documentation for details.
 
+## CEP-15 Common Tool Schemas
+
+If your server implements a shared tool contract defined by [CEP-15](/spec/ceps/cep-15), you can opt specific tools into common-schema publication.
+
+Use `withCommonToolSchemas()` to decorate the transport before connecting the server:
+
+```typescript
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import {
+  ApplesauceRelayPool,
+  NostrServerTransport,
+  PrivateKeySigner,
+  withCommonToolSchemas,
+} from '@contextvm/sdk';
+
+const signer = new PrivateKeySigner('your-server-private-key');
+const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
+
+const server = new McpServer({
+  name: 'translation-server',
+  version: '1.0.0',
+});
+
+server.registerTool(
+  'translate_text',
+  {
+    description: 'Translate text between languages.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        text: { type: 'string' },
+        target_language: { type: 'string' },
+      },
+      required: ['text', 'target_language'],
+    },
+    outputSchema: {
+      type: 'object',
+      properties: {
+        translated_text: { type: 'string' },
+      },
+      required: ['translated_text'],
+    },
+  },
+  async ({ text, target_language }) => ({
+    content: [{ type: 'text', text: `Translated to ${target_language}: ${text}` }],
+    structuredContent: {
+      translated_text: `Translated to ${target_language}: ${text}`,
+    },
+  }),
+);
+
+const transport = withCommonToolSchemas(
+  new NostrServerTransport({
+    signer,
+    relayHandler: relayPool,
+    isAnnouncedServer: true,
+  }),
+  {
+    tools: [{ name: 'translate_text' }],
+    categories: ['translation', 'language-tools'],
+  },
+);
+
+await server.connect(transport);
+```
+
+### What the SDK publishes automatically
+
+For each opted-in tool, the SDK:
+
+- computes the CEP-15 schema hash from the tool name plus normalized `inputSchema` and `outputSchema`;
+- injects `_meta['io.contextvm/common-schema'].schemaHash` into `tools/list` responses;
+- adds matching `i` and `k` tags to tools-list announcement events when the server is announced;
+- adds optional CEP-15 `t` category tags to announced tools-list events when `categories` are configured.
+
+Use this for tools that are intended to match a shared public contract across providers. Bespoke tools should remain outside the common-schema configuration.
+
+`categories` apply at the announcement-event level, which matches CEP-15 semantics. They are intended for best-effort browsing and filtering rather than schema verification. The SDK trims whitespace, drops empty entries, and deduplicates repeated categories before publishing `t` tags.
+
+### Notes
+
+- Apply `withCommonToolSchemas()` before `server.connect()` so direct responses and announcements stay aligned from the start.
+- Tool `name` is part of the schema identity, so renaming a tool changes the resulting hash.
+- If you provide an `outputSchema`, it participates in the hash and should remain stable across providers.
+- Schemas used for hashing must be self-contained. Remote `$ref` values must be resolved before hashing.
+
+For lower-level hashing and verification utilities, see [Common Tool Schemas](/ts-sdk/core/common-tool-schemas).
+
 ## How It Works
 
 1.  **`start()`**: When `mcpServer.connect()` is called, the transport connects to the relays and subscribes to events targeting the server's public key. If `isAnnouncedServer` is `true`, it publishes public announcement events. Independently, if `publishRelayList` is enabled, it also publishes relay-list metadata. If `profileMetadata` is configured, it publishes a CEP-23 `kind:0` profile event.
