@@ -93,7 +93,7 @@ The `direct_payment` tag is an optional optimization for bearer-asset payment me
 
 #### `payment_interaction` Tag (optional)
 
-The `payment_interaction` tag is an optional negotiation tag used by clients to advertise the preferred payment interaction semantic for the current session.
+The `payment_interaction` tag is an optional negotiation tag used by clients to request the payment interaction semantic for the current session.
 
 ```json
 ["payment_interaction", "<mode>"]
@@ -107,10 +107,10 @@ Where `<mode>` is one of:
 ##### Notes
 
 - `payment_interaction` is a negotiation tag, not a pricing tag.
-- Clients SHOULD send at most one `payment_interaction` tag on the first direct client-to-server message of a session.
+- Clients SHOULD send at most one `payment_interaction` tag on the first direct client-to-server message of a session. The tag expresses the requested effective lifecycle for the session, not a list of all lifecycles the client supports. Clients MUST NOT rely on the presence of multiple `payment_interaction` tags to express an ordered preference list.
 - When present on that first direct message, it participates in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35).
 - If omitted, `transparent` is the default.
-- Servers MAY advertise supported interaction semantics in initialization responses or public announcements using the same tag format.
+- Servers MAY advertise supported interaction semantics in initialization responses or public announcements using the same tag format. Because `transparent` is the default compatibility baseline, a server that supports `explicit_gating` MAY advertise support by including a `payment_interaction=explicit_gating` tag in its public announcement, initialization response, or first direct response. Such advertisement means explicit gating is available as an opt-in mode; it does not make explicit gating the effective lifecycle unless the client requests it and the server accepts it for the session.
 
 #### `change` Tag (optional)
 
@@ -206,6 +206,18 @@ Recommended PMIs and naming conventions are documented in the informational comp
 
 PMI discovery allows clients and servers to determine payment-method compatibility before, or during, paid capability use.
 
+#### Discovery methods
+
+Clients discover server PMI support from public announcements, initialization responses, or request-time payment offers. Servers discover client PMI support from initialization requests or from `pmi` tags on the first direct client message in stateless operation.
+
+#### Stateless operation
+
+In stateless operation (no prior initialization), clients that want to use paid capabilities SHOULD include one or more `pmi` tags in the request event so the server can select a compatible payment method.
+
+When sent on the first direct client-to-server message of a session, these `pmi` tags participate in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). When sent on later requests, they are interpreted in the context of those requests unless another CEP explicitly defines stronger session-update semantics.
+
+Clients that prefer `explicit_gating` SHOULD also include `payment_interaction` on that first direct request so the server can apply the session's negotiated payment interaction behavior from the start.
+
 ### Payment Interaction Negotiation
 
 CEP-8 defines an optional session-level negotiation surface for how payment-gated invocations are exposed by the transport.
@@ -216,16 +228,49 @@ Payment interaction is a transport concern. A server transport MAY enforce payme
 
 This CEP defines `payment_interaction` as a session-level negotiation tag.
 
-- When a client includes `payment_interaction` on the first direct client-to-server message of a session, that value expresses the client's preferred payment interaction semantic for the session.
+- When a client includes `payment_interaction` on the first direct client-to-server message of a session, that value expresses the client's requested payment interaction semantic for the session.
 - After the first-message exchange, implementations SHOULD omit repeated `payment_interaction` tags unless a future CEP defines stronger update semantics.
 - `transparent` is the default and remains the compatibility baseline.
-- `explicit_gating` applies only when requested by the client and supported by the server for the session. If no compatible explicit preference is negotiated, implementations MUST use `transparent`.
+- `explicit_gating` becomes the effective lifecycle for the session only when it is requested by the client and accepted by the server. If the client does not request `explicit_gating`, or if the server does not accept it, the effective lifecycle is `transparent`.
 - `transparent` means payment may be handled through payment notifications without surfacing payment as the final invocation outcome.
 - `explicit_gating` means payment is surfaced as a JSON-RPC error response to the invocation. The paid result is returned only if the client later sends a matching invocation after payment authorization is available.
 
-Servers MAY advertise support for `explicit_gating` in discovery, initialization responses, first direct responses, or public announcements. In stateless operation, `payment_interaction` follows the first-message exchange and capability-learning rules described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). Clients that want `explicit_gating` in stateless operation SHOULD request it on the first direct invocation event of the session.
+In stateless operation, `payment_interaction` follows the first-message exchange and capability-learning rules described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). Clients that want `explicit_gating` in stateless operation SHOULD request it on the first direct invocation event of the session.
 
-#### PMI and interaction advertisement
+#### Effective mode disclosure and lifecycle negotiation
+
+The effective `payment_interaction` for a session is established during the first direct message exchange. To avoid clients waiting for the wrong lifecycle, the effective mode MUST be observable on the first direct server-to-client response when the client requested a non-default mode.
+
+- When a client includes `payment_interaction=explicit_gating` on the first direct client-to-server message of a session, the server MUST indicate the effective mode on its first direct server-to-client message in the same session. The server indicates acceptance by including a `payment_interaction=explicit_gating` tag on that first direct response.
+- When a client includes `payment_interaction=explicit_gating` and the server does not support or does not accept it for the session, the server MUST NOT silently fall back to transparent payment behavior for the priced invocation. The server SHOULD either:
+  - return a JSON-RPC error indicating that the requested `payment_interaction` is unsupported or unavailable for the session, or
+  - indicate `payment_interaction=transparent` on the first direct response and use the transparent lifecycle for the session.
+- If a client includes `payment_interaction=transparent` explicitly, or omits the tag, the effective mode is `transparent` for that session. The server MAY still echo `payment_interaction=transparent` on its first direct response; if it does not, implementations MUST continue to behave as if the effective mode is `transparent`.
+- Clients SHOULD treat the observed effective `payment_interaction` on the first direct response as authoritative for the session. A client that requested `explicit_gating` and receives an effective `transparent` response, no effective-mode disclosure, or transparent `notifications/payment_required` messages SHOULD treat negotiation of `explicit_gating` as failed for that session and MAY abort the session or fall back to the observed lifecycle according to local policy.
+- A client that required `explicit_gating` because payment decisions must be visible to the application or agent SHOULD NOT automatically satisfy transparent `notifications/payment_required` messages received in a session where `explicit_gating` was not accepted.
+
+##### JSON-RPC error when `explicit_gating` is unsupported
+
+When a server rejects a `payment_interaction=explicit_gating` request, it SHOULD return a JSON-RPC error with code `-32602 Invalid params` and a `data` object identifying the requested mode and, when useful, the modes the server supports. Example:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "error": {
+    "code": -32602,
+    "message": "Unsupported payment_interaction",
+    "data": {
+      "requested": "explicit_gating",
+      "supported": ["transparent"]
+    }
+  }
+}
+```
+
+Returning this error is sufficient to satisfy the server's effective-mode-disclosure obligation for the first direct response; it is not a payment error.
+
+#### PMI advertisement
 
 Servers advertise supported PMIs using the `pmi` tag in initialization responses or public announcements:
 
@@ -263,18 +308,6 @@ Clients advertise supported PMIs in initialization requests. Clients that prefer
   ]
 }
 ```
-
-#### Discovery methods
-
-Clients discover server PMI support from public announcements, initialization responses, or request-time payment offers. Servers discover client PMI support from initialization requests or from `pmi` tags on the first direct client message in stateless operation.
-
-##### Stateless operation
-
-In stateless operation (no prior initialization), clients that want to use paid capabilities SHOULD include one or more `pmi` tags in the request event so the server can select a compatible payment method.
-
-When sent on the first direct client-to-server message of a session, these `pmi` tags participate in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). When sent on later requests, they are interpreted in the context of those requests unless another CEP explicitly defines stronger session-update semantics.
-
-Clients that prefer `explicit_gating` SHOULD also include `payment_interaction` on that first direct request so the server can apply the session's negotiated payment interaction behavior from the start.
 
 ### Payment Flow
 
@@ -361,7 +394,7 @@ The server transport MUST NOT forward the payment-gated invocation to the underl
 
 The `explicit_gating` lifecycle is:
 
-1. The client negotiates `payment_interaction=explicit_gating` on the first direct message of the session.
+1. The client requests `payment_interaction=explicit_gating` on the first direct message of the session, and the server accepts it by including `payment_interaction=explicit_gating` on its first direct response (see [Effective mode disclosure and lifecycle negotiation](#effective-mode-disclosure-and-lifecycle-negotiation)).
 2. The client invokes a priced capability.
 3. The server transport evaluates the request before forwarding it to the underlying MCP handler.
 4. If payment is required and no matching paid execution authorization exists, the server transport returns a JSON-RPC `Payment Required` error response.
@@ -456,7 +489,7 @@ Example canonicalization input:
 }
 ```
 
-Each successful payment SHOULD authorize one future execution for the matching client pubkey and canonical invocation identity unless server policy explicitly grants a different number of executions. Servers SHOULD consume one authorization atomically before forwarding the matching invocation to the underlying MCP handler and MUST prevent concurrent double-consumption.
+Each successful payment SHOULD authorize one future execution for the matching client pubkey and canonical invocation identity unless server policy explicitly grants a different number of executions. Servers MUST atomically claim or consume one matching authorization before forwarding the invocation to the underlying MCP handler, MUST prevent concurrent double-consumption, and MUST NOT forward a priced invocation to the underlying MCP handler unless a matching paid authorization has been claimed. Server policy determines whether a failed or interrupted execution restores, expires, or consumes the claimed authorization.
 
 Servers MAY expire or evict unpaid payment options, pending payment state, and unused paid execution authorizations according to local policy. If no valid paid authorization exists when a matching invocation arrives, the server transport handles the invocation as unpaid and MAY return `Payment Required`.
 
@@ -624,11 +657,25 @@ Clients SHOULD include at most one `direct_payment` tag. If multiple `direct_pay
 
 For bearer-asset PMIs, servers SHOULD treat `notifications/payment_rejected` as meaning the bearer asset was not consumed/redeemed.
 
-### Correlation and Idempotency
+### Correlation, Authorization Identity, and Idempotency
 
-Payment-related notifications in the transparent lifecycle MUST include an `e` tag referencing the original request event id.
+Correlation and idempotency depend on the effective `payment_interaction` lifecycle for the session. The two lifecycles use different correlation identities on purpose: the transparent lifecycle correlates by the outer Nostr request event id, while the explicit gating lifecycle correlates by a canonical invocation identity derived from the inner MCP `method` and `params`.
 
-Clients MAY retry publishing the same request event (same event id) to achieve idempotent semantics. Servers SHOULD treat duplicate request events with the same id as retries and MUST NOT charge more than once for the same request.
+#### Transparent lifecycle
+
+In the transparent lifecycle, payment-related notifications MUST include an `e` tag referencing the original request event id. The "same request" for transparent idempotency means the same outer Nostr request event (same event id).
+
+Clients MAY retry publishing the same request event, with the same event id, to achieve idempotent transparent request semantics. Servers SHOULD treat duplicate request events with the same id as retries and MUST NOT charge more than once for the same transparent request event.
+
+#### Explicit gating lifecycle
+
+In the explicit gating lifecycle, payment authorization and retry matching are based on the explicit-gating authorization identity, not the outer request event id. For explicit gating, "the same invocation" means the same requesting client pubkey and the same canonical invocation identity, derived from the SHA-256 digest of the RFC 8785 JSON Canonicalization Scheme (JCS) serialization of a JSON object containing exactly the inner MCP request `method` and `params`.
+
+The JSON-RPC `id`, outer Nostr event id, timestamps, signatures, and event tags MUST NOT affect this identity. A retry MAY therefore use a different JSON-RPC `id` or a different outer event id and still match a paid authorization if `method`, `params`, and client pubkey are unchanged.
+
+Servers MUST atomically claim or consume one matching paid authorization before forwarding the invocation to the underlying MCP handler, MUST prevent concurrent double-consumption, and MUST NOT forward a priced invocation to the underlying MCP handler unless a matching paid authorization has been claimed. Server policy determines whether a failed or interrupted execution restores, expires, or consumes the claimed authorization.
+
+A paid authorization grants permission for execution; it does not by itself guarantee replay of the completed result. If the invocation is executed and the resulting response is not received by the client because of transport loss, relay behavior, client disconnect, or another delivery failure, this CEP does not require the server to replay the completed result. A later matching invocation for which no unused paid authorization remains MAY be treated as unpaid and MAY receive a fresh `Payment Required` error, unless server-specific policy provides another remedy.
 
 ## Backward Compatibility
 
