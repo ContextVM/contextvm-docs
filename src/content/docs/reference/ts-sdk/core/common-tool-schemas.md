@@ -5,7 +5,7 @@ description: Compute and publish CEP-15 common tool schema hashes with the @cont
 
 # Common Tool Schemas
 
-The `@contextvm/sdk` includes helpers for [CEP-15](/spec/ceps/cep-15) common tool schemas.
+The `@contextvm/sdk` includes helpers for [CEP-15](/reference/ceps/cep-15) common tool schemas.
 
 For most server integrations, prefer `withCommonToolSchemas()`. It decorates `NostrServerTransport` and publishes the required metadata automatically.
 
@@ -80,7 +80,7 @@ This is the recommended path because the SDK will automatically:
 
 `categories` are lightweight discoverability hints for announced `tools/list` events. The SDK trims whitespace, removes empty values, and deduplicates repeated categories while preserving the original order of the remaining entries.
 
-For more transport-specific context, see [Nostr Server Transport](/ts-sdk/transports/nostr-server-transport#cep-15-common-tool-schemas).
+For more transport-specific context, see [Nostr Server Transport](/reference/ts-sdk/transports/nostr-server-transport#cep-15-common-tool-schemas).
 
 ## Exports
 
@@ -173,4 +173,4 @@ This is mainly useful for tests, debugging, and custom verification flows.
 
 ## Next Steps
 
-For the recommended server-side integration, see [Nostr Server Transport](/ts-sdk/transports/nostr-server-transport#cep-15-common-tool-schemas).
+For the recommended server-side integration, see [Nostr Server Transport](/reference/ts-sdk/transports/nostr-server-transport#cep-15-common-tool-schemas).

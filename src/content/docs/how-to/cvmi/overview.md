@@ -89,6 +89,6 @@ Generate strongly typed TypeScript clients directly from a live ContextVM server
 
 ## Next Steps
 
-- [Install CVMI](/cvmi/installation) - Get started with CVMI
-- [Commands Reference](/cvmi/commands) - Learn about available commands
-- [Configuration](/cvmi/configuration) - Configure CVMI for your needs
+- [Install CVMI](/how-to/cvmi/installation) - Get started with CVMI
+- [Commands Reference](/how-to/cvmi/commands) - Learn about available commands
+- [Configuration](/how-to/cvmi/configuration) - Configure CVMI for your needs

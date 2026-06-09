@@ -37,7 +37,7 @@ This CEP defines:
 
 This CEP does **not** define:
 
-- Privacy guarantees for payment messages (use encryption mechanisms in [CEP-4](/spec/ceps/cep-4) where required).
+- Privacy guarantees for payment messages (use encryption mechanisms in [CEP-4](/reference/ceps/cep-4) where required).
 - Rate limiting / abuse prevention mechanisms.
 - Currency conversion rules or exchange rate discovery.
 
@@ -152,7 +152,7 @@ Pricing information is advertised using the `cap` tag in server announcements an
 
 The `cap` tag indicates that using the `get_weather` tool costs 100 satoshis, allowing clients to display pricing to users.
 
-When `cap` tags are attached to a capability list response, they describe the pricing surface of that specific response payload. They are response-local discovery metadata for the listed capabilities, not by themselves a replacement for the peer's general session discovery baseline as defined in [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35).
+When `cap` tags are attached to a capability list response, they describe the pricing surface of that specific response payload. They are response-local discovery metadata for the listed capabilities, not by themselves a replacement for the peer's general session discovery baseline as defined in [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35).
 
 ### Payment Method Identifiers (PMI)
 
@@ -176,7 +176,7 @@ PMIs MUST follow the format defined by the [W3C Payment Method Identifiers](http
 
 This CEP maintains no in-document registry of recommended PMIs.
 
-Recommended PMIs and naming conventions are documented in the informational companion CEP, [CEP-21: Payment Method Identifier (PMI) Recommendations](/spec/ceps/informational/cep-21).
+Recommended PMIs and naming conventions are documented in the informational companion CEP, [CEP-21: Payment Method Identifier (PMI) Recommendations](/reference/ceps/informational/cep-21).
 
 #### PMI Benefits and Roles
 
@@ -189,7 +189,7 @@ Using standardized PMIs provides:
 
 ### PMI Discovery
 
-PMI discovery allows clients and servers to determine compatibility with payment methods, similar to encryption support discovery in [CEP-4](/spec/ceps/cep-4).
+PMI discovery allows clients and servers to determine compatibility with payment methods, similar to encryption support discovery in [CEP-4](/reference/ceps/cep-4).
 
 #### PMI Advertisement
 
@@ -245,7 +245,7 @@ Servers can discover PMI support through:
 
 In stateless operation (no prior initialization), clients that want to use paid capabilities SHOULD include one or more `pmi` tags in the request event so the server can select a compatible payment method.
 
-When sent on the first direct client-to-server message of a session, these `pmi` tags participate in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). When sent on later requests, they are interpreted in the context of those requests unless another CEP explicitly defines stronger session-update semantics.
+When sent on the first direct client-to-server message of a session, these `pmi` tags participate in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35). When sent on later requests, they are interpreted in the context of those requests unless another CEP explicitly defines stronger session-update semantics.
 
 ### Payment Flow
 
@@ -492,7 +492,7 @@ A reference implementation of this CEP is available in the [ContextVM TypeScript
 
 ## Dependencies
 
-- [CEP-4: Encryption Support](/spec/ceps/cep-4)
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
-- [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35)
+- [CEP-4: Encryption Support](/reference/ceps/cep-4)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
+- [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35)
 - [W3C Payment Method Identifiers](https://www.w3.org/TR/payment-method-id/)

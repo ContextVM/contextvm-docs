@@ -112,4 +112,4 @@ A reference implementation for server review UI and data fetching can be found i
 
 ## Dependencies
 
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)

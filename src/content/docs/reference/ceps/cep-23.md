@@ -79,4 +79,4 @@ A reference implementation of this metadata publishing can be found in the [Cont
 
 ## Dependencies
 
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)

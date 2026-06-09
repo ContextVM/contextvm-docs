@@ -105,6 +105,6 @@ A reference implementation is available in the [ContextVM SDK](https://github.co
 
 ## Dependencies
 
-- [CEP-4: Encryption Support](/spec/ceps/cep-4)
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
-- [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35)
+- [CEP-4: Encryption Support](/reference/ceps/cep-4)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
+- [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35)

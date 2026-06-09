@@ -278,4 +278,4 @@ All commands support these global options:
 
 ## Environment Variables
 
-See the [Configuration](/cvmi/configuration) page for details on environment variables that affect command behavior.
+See the [Configuration](/how-to/cvmi/configuration) page for details on environment variables that affect command behavior.

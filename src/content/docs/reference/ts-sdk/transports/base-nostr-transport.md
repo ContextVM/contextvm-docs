@@ -48,7 +48,7 @@ The `GiftWrapMode` enum controls which NIP-59 gift wrap kind is used for encrypt
 - **`EPHEMERAL`**: Always uses ephemeral gift wraps (kind `21059`). Only use this when you know the remote peer supports ephemeral gift wraps.
 - **`PERSISTENT`**: Always uses persistent gift wraps (kind `1059`). Use this for maximum compatibility with existing implementations.
 
-Ephemeral gift wraps (kind `21059`) are preferred for privacy-sensitive communications as relays are not expected to store them. See [CEP-19: Ephemeral Gift Wraps](/spec/ceps/cep-19) for more details.
+Ephemeral gift wraps (kind `21059`) are preferred for privacy-sensitive communications as relays are not expected to store them. See [CEP-19: Ephemeral Gift Wraps](/reference/ceps/cep-19) for more details.
 
 ### Example: Using Ephemeral Gift Wraps
 

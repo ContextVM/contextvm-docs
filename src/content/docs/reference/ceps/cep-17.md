@@ -138,7 +138,7 @@ Servers that do not publish a relay list event are treated the same as before - 
 
 ## Dependencies
 
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6) - Server announcements (kind 11316) provide the pubkey needed to query relay lists
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6) - Server announcements (kind 11316) provide the pubkey needed to query relay lists
 
 ## Reference Implementation
 

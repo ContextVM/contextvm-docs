@@ -110,5 +110,5 @@ cvmi serve -- npx -y @modelcontextprotocol/server-filesystem /tmp
 
 Now that you have CVMI installed, explore:
 
-- [Commands Reference](/cvmi/commands) - Learn about all available commands
-- [Configuration](/cvmi/configuration) - Set up your environment and preferences
+- [Commands Reference](/how-to/cvmi/commands) - Learn about all available commands
+- [Configuration](/how-to/cvmi/configuration) - Set up your environment and preferences

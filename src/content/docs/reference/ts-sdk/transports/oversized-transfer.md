@@ -5,13 +5,13 @@ description: Bounded oversized payload transfer for ContextVM using MCP progress
 
 # Oversized Transfer
 
-Oversized transfer is the SDK feature that automatically switches a message to the [CEP-22: Oversized Payload Transfer](/spec/ceps/cep-22) flow when a normal relay event would likely be too large.
+Oversized transfer is the SDK feature that automatically switches a message to the [CEP-22: Oversized Payload Transfer](/reference/ceps/cep-22) flow when a normal relay event would likely be too large.
 
 In normal use, application code does not send chunks or manage transfer state directly. The transport handles that internally.
 
 ## Default Behavior
 
-Oversized transfer is enabled by default on both [`Nostr Client Transport`](/ts-sdk/transports/nostr-client-transport) and [`Nostr Server Transport`](/ts-sdk/transports/nostr-server-transport).
+Oversized transfer is enabled by default on both [`Nostr Client Transport`](/reference/ts-sdk/transports/nostr-client-transport) and [`Nostr Server Transport`](/reference/ts-sdk/transports/nostr-server-transport).
 
 With defaults:
 
@@ -24,7 +24,7 @@ This means most consumers do not need to configure anything unless they want str
 
 ## Request Activation and `progressToken`
 
-CEP-22 oversized transfer is request-scoped. It is only available for a logical exchange when the originating MCP request includes a `progressToken`, as described in [CEP-22: Oversized Payload Transfer](/spec/ceps/cep-22).
+CEP-22 oversized transfer is request-scoped. It is only available for a logical exchange when the originating MCP request includes a `progressToken`, as described in [CEP-22: Oversized Payload Transfer](/reference/ceps/cep-22).
 
 In practice, this matters most on the client side:
 
@@ -75,7 +75,7 @@ When using the MCP TypeScript SDK, remember that this timeout-reset behavior is 
 
 ### Low-level transport usage
 
-If you are working below the usual MCP client helpers, such as constructing raw requests for [`NostrClientTransport`](/ts-sdk/transports/nostr-client-transport), treat `progressToken` as part of the activation contract for CEP-22.
+If you are working below the usual MCP client helpers, such as constructing raw requests for [`NostrClientTransport`](/reference/ts-sdk/transports/nostr-client-transport), treat `progressToken` as part of the activation contract for CEP-22.
 
 - High-level MCP SDK usage with `onprogress` usually handles this automatically.
 - Manual raw requests must include the token explicitly in request metadata.
@@ -173,10 +173,10 @@ If an oversized transfer fails, the transport may surface one of these errors:
 - Prefer high-level MCP client calls with `onprogress` so the SDK can assign a `progressToken` automatically.
 - Set `resetTimeoutOnProgress: true` for requests that may emit progress or trigger CEP-22 oversized transfer.
 - Tighten `policy` values if you operate in a more adversarial or resource-constrained environment.
-- Refer to [CEP-22: Oversized Payload Transfer](/spec/ceps/cep-22) for protocol-level behavior.
+- Refer to [CEP-22: Oversized Payload Transfer](/reference/ceps/cep-22) for protocol-level behavior.
 
 ## Related Documentation
 
-- [CEP-22: Oversized Payload Transfer](/spec/ceps/cep-22)
-- [Nostr Client Transport](/ts-sdk/transports/nostr-client-transport)
-- [Nostr Server Transport](/ts-sdk/transports/nostr-server-transport)
+- [CEP-22: Oversized Payload Transfer](/reference/ceps/cep-22)
+- [Nostr Client Transport](/reference/ts-sdk/transports/nostr-client-transport)
+- [Nostr Server Transport](/reference/ts-sdk/transports/nostr-server-transport)

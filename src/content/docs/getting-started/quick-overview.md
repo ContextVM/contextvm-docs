@@ -15,14 +15,14 @@ Our documentation is organized into several main sections:
 
 ### 📋 Specification
 
-- **[Specification](/spec/ctxvm-draft-spec)**: The official ContextVM draft specification detailing the protocol
-- **[CEP - Guidelines](/spec/cep-guidelines)**: ContextVM Enhancement Proposal guidelines for contributing to the protocol
+- **[Specification](/reference/spec/ctxvm-draft-spec)**: The official ContextVM draft specification detailing the protocol
+- **[CEP - Guidelines](/reference/spec/cep-guidelines)**: ContextVM Enhancement Proposal guidelines for contributing to the protocol
 
 ### 🛠️ ts-SDK
 
 The TypeScript SDK provides tools and libraries for building applications with ContextVM:
 
-- **[SDK Quick Overview](/ts-sdk/quick-overview)**: A comprehensive overview of the SDK's modules and core concepts
+- **[SDK Quick Overview](/reference/ts-sdk/quick-overview)**: A comprehensive overview of the SDK's modules and core concepts
 - **Core Concepts**: Fundamental definitions, constants, interfaces, and utilities
 - **Transports**: Communication modules for MCP over Nostr
 - **Components**: Gateway, Relay Handlers, Signers, and Proxy implementations
@@ -40,16 +40,16 @@ ContextVM is a protocol that bridges the Model Context Protocol (MCP) with the N
 
 ## Getting Started
 
-1. **Read the Specification**: Start with the [ContextVM specification](/spec/ctxvm-draft-spec) to understand the protocol
-2. **Explore the SDK**: Check out the [SDK Quick Overview](/ts-sdk/quick-overview) for development guidance
+1. **Read the Specification**: Start with the [ContextVM specification](/reference/spec/ctxvm-draft-spec) to understand the protocol
+2. **Explore the SDK**: Check out the [SDK Quick Overview](/reference/ts-sdk/quick-overview) for development guidance
 3. **Follow Tutorials**: Work through practical examples to see ContextVM in action
 
 ## Next Steps
 
 Choose your path based on your interests:
 
-- **Protocol Development**: Dive into the [Specification](/spec/ctxvm-draft-spec) to understand the protocol details
-- **SDK Development**: Start with the [SDK Quick Overview](/ts-sdk/quick-overview) to begin building with ContextVM
-- **Contributing**: Learn about contributing to the protocol with [CEP Guidelines](/spec/cep-guidelines)
+- **Protocol Development**: Dive into the [Specification](/reference/spec/ctxvm-draft-spec) to understand the protocol details
+- **SDK Development**: Start with the [SDK Quick Overview](/reference/ts-sdk/quick-overview) to begin building with ContextVM
+- **Contributing**: Learn about contributing to the protocol with [CEP Guidelines](/reference/spec/cep-guidelines)
 
 For the latest updates and community discussions, visit our [GitHub repository](https://github.com/contextvm/).

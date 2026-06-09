@@ -152,11 +152,11 @@ This CEP does not replace feature-specific CEPs. Instead, it defines the behavio
 
 Relevant specifications include:
 
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
-- [CEP-8: Capability Pricing and Payment Flow](/spec/ceps/cep-8)
-- [CEP-17: Relay List Metadata Discovery](/spec/ceps/cep-17)
-- [CEP-19: Ephemeral Gift Wrap for Encrypted Transport](/spec/ceps/cep-19)
-- [CEP-22: Oversized Transfer](/spec/ceps/cep-22)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
+- [CEP-8: Capability Pricing and Payment Flow](/reference/ceps/cep-8)
+- [CEP-17: Relay List Metadata Discovery](/reference/ceps/cep-17)
+- [CEP-19: Ephemeral Gift Wrap for Encrypted Transport](/reference/ceps/cep-19)
+- [CEP-22: Oversized Transfer](/reference/ceps/cep-22)
 
 These CEPs define individual discovery vocabularies or feature semantics. This CEP defines how implementations should exchange and learn that information in stateless session context.
 
@@ -192,7 +192,7 @@ This behavior is already established in the ContextVM TypeScript SDK, which serv
 
 ## Dependencies
 
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
-- [CEP-8: Capability Pricing and Payment Flow](/spec/ceps/cep-8)
-- [CEP-19: Ephemeral Gift Wrap for Encrypted Transport](/spec/ceps/cep-19)
-- [CEP-22: Oversized Transfer](/spec/ceps/cep-22)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
+- [CEP-8: Capability Pricing and Payment Flow](/reference/ceps/cep-8)
+- [CEP-19: Ephemeral Gift Wrap for Encrypted Transport](/reference/ceps/cep-19)
+- [CEP-22: Oversized Transfer](/reference/ceps/cep-22)

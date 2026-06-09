@@ -121,8 +121,8 @@ This keeps the active relay set minimal and avoids automatically merging every p
 
 Some transport features are activated per request, not just per transport instance.
 
-- [Oversized Transfer](/ts-sdk/transports/oversized-transfer) uses the MCP request `progressToken` as the CEP-22 transfer identifier.
-- [Open Stream](/ts-sdk/transports/open-stream) uses the MCP request `progressToken` as the CEP-41 stream identifier.
+- [Oversized Transfer](/reference/ts-sdk/transports/oversized-transfer) uses the MCP request `progressToken` as the CEP-22 transfer identifier.
+- [Open Stream](/reference/ts-sdk/transports/open-stream) uses the MCP request `progressToken` as the CEP-41 stream identifier.
 
 When you use the MCP TypeScript SDK through high-level request APIs and provide an `onprogress` callback, the SDK usually creates that token automatically. When you construct raw requests manually, you must provide the token yourself if you want request-scoped progress-based transport features to activate.
 

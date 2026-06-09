@@ -495,7 +495,7 @@ Works identically across all providers implementing the same schema hash.
 
 ## Dependencies
 
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
 - [NIP-73: External Content IDs](https://github.com/nostr-protocol/nips/blob/master/73.md)
 - [RFC 8785: JSON Canonicalization Scheme (JCS)](https://tools.ietf.org/html/rfc8785)
 - [MCP Specification: Tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)

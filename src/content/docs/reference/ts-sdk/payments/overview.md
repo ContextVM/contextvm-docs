@@ -250,8 +250,8 @@ In practice, when you use payments wrappers, PMI advertisement is handled for yo
 
 ## Related
 
-- [CEP-8 Specification](/spec/ceps/cep-8)
-- [CEP-21: Payment Rejection](/spec/ceps/informational/cep-21)
+- [CEP-8 Specification](/reference/ceps/cep-8)
+- [CEP-21: Payment Rejection](/reference/ceps/informational/cep-21)
 - [Paid Servers and Clients Guide](/docs/payments-paid-servers-and-clients)
 
 ## Next steps

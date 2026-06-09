@@ -45,201 +45,151 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Specification',
+          label: 'Reference',
           items: [
-            { label: 'Specification', slug: 'spec/ctxvm-draft-spec' },
-            { label: 'CEP - Guidelines', slug: 'spec/cep-guidelines' },
+            {
+              label: 'Specification',
+              items: [
+                { label: 'Specification', slug: 'reference/spec/ctxvm-draft-spec' },
+                { label: 'CEP - Guidelines', slug: 'reference/spec/cep-guidelines' },
+              ],
+            },
             {
               label: 'CEPs',
               items: [
-                { label: 'CEP-4: Encryption Support', slug: 'spec/ceps/cep-4' },
-                {
-                  label: 'CEP-6: Public Server Announcements',
-                  slug: 'spec/ceps/cep-6',
-                },
-                {
-                  label: 'CEP-8: Capability Pricing and Payment Flow',
-                  slug: 'spec/ceps/cep-8',
-                },
-                {
-                  label: 'CEP-15: Common Tool Schemas',
-                  slug: 'spec/ceps/cep-15',
-                },
-                {
-                  label: 'CEP-17: Server Relay List Metadata',
-                  slug: 'spec/ceps/cep-17',
-                },
-                {
-                  label: 'CEP-19: Ephemeral Gift Wraps',
-                  slug: 'spec/ceps/cep-19',
-                },
-                {
-                  label: 'CEP-22: Oversized Payload Transfer',
-                  slug: 'spec/ceps/cep-22',
-                },
-                {
-                  label:
-                    'CEP-23: Server Profile Metadata and Social Communications',
-                  slug: 'spec/ceps/cep-23',
-                },
-                {
-                  label: 'CEP-24: Server Reviews',
-                  slug: 'spec/ceps/cep-24',
-                },
-                {
-                  label: 'CEP-41: Open-Ended Stream Transfer',
-                  slug: 'spec/ceps/cep-41',
-                },
+                { label: 'CEP-4: Encryption Support', slug: 'reference/ceps/cep-4' },
+                { label: 'CEP-6: Public Server Announcements', slug: 'reference/ceps/cep-6' },
+                { label: 'CEP-8: Capability Pricing and Payment Flow', slug: 'reference/ceps/cep-8' },
+                { label: 'CEP-15: Common Tool Schemas', slug: 'reference/ceps/cep-15' },
+                { label: 'CEP-17: Server Relay List Metadata', slug: 'reference/ceps/cep-17' },
+                { label: 'CEP-19: Ephemeral Gift Wraps', slug: 'reference/ceps/cep-19' },
+                { label: 'CEP-22: Oversized Payload Transfer', slug: 'reference/ceps/cep-22' },
+                { label: 'CEP-23: Server Profile Metadata and Social Communications', slug: 'reference/ceps/cep-23' },
+                { label: 'CEP-24: Server Reviews', slug: 'reference/ceps/cep-24' },
+                { label: 'CEP-41: Open-Ended Streams', slug: 'reference/ceps/cep-41' },
                 {
                   label: 'Informational',
                   items: [
-                    {
-                      label: 'CEP-16: Client Public Key Injection',
-                      slug: 'spec/ceps/informational/cep-16',
-                    },
-                    {
-                      label:
-                        'CEP-21: Payment Method Identifier (PMI) Recommendations',
-                      slug: 'spec/ceps/informational/cep-21',
-                    },
-                    {
-                      label:
-                        'CEP-35: Stateless Session Discovery and Capability Learning',
-                      slug: 'spec/ceps/informational/cep-35',
-                    },
+                    { label: 'CEP-16: Client Public Key Injection', slug: 'reference/ceps/informational/cep-16' },
+                    { label: 'CEP-21: PMI Recommendations', slug: 'reference/ceps/informational/cep-21' },
+                    { label: 'CEP-35: Stateless Session Discovery', slug: 'reference/ceps/informational/cep-35' },
                   ],
                 },
               ],
             },
-          ],
-        },
-        {
-          label: 'TypeScript SDK',
-          items: [
-            { label: 'Quick Overview', slug: 'ts-sdk/quick-overview' },
             {
-              label: 'Core Concepts',
+              label: 'TypeScript SDK',
               items: [
-                { label: 'Constants', slug: 'ts-sdk/core/constants' },
-                { label: 'Interfaces', slug: 'ts-sdk/core/interfaces' },
-                { label: 'Logging', slug: 'ts-sdk/core/logging' },
+                { label: 'Quick Overview', slug: 'reference/ts-sdk/quick-overview' },
                 {
-                  label: 'Relay handler',
-                  slug: 'ts-sdk/relay/relay-handler-interface',
-                },
-                {
-                  label: 'Nostr signer',
-                  slug: 'ts-sdk/signer/nostr-signer-interface',
-                },
-                { label: 'Encryption', slug: 'ts-sdk/core/encryption' },
-                {
-                  label: 'Common Tool Schemas',
-                  slug: 'ts-sdk/core/common-tool-schemas',
-                },
-              ],
-            },
-            {
-              label: 'Transports',
-              items: [
-                {
-                  label: 'Base Nostr Transport',
-                  slug: 'ts-sdk/transports/base-nostr-transport',
-                },
-                {
-                  label: 'Nostr Client Transport',
-                  slug: 'ts-sdk/transports/nostr-client-transport',
-                },
-                {
-                  label: 'Nostr Server Transport',
-                  slug: 'ts-sdk/transports/nostr-server-transport',
-                },
-                {
-                  label: 'Oversized Transfer',
-                  slug: 'ts-sdk/transports/oversized-transfer',
-                },
-                {
-                  label: 'Open Stream',
-                  slug: 'ts-sdk/transports/open-stream',
-                },
-              ],
-            },
-            {
-              label: 'Components',
-              items: [
-                {
-                  label: 'Relay Handlers',
+                  label: 'Core Concepts',
                   items: [
-                    {
-                      label: 'Applesauce Relay Pool',
-                      slug: 'ts-sdk/relay/applesauce-relay-pool',
-                    },
-                    {
-                      label: 'Custom Relay Handler Development',
-                      slug: 'ts-sdk/relay/custom-relay-handler',
-                    },
+                    { label: 'Constants', slug: 'reference/ts-sdk/core/constants' },
+                    { label: 'Interfaces', slug: 'reference/ts-sdk/core/interfaces' },
+                    { label: 'Logging', slug: 'reference/ts-sdk/core/logging' },
+                    { label: 'Relay Handler', slug: 'reference/ts-sdk/relay/relay-handler-interface' },
+                    { label: 'Nostr Signer', slug: 'reference/ts-sdk/signer/nostr-signer-interface' },
+                    { label: 'Encryption', slug: 'reference/ts-sdk/core/encryption' },
+                    { label: 'Common Tool Schemas', slug: 'reference/ts-sdk/core/common-tool-schemas' },
                   ],
                 },
                 {
-                  label: 'Signers',
+                  label: 'Transports',
                   items: [
-                    {
-                      label: 'Private Key Signer',
-                      slug: 'ts-sdk/signer/private-key-signer',
-                    },
-                    {
-                      label: 'Custom Signer Development',
-                      slug: 'ts-sdk/signer/custom-signer-development',
-                    },
+                    { label: 'Base Nostr Transport', slug: 'reference/ts-sdk/transports/base-nostr-transport' },
+                    { label: 'Nostr Client Transport', slug: 'reference/ts-sdk/transports/nostr-client-transport' },
+                    { label: 'Nostr Server Transport', slug: 'reference/ts-sdk/transports/nostr-server-transport' },
+                    { label: 'Oversized Transfer', slug: 'reference/ts-sdk/transports/oversized-transfer' },
+                    { label: 'Open Stream', slug: 'reference/ts-sdk/transports/open-stream' },
                   ],
                 },
-                { label: 'Gateway', slug: 'ts-sdk/gateway/overview' },
-                { label: 'Proxy', slug: 'ts-sdk/proxy/overview' },
                 {
-                  label: 'Payments',
+                  label: 'Components',
                   items: [
-                    { label: 'Overview', slug: 'ts-sdk/payments/overview' },
                     {
-                      label: 'Getting Started',
-                      slug: 'ts-sdk/payments/getting-started',
-                    },
-                    { label: 'Server', slug: 'ts-sdk/payments/server' },
-                    { label: 'Client', slug: 'ts-sdk/payments/client' },
-                    {
-                      label: 'Rails',
+                      label: 'Relay Handlers',
                       items: [
-                        {
-                          label: 'Lightning over NWC',
-                          slug: 'ts-sdk/payments/rails/lightning-nwc',
-                        },
+                        { label: 'Applesauce Relay Pool', slug: 'reference/ts-sdk/relay/applesauce-relay-pool' },
+                        { label: 'Custom Relay Handler', slug: 'reference/ts-sdk/relay/custom-relay-handler' },
                       ],
                     },
                     {
-                      label: 'Build Your Own Rail',
-                      slug: 'ts-sdk/payments/custom-rails',
+                      label: 'Signers',
+                      items: [
+                        { label: 'Private Key Signer', slug: 'reference/ts-sdk/signer/private-key-signer' },
+                        { label: 'Custom Signer Development', slug: 'reference/ts-sdk/signer/custom-signer-development' },
+                      ],
+                    },
+                    { label: 'Gateway', slug: 'reference/ts-sdk/gateway/overview' },
+                    { label: 'Proxy', slug: 'reference/ts-sdk/proxy/overview' },
+                    {
+                      label: 'Payments',
+                      items: [
+                        { label: 'Overview', slug: 'reference/ts-sdk/payments/overview' },
+                      ],
                     },
                   ],
                 },
               ],
             },
             {
-              label: 'Tutorials',
+              label: 'Rust SDK',
               items: [
+                { label: 'Overview', slug: 'reference/rs-sdk/overview' },
+                { label: 'Native Server Guide', slug: 'reference/rs-sdk/server-transport' },
+                { label: 'Native Client Guide', slug: 'reference/rs-sdk/client-transport' },
+                { label: 'Gateway', slug: 'reference/rs-sdk/gateway' },
+                { label: 'Proxy', slug: 'reference/rs-sdk/proxy' },
+                { label: 'Discovery', slug: 'reference/rs-sdk/discovery' },
+                { label: 'Encryption', slug: 'reference/rs-sdk/encryption' },
+                { label: 'Transport Modes', slug: 'reference/rs-sdk/transport-modes' },
+                { label: 'Transports (Low-Level)', slug: 'reference/rs-sdk/transports' },
+                { label: 'Stateless Mode', slug: 'reference/rs-sdk/stateless' },
+                { label: 'RMCP Integration', slug: 'reference/rs-sdk/rmcp' },
                 {
-                  label: 'Client-Server Communication',
-                  slug: 'ts-sdk/tutorials/client-server-communication',
+                  label: 'Design',
+                  items: [
+                    { label: 'Architecture & Design', slug: 'reference/rs-sdk/design' },
+                  ],
                 },
               ],
             },
           ],
         },
         {
-          label: 'CVMI (CLI Tool)',
+          label: 'How-to',
           items: [
-            { label: 'Overview', slug: 'cvmi/overview' },
-            { label: 'Installation', slug: 'cvmi/installation' },
-            { label: 'Commands', slug: 'cvmi/commands' },
-            { label: 'Configuration', slug: 'cvmi/configuration' },
-            { label: 'Skills Overview', slug: 'cvmi/skills/overview' },
+            {
+              label: 'CVMI CLI',
+              items: [
+                { label: 'Overview', slug: 'how-to/cvmi/overview' },
+                { label: 'Installation', slug: 'how-to/cvmi/installation' },
+                { label: 'Commands', slug: 'how-to/cvmi/commands' },
+                { label: 'Configuration', slug: 'how-to/cvmi/configuration' },
+                { label: 'Skills Overview', slug: 'how-to/cvmi/skills/overview' },
+              ],
+            },
+            {
+              label: 'Payments',
+              items: [
+                { label: 'Getting Started', slug: 'how-to/payments/getting-started' },
+                { label: 'Server', slug: 'how-to/payments/server' },
+                { label: 'Client', slug: 'how-to/payments/client' },
+                {
+                  label: 'Rails',
+                  items: [
+                    { label: 'Lightning over NWC', slug: 'how-to/payments/rails/lightning-nwc' },
+                  ],
+                },
+                { label: 'Build Your Own Rail', slug: 'how-to/payments/custom-rails' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Tutorials',
+          items: [
+            { label: 'Client-Server Communication', slug: 'tutorials/client-server-communication' },
           ],
         },
       ],

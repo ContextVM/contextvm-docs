@@ -11,7 +11,7 @@ description: Recommended PMIs and naming conventions for CEP-8 payments
 
 ## Abstract
 
-This CEP provides **non-normative** recommendations for Payment Method Identifiers (PMIs) used with [CEP-8](/spec/ceps/cep-8).
+This CEP provides **non-normative** recommendations for Payment Method Identifiers (PMIs) used with [CEP-8](/reference/ceps/cep-8).
 
 It exists to:
 
@@ -61,4 +61,4 @@ This is a convention for discovery and interoperability; support is ultimately i
 
 ## Dependencies
 
-- [CEP-8: Capability Pricing and Payment Flow](/spec/ceps/cep-8)
+- [CEP-8: Capability Pricing and Payment Flow](/reference/ceps/cep-8)

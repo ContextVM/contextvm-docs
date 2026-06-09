@@ -317,7 +317,7 @@ console.log('MCP server is running and available on Nostr.');
 
 ## CEP-15 Common Tool Schemas
 
-If your server implements a shared tool contract defined by [CEP-15](/spec/ceps/cep-15), you can opt specific tools into common-schema publication.
+If your server implements a shared tool contract defined by [CEP-15](/reference/ceps/cep-15), you can opt specific tools into common-schema publication.
 
 Use `withCommonToolSchemas()` to decorate the transport before connecting the server:
 
@@ -401,7 +401,7 @@ Use this for tools that are intended to match a shared public contract across pr
 - If you provide an `outputSchema`, it participates in the hash and should remain stable across providers.
 - Schemas used for hashing must be self-contained. Remote `$ref` values must be resolved before hashing.
 
-For lower-level hashing and verification utilities, see [Common Tool Schemas](/ts-sdk/core/common-tool-schemas).
+For lower-level hashing and verification utilities, see [Common Tool Schemas](/reference/ts-sdk/core/common-tool-schemas).
 
 ## How It Works
 

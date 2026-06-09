@@ -518,10 +518,10 @@ This CEP introduces no breaking changes:
 
 ## Dependencies
 
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
-- [CEP-19: Ephemeral Gift Wraps](/spec/ceps/cep-19)
-- [CEP-22: Oversized Payload Transfer](/spec/ceps/cep-22)
-- [CEP-35: Discoverability Patterns for ContextVM Capabilities](/spec/ceps/informational/cep-35)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
+- [CEP-19: Ephemeral Gift Wraps](/reference/ceps/cep-19)
+- [CEP-22: Oversized Payload Transfer](/reference/ceps/cep-22)
+- [CEP-35: Discoverability Patterns for ContextVM Capabilities](/reference/ceps/informational/cep-35)
 
 ## Reference Implementation
 

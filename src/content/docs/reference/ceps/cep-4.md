@@ -118,4 +118,4 @@ A reference implementation can be found in the [ContextVM sdk](https://github.co
 
 ## Dependencies
 
-- [cep-19: Ephemeral Gift Wraps](/spec/ceps/cep-19)
+- [cep-19: Ephemeral Gift Wraps](/reference/ceps/cep-19)

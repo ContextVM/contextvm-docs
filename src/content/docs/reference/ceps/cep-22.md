@@ -461,7 +461,7 @@ Implementations that ignore the new tags or do not understand the oversized-tran
 
 ## Dependencies
 
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
 
 ## Reference Implementation
 

@@ -5,7 +5,7 @@ description: CEP-41 open-ended stream support in the ContextVM TypeScript SDK
 
 # Open Stream
 
-Open stream is the SDK support for [CEP-41: Open-Ended Stream Transfer](/spec/ceps/cep-41). It is designed for MCP exchanges that produce useful output incrementally, such as long-running tool execution, progressive generation, and event-like result delivery.
+Open stream is the SDK support for [CEP-41: Open-Ended Stream Transfer](/reference/ceps/cep-41). It is designed for MCP exchanges that produce useful output incrementally, such as long-running tool execution, progressive generation, and event-like result delivery.
 
 In the SDK, CEP-41 support is exposed as a small set of transport-layer primitives plus a convenience helper for tool calls, all documented on this page.
 
@@ -32,7 +32,7 @@ Typical cases include:
 - feeds or server-side event sequences associated with a request
 - long-running tool calls where users benefit from intermediate output before the final MCP response arrives
 
-If you only need to move one bounded oversized payload, prefer [Oversized Transfer](/ts-sdk/transports/oversized-transfer), which implements CEP-22 bounded chunking and reassembly.
+If you only need to move one bounded oversized payload, prefer [Oversized Transfer](/reference/ts-sdk/transports/oversized-transfer), which implements CEP-22 bounded chunking and reassembly.
 
 ## Mental Model
 
@@ -116,7 +116,7 @@ If your application already has its own request correlation or tracing scheme, y
 
 This is why the helper is usually preferable to assembling the request metadata and session correlation manually.
 
-For consistency with other progress-based transport features such as [Oversized Transfer](/ts-sdk/transports/oversized-transfer), remember that high-level MCP TypeScript SDK usage can usually create the request `progressToken` automatically when `onprogress` is used, while low-level manual requests must provide that token explicitly. On the MCP TypeScript SDK low-level `client.request()` path, `resetTimeoutOnProgress: true` also depends on `onprogress` being provided.
+For consistency with other progress-based transport features such as [Oversized Transfer](/reference/ts-sdk/transports/oversized-transfer), remember that high-level MCP TypeScript SDK usage can usually create the request `progressToken` automatically when `onprogress` is used, while low-level manual requests must provide that token explicitly. On the MCP TypeScript SDK low-level `client.request()` path, `resetTimeoutOnProgress: true` also depends on `onprogress` being provided.
 
 ## Enabling Open Stream on Transports
 
@@ -256,7 +256,7 @@ await server.connect(transport);
 
 This example shows the full producer-side shape:
 
-- an MCP server created with [`McpServer`](/ts-sdk/transports/open-stream.md:144)
+- an MCP server created with [`McpServer`](/reference/ts-sdk/transports/open-stream.md:144)
 - a [`NostrServerTransport`](src/transport/nostr-server-transport.ts) with `openStream.enabled`
 - a registered tool that reads the injected stream writer from `extra._meta.stream`
 - a server-managed [`OpenStreamWriter`](src/transport/open-stream/writer.ts:26) that publishes CEP-41 frames while the tool is running
@@ -387,13 +387,13 @@ This behavior aligns with the reference implementation tested in [`src/transport
 
 ## Relationship to the CEP
 
-For protocol-level semantics, validation rules, and wire examples, refer to [CEP-41: Open-Ended Stream Transfer](/spec/ceps/cep-41).
+For protocol-level semantics, validation rules, and wire examples, refer to [CEP-41: Open-Ended Stream Transfer](/reference/ceps/cep-41).
 
 This SDK page focuses on how those semantics map onto the TypeScript API surface.
 
 ## Related Documentation
 
-- [CEP-41: Open-Ended Stream Transfer](/spec/ceps/cep-41)
-- [Oversized Transfer](/ts-sdk/transports/oversized-transfer)
-- [Nostr Client Transport](/ts-sdk/transports/nostr-client-transport)
-- [Nostr Server Transport](/ts-sdk/transports/nostr-server-transport)
+- [CEP-41: Open-Ended Stream Transfer](/reference/ceps/cep-41)
+- [Oversized Transfer](/reference/ts-sdk/transports/oversized-transfer)
+- [Nostr Client Transport](/reference/ts-sdk/transports/nostr-client-transport)
+- [Nostr Server Transport](/reference/ts-sdk/transports/nostr-server-transport)

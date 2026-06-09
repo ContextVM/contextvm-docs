@@ -322,8 +322,8 @@ The following CEPs have been accepted:
 
 The following CEPs have been finalized:
 
-- [CEP-4: Encryption Support](/spec/ceps/cep-4)
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
+- [CEP-4: Encryption Support](/reference/ceps/cep-4)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
 
 ## Complete Protocol Flow
 
