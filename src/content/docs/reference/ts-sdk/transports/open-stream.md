@@ -66,18 +66,18 @@ import {
   callToolStream,
   NostrClientTransport,
   PrivateKeySigner,
-} from '@contextvm/sdk';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+} from "@contextvm/sdk";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 
 const transport = new NostrClientTransport({
-  signer: new PrivateKeySigner('your-private-key'),
-  serverPubkey: 'npub1...',
-  relayHandler: ['wss://relay.example.com'],
+  signer: new PrivateKeySigner("your-private-key"),
+  serverPubkey: "npub1...",
+  relayHandler: ["wss://relay.example.com"],
 });
 
 const client = new Client({
-  name: 'streaming-client',
-  version: '1.0.0',
+  name: "streaming-client",
+  version: "1.0.0",
 });
 
 await client.connect(transport);
@@ -85,9 +85,9 @@ await client.connect(transport);
 const call = await callToolStream({
   client,
   transport,
-  name: 'streaming_tool',
+  name: "streaming_tool",
   arguments: {
-    prompt: 'Explain CEP-41 in short steps',
+    prompt: "Explain CEP-41 in short steps",
   },
 });
 
@@ -107,12 +107,12 @@ If your application already has its own request correlation or tracing scheme, y
 
 [`callToolStream()`](src/transport/call-tool-stream.ts:28) accepts [`CallToolStreamParams`](src/transport/call-tool-stream.ts:6) and resolves to [`ToolStreamCall`](src/transport/call-tool-stream.ts:14).
 
-| Property | Meaning |
-| --- | --- |
-| `progressToken` | The token used for both the MCP request and the stream correlation |
-| `stream` | The paired [`OpenStreamSession`](src/transport/open-stream/session.ts) |
-| `result` | Promise for the final MCP tool call result |
-| `abort()` | Aborts the local stream session |
+| Property        | Meaning                                                                |
+| --------------- | ---------------------------------------------------------------------- |
+| `progressToken` | The token used for both the MCP request and the stream correlation     |
+| `stream`        | The paired [`OpenStreamSession`](src/transport/open-stream/session.ts) |
+| `result`        | Promise for the final MCP tool call result                             |
+| `abort()`       | Aborts the local stream session                                        |
 
 This is why the helper is usually preferable to assembling the request metadata and session correlation manually.
 
@@ -185,13 +185,13 @@ The writer automatically:
 ### Full minimal producer example
 
 ```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import {
   NostrServerTransport,
   type OpenStreamWriter,
   PrivateKeySigner,
-} from '@contextvm/sdk';
+} from "@contextvm/sdk";
 
 function getOpenStreamWriter(extra: {
   _meta?: Record<string, unknown>;
@@ -200,33 +200,33 @@ function getOpenStreamWriter(extra: {
     ?.stream;
 
   if (!stream) {
-    throw new Error('Expected open stream writer in _meta.stream');
+    throw new Error("Expected open stream writer in _meta.stream");
   }
 
   return stream;
 }
 
 const server = new McpServer({
-  name: 'streaming-server',
-  version: '1.0.0',
+  name: "streaming-server",
+  version: "1.0.0",
 });
 
 const transport = new NostrServerTransport({
-  signer: new PrivateKeySigner('your-private-key'),
-  relayHandler: ['wss://relay.example.com'],
+  signer: new PrivateKeySigner("your-private-key"),
+  relayHandler: ["wss://relay.example.com"],
   openStream: {
     enabled: true,
   },
   serverInfo: {
-    name: 'streaming-server',
+    name: "streaming-server",
   },
 });
 
 server.registerTool(
-  'streaming_tool',
+  "streaming_tool",
   {
-    title: 'Streaming tool',
-    description: 'Emits incremental text before the final tool result',
+    title: "Streaming tool",
+    description: "Emits incremental text before the final tool result",
     inputSchema: {
       prompt: z.string(),
     },
@@ -236,14 +236,14 @@ server.registerTool(
 
     await stream.start();
     await stream.write(`Starting: ${prompt}\n`);
-    await stream.write('Step 1 complete\n');
-    await stream.write('Step 2 complete\n');
+    await stream.write("Step 1 complete\n");
+    await stream.write("Step 2 complete\n");
     await stream.close();
 
     return {
       content: [
         {
-          type: 'text',
+          type: "text",
           text: `Finished processing: ${prompt}`,
         },
       ],
@@ -289,17 +289,17 @@ function getOpenStreamWriter(extra: {
     ?.stream;
 
   if (!stream) {
-    throw new Error('Expected open stream writer in _meta.stream');
+    throw new Error("Expected open stream writer in _meta.stream");
   }
 
   return stream;
 }
 
 server.registerTool(
-  'subscribe_to_feed',
+  "subscribe_to_feed",
   {
-    title: 'Subscribe to feed',
-    description: 'Bridges an upstream websocket feed into CEP-41 chunks',
+    title: "Subscribe to feed",
+    description: "Bridges an upstream websocket feed into CEP-41 chunks",
     inputSchema: {
       url: z.string().url(),
     },
@@ -309,20 +309,20 @@ server.registerTool(
 
     const socket = new WebSocket(url);
 
-    socket.addEventListener('message', async (event) => {
+    socket.addEventListener("message", async (event) => {
       await stream.write(String(event.data));
     });
 
-    socket.addEventListener('close', async () => {
+    socket.addEventListener("close", async () => {
       await stream.close();
     });
 
-    socket.addEventListener('error', async () => {
-      await stream.abort('Upstream websocket failed');
+    socket.addEventListener("error", async () => {
+      await stream.abort("Upstream websocket failed");
     });
 
     return {
-      content: [{ type: 'text', text: `Subscribed to ${url}` }],
+      content: [{ type: "text", text: `Subscribed to ${url}` }],
     };
   },
 );
@@ -348,14 +348,14 @@ The shared policy shape is defined by [`OpenStreamTransportPolicy`](src/transpor
 
 Supported controls are:
 
-| Option | Meaning |
-| --- | --- |
-| `maxConcurrentStreams` | Maximum number of active sessions tracked at once |
-| `maxBufferedChunksPerStream` | Maximum count of unresolved buffered chunks per stream |
-| `maxBufferedBytesPerStream` | Maximum buffered chunk bytes per stream |
-| `idleTimeoutMs` | Idle period before a keepalive probe is sent |
-| `probeTimeoutMs` | Time to wait for the matching `pong` before failing the stream |
-| `closeGracePeriodMs` | Bounded grace period after `close` when chunk gaps remain |
+| Option                       | Meaning                                                        |
+| ---------------------------- | -------------------------------------------------------------- |
+| `maxConcurrentStreams`       | Maximum number of active sessions tracked at once              |
+| `maxBufferedChunksPerStream` | Maximum count of unresolved buffered chunks per stream         |
+| `maxBufferedBytesPerStream`  | Maximum buffered chunk bytes per stream                        |
+| `idleTimeoutMs`              | Idle period before a keepalive probe is sent                   |
+| `probeTimeoutMs`             | Time to wait for the matching `pong` before failing the stream |
+| `closeGracePeriodMs`         | Bounded grace period after `close` when chunk gaps remain      |
 
 The default constants live in [`src/transport/open-stream/constants.ts`](src/transport/open-stream/constants.ts).
 
@@ -365,10 +365,10 @@ These limits exist to keep CEP-41 streams safe under normal operation and under 
 
 The main CEP-41 error types are defined in [`src/transport/open-stream/errors.ts`](src/transport/open-stream/errors.ts):
 
-| Error | Meaning |
-| --- | --- |
-| `OpenStreamAbortError` | The remote side or local policy aborted the stream |
-| `OpenStreamPolicyError` | Local admission or policy constraints rejected stream creation |
+| Error                     | Meaning                                                                   |
+| ------------------------- | ------------------------------------------------------------------------- |
+| `OpenStreamAbortError`    | The remote side or local policy aborted the stream                        |
+| `OpenStreamPolicyError`   | Local admission or policy constraints rejected stream creation            |
 | `OpenStreamSequenceError` | The stream violated CEP-41 lifecycle, ordering, or chunk contiguity rules |
 
 In practice, sequence errors usually indicate malformed frames, duplicate starts, stale chunks, non-increasing `progress`, or incomplete close conditions.

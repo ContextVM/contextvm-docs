@@ -112,15 +112,15 @@ const transport = new NostrServerTransport({
   isAnnouncedServer: true,
   publishRelayList: true,
   profileMetadata: {
-    name: 'My Awesome MCP Server',
-    about: 'Public MCP provider on Nostr',
-    picture: 'https://example.com/avatar.png',
-    website: 'https://example.com',
-    nip05: 'server@example.com',
+    name: "My Awesome MCP Server",
+    about: "Public MCP provider on Nostr",
+    picture: "https://example.com/avatar.png",
+    website: "https://example.com",
+    nip05: "server@example.com",
   },
   serverInfo: {
-    name: 'My Awesome MCP Server',
-    website: 'https://example.com',
+    name: "My Awesome MCP Server",
+    website: "https://example.com",
   },
 });
 ```
@@ -133,11 +133,11 @@ const transport = new NostrServerTransport({
   relayHandler: relayPool,
   isAnnouncedServer: false,
   profileMetadata: {
-    name: 'Private Profile Server',
-    about: 'Publishes a CEP-23 profile without public capability announcements',
-    website: 'https://example.com/private-server',
+    name: "Private Profile Server",
+    about: "Publishes a CEP-23 profile without public capability announcements",
+    website: "https://example.com/private-server",
   },
-  bootstrapRelayUrls: ['wss://relay.damus.io'],
+  bootstrapRelayUrls: ["wss://relay.damus.io"],
 });
 ```
 
@@ -186,7 +186,7 @@ const transport = new NostrServerTransport({
   signer,
   relayHandler: relayPool,
   // Static allowlist (optional - can be used alone or with dynamic check)
-  allowedPublicKeys: ['known-trusted-client'],
+  allowedPublicKeys: ["known-trusted-client"],
   // Dynamic authorization callback
   isPubkeyAllowed: async (clientPubkey) => {
     // Check against a database, external service, or custom logic
@@ -206,13 +206,13 @@ Use `isCapabilityExcluded` to dynamically determine which capabilities bypass wh
 const transport = new NostrServerTransport({
   signer,
   relayHandler: relayPool,
-  allowedPublicKeys: ['trusted-client'],
+  allowedPublicKeys: ["trusted-client"],
   // Static exclusions
-  excludedCapabilities: [{ method: 'tools/list' }],
+  excludedCapabilities: [{ method: "tools/list" }],
   // Dynamic exclusion callback - evaluated after static exclusions
   isCapabilityExcluded: async (exclusion) => {
     // Check if this specific capability should be public
-    if (exclusion.method === 'tools/call' && exclusion.name === 'get_weather') {
+    if (exclusion.method === "tools/call" && exclusion.name === "get_weather") {
       return await isWeatherServicePublic();
     }
     return false;
@@ -232,7 +232,7 @@ const transport = new NostrServerTransport({
   relayHandler: relayPool,
   isAnnouncedServer: true,
   // Hardcoded trusted clients
-  allowedPublicKeys: ['admin-pubkey', 'service-account-pubkey'],
+  allowedPublicKeys: ["admin-pubkey", "service-account-pubkey"],
   // Dynamic check for additional clients
   isPubkeyAllowed: async (clientPubkey) => {
     // Check subscription status in database
@@ -241,13 +241,13 @@ const transport = new NostrServerTransport({
   },
   // Public capabilities anyone can use
   excludedCapabilities: [
-    { method: 'tools/list' },
-    { method: 'tools/call', name: 'get_status' },
+    { method: "tools/list" },
+    { method: "tools/call", name: "get_status" },
   ],
   // Dynamic capability exclusions
   isCapabilityExcluded: async (exclusion) => {
     // Check feature flags for temporarily public capabilities
-    if (exclusion.method === 'tools/call') {
+    if (exclusion.method === "tools/call") {
       return await featureFlags.isToolPublic(exclusion.name);
     }
     return false;
@@ -260,19 +260,19 @@ const transport = new NostrServerTransport({
 Here's how to use the `NostrServerTransport` with an `McpServer` from the `@modelcontextprotocol/sdk`:
 
 ```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { NostrServerTransport } from '@contextvm/sdk';
-import { PrivateKeySigner } from '@contextvm/sdk';
-import { ApplesauceRelayPool } from '@contextvm/sdk';
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { NostrServerTransport } from "@contextvm/sdk";
+import { PrivateKeySigner } from "@contextvm/sdk";
+import { ApplesauceRelayPool } from "@contextvm/sdk";
 
 // 1. Configure the signer and relay pool
-const signer = new PrivateKeySigner('your-server-private-key');
-const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
+const signer = new PrivateKeySigner("your-server-private-key");
+const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
 
 // 2. Create the McpServer instance
 const mcpServer = new McpServer({
-  name: 'demo-server',
-  version: '1.0.0',
+  name: "demo-server",
+  version: "1.0.0",
 });
 
 // Register your server's tools, resources, etc.
@@ -284,21 +284,21 @@ const serverNostrTransport = new NostrServerTransport({
   relayHandler: relayPool,
   isAnnouncedServer: true,
   publishRelayList: true,
-  bootstrapRelayUrls: ['wss://relay.damus.io', 'wss://nos.lol'],
+  bootstrapRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"],
   profileMetadata: {
-    name: 'My Awesome MCP Server',
-    about: 'Public MCP provider on Nostr',
-    picture: 'https://example.com/avatar.png',
-    website: 'https://example.com',
+    name: "My Awesome MCP Server",
+    about: "Public MCP provider on Nostr",
+    picture: "https://example.com/avatar.png",
+    website: "https://example.com",
   },
   serverInfo: {
-    name: 'My Awesome MCP Server',
-    website: 'https://example.com',
+    name: "My Awesome MCP Server",
+    website: "https://example.com",
   },
-  allowedPublicKeys: ['trusted-client-key'], // Only allow specific clients
+  allowedPublicKeys: ["trusted-client-key"], // Only allow specific clients
   excludedCapabilities: [
-    { method: 'tools/list' }, // Allow any client to list available tools
-    { method: 'tools/call', name: 'get_weather' }, // Allow any client to call get_weather tool
+    { method: "tools/list" }, // Allow any client to list available tools
+    { method: "tools/call", name: "get_weather" }, // Allow any client to call get_weather tool
   ],
   injectClientPubkey: true, // Enable client public key injection
   injectRequestEventId: true, // Enable request event ID injection
@@ -307,7 +307,7 @@ const serverNostrTransport = new NostrServerTransport({
 // 4. Connect the server
 await mcpServer.connect(serverNostrTransport);
 
-console.log('MCP server is running and available on Nostr.');
+console.log("MCP server is running and available on Nostr.");
 
 // Keep the process running...
 // To shut down: await mcpServer.close();
@@ -322,44 +322,46 @@ If your server implements a shared tool contract defined by [CEP-15](/reference/
 Use `withCommonToolSchemas()` to decorate the transport before connecting the server:
 
 ```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   ApplesauceRelayPool,
   NostrServerTransport,
   PrivateKeySigner,
   withCommonToolSchemas,
-} from '@contextvm/sdk';
+} from "@contextvm/sdk";
 
-const signer = new PrivateKeySigner('your-server-private-key');
-const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
+const signer = new PrivateKeySigner("your-server-private-key");
+const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
 
 const server = new McpServer({
-  name: 'translation-server',
-  version: '1.0.0',
+  name: "translation-server",
+  version: "1.0.0",
 });
 
 server.registerTool(
-  'translate_text',
+  "translate_text",
   {
-    description: 'Translate text between languages.',
+    description: "Translate text between languages.",
     inputSchema: {
-      type: 'object',
+      type: "object",
       properties: {
-        text: { type: 'string' },
-        target_language: { type: 'string' },
+        text: { type: "string" },
+        target_language: { type: "string" },
       },
-      required: ['text', 'target_language'],
+      required: ["text", "target_language"],
     },
     outputSchema: {
-      type: 'object',
+      type: "object",
       properties: {
-        translated_text: { type: 'string' },
+        translated_text: { type: "string" },
       },
-      required: ['translated_text'],
+      required: ["translated_text"],
     },
   },
   async ({ text, target_language }) => ({
-    content: [{ type: 'text', text: `Translated to ${target_language}: ${text}` }],
+    content: [
+      { type: "text", text: `Translated to ${target_language}: ${text}` },
+    ],
     structuredContent: {
       translated_text: `Translated to ${target_language}: ${text}`,
     },
@@ -373,8 +375,8 @@ const transport = withCommonToolSchemas(
     isAnnouncedServer: true,
   }),
   {
-    tools: [{ name: 'translate_text' }],
-    categories: ['translation', 'language-tools'],
+    tools: [{ name: "translate_text" }],
+    categories: ["translation", "language-tools"],
   },
 );
 
@@ -519,23 +521,23 @@ import {
   NostrServerTransport,
   PrivateKeySigner,
   ApplesauceRelayPool,
-} from '@contextvm/sdk';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+} from "@contextvm/sdk";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-const signer = new PrivateKeySigner('your-server-private-key');
-const relayPool = new ApplesauceRelayPool(['wss://relay.damus.io']);
+const signer = new PrivateKeySigner("your-server-private-key");
+const relayPool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
 const transport = new NostrServerTransport({
   signer,
   relayHandler: relayPool,
   injectRequestEventId: true,
 });
 
-const server = new McpServer({ name: 'demo-server', version: '1.0.0' });
+const server = new McpServer({ name: "demo-server", version: "1.0.0" });
 
 server.registerTool(
-  'whoami',
+  "whoami",
   {
-    description: 'Returns the public key of the client that invoked this tool.',
+    description: "Returns the public key of the client that invoked this tool.",
     inputSchema: {},
   },
   async (_args, extra) => {
@@ -546,7 +548,7 @@ server.registerTool(
         return {
           content: [
             {
-              type: 'text',
+              type: "text",
               text: `Called by ${requestEvent.pubkey} at timestamp ${requestEvent.created_at}`,
             },
           ],
@@ -554,7 +556,7 @@ server.registerTool(
       }
     }
     return {
-      content: [{ type: 'text', text: 'unknown caller' }],
+      content: [{ type: "text", text: "unknown caller" }],
     };
   },
 );
@@ -570,9 +572,9 @@ Define an `outputSchema` on the tool and return `structuredContent` from the han
 
 ```typescript
 server.registerTool(
-  'get_weather',
+  "get_weather",
   {
-    description: 'Get weather information for a city',
+    description: "Get weather information for a city",
     inputSchema: z.object({
       city: z.string(),
       country: z.string(),
@@ -582,7 +584,7 @@ server.registerTool(
         celsius: z.number(),
         fahrenheit: z.number(),
       }),
-      conditions: z.enum(['sunny', 'cloudy', 'rainy', 'stormy', 'snowy']),
+      conditions: z.enum(["sunny", "cloudy", "rainy", "stormy", "snowy"]),
       humidity: z.number().min(0).max(100),
     }),
   },
@@ -592,14 +594,14 @@ server.registerTool(
         celsius: 22,
         fahrenheit: 71.6,
       },
-      conditions: 'sunny' as const,
+      conditions: "sunny" as const,
       humidity: 45,
     };
 
     return {
       content: [
         {
-          type: 'text',
+          type: "text",
           text: `Weather for ${city}, ${country}: ${structuredContent.temperature.celsius}°C and ${structuredContent.conditions}.`,
         },
       ],

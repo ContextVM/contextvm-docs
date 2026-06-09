@@ -3,7 +3,6 @@ title: "Discovery"
 description: "ContextVM Rust SDK documentation for Discovery"
 ---
 
-
 The Rust SDK exposes public discovery helpers for finding announced servers and their published capabilities.
 
 These functions query public announcement events so clients can find servers before opening a direct session.
@@ -89,6 +88,6 @@ The `discovery_relay_urls` and `fallback_operational_relay_urls` config fields c
 - the current helpers fetch and parse latest public lists, but they do not replace direct session learning
 - direct session learning still matters for encryption preferences, gift-wrap support, and first-message capability hints on an active connection
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/discovery.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/discovery.md)._

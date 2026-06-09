@@ -3,7 +3,6 @@ title: "Native Client Guide"
 description: "ContextVM Rust SDK documentation for Native Client Guide"
 ---
 
-
 Use this path when you are building a native ContextVM client in Rust.
 
 The recommended architecture is:
@@ -174,6 +173,6 @@ Use the proxy guide when you want a simpler message-oriented bridge and do not w
 - Capability learning and gift-wrap handling happen inside the client transport implementation.
 - When `relay_urls` is empty, `start()` runs 6-stage relay resolution before connecting: configured relays > nprofile hints > CEP-17 kind 10002 discovery > fallback probing > bootstrap defaults. Callers can set `server_pubkey` to an nprofile and omit `relay_urls` entirely.
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/client-transport.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/client-transport.md)._

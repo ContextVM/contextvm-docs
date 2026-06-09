@@ -16,40 +16,42 @@ Use the lower-level utilities on this page when you need to precompute hashes, v
 The usual integration point is `withCommonToolSchemas()`:
 
 ```typescript
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   NostrServerTransport,
   PrivateKeySigner,
   withCommonToolSchemas,
-} from '@contextvm/sdk';
+} from "@contextvm/sdk";
 
 const server = new McpServer({
-  name: 'translation-server',
-  version: '1.0.0',
+  name: "translation-server",
+  version: "1.0.0",
 });
 
 server.registerTool(
-  'translate_text',
+  "translate_text",
   {
-    description: 'Translate text between languages.',
+    description: "Translate text between languages.",
     inputSchema: {
-      type: 'object',
+      type: "object",
       properties: {
-        text: { type: 'string' },
-        target_language: { type: 'string' },
+        text: { type: "string" },
+        target_language: { type: "string" },
       },
-      required: ['text', 'target_language'],
+      required: ["text", "target_language"],
     },
     outputSchema: {
-      type: 'object',
+      type: "object",
       properties: {
-        translated_text: { type: 'string' },
+        translated_text: { type: "string" },
       },
-      required: ['translated_text'],
+      required: ["translated_text"],
     },
   },
   async ({ text, target_language }) => ({
-    content: [{ type: 'text', text: `Translated to ${target_language}: ${text}` }],
+    content: [
+      { type: "text", text: `Translated to ${target_language}: ${text}` },
+    ],
     structuredContent: {
       translated_text: `Translated to ${target_language}: ${text}`,
     },
@@ -58,13 +60,13 @@ server.registerTool(
 
 const transport = withCommonToolSchemas(
   new NostrServerTransport({
-    signer: new PrivateKeySigner('your-server-private-key'),
-    relayHandler: ['wss://relay.damus.io'],
+    signer: new PrivateKeySigner("your-server-private-key"),
+    relayHandler: ["wss://relay.damus.io"],
     isAnnouncedServer: true,
   }),
   {
-    tools: [{ name: 'translate_text' }],
-    categories: ['translation', 'language-tools'],
+    tools: [{ name: "translate_text" }],
+    categories: ["translation", "language-tools"],
   },
 );
 
@@ -110,24 +112,24 @@ The resulting normalized schema is then suitable for deterministic hashing.
 ## Computing a schema hash
 
 ```typescript
-import { computeCommonSchemaHash } from '@contextvm/sdk';
+import { computeCommonSchemaHash } from "@contextvm/sdk";
 
 const schemaHash = computeCommonSchemaHash({
-  name: 'translate_text',
+  name: "translate_text",
   inputSchema: {
-    type: 'object',
+    type: "object",
     properties: {
-      text: { type: 'string', description: 'Input text' },
-      target_language: { type: 'string', title: 'Target language' },
+      text: { type: "string", description: "Input text" },
+      target_language: { type: "string", title: "Target language" },
     },
-    required: ['text', 'target_language'],
+    required: ["text", "target_language"],
   },
   outputSchema: {
-    type: 'object',
+    type: "object",
     properties: {
-      translated_text: { type: 'string' },
+      translated_text: { type: "string" },
     },
-    required: ['translated_text'],
+    required: ["translated_text"],
   },
 });
 ```
@@ -146,8 +148,8 @@ If you need to verify a schema hash yourself, compute it from the tool definitio
 import {
   COMMON_SCHEMA_META_NAMESPACE,
   computeCommonSchemaHash,
-} from '@contextvm/sdk';
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+} from "@contextvm/sdk";
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 function hasMatchingSchemaHash(tool: Tool): boolean {
   const expectedHash = computeCommonSchemaHash({

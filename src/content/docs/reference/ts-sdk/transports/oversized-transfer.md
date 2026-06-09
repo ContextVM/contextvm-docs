@@ -43,7 +43,7 @@ When you expect a request may run for a while or may trigger CEP-22 fragmentatio
 ```typescript
 const result = await client.callTool(
   {
-    name: 'long-task',
+    name: "long-task",
     arguments: {},
   },
   CallToolResultSchema,
@@ -98,7 +98,7 @@ Tuning is mainly useful when:
 Use the `oversizedTransfer` transport option to enable, disable, or tune the feature.
 
 ```typescript
-import { NostrClientTransport } from '@contextvm/sdk';
+import { NostrClientTransport } from "@contextvm/sdk";
 
 const transport = new NostrClientTransport({
   signer,
@@ -112,7 +112,7 @@ const transport = new NostrClientTransport({
 Disable it explicitly when you want the transport to avoid CEP-22 fragmentation entirely:
 
 ```typescript
-import { NostrClientTransport } from '@contextvm/sdk';
+import { NostrClientTransport } from "@contextvm/sdk";
 
 const transport = new NostrClientTransport({
   signer,

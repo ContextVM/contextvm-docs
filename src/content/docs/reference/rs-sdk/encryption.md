@@ -3,7 +3,6 @@ title: "Encryption"
 description: "ContextVM Rust SDK documentation for Encryption"
 ---
 
-
 ContextVM encryption in this SDK is controlled by `EncryptionMode` and `GiftWrapMode`.
 
 At a high level, direct traffic can be sent as plaintext ContextVM events or as encrypted NIP-44 payloads wrapped in gift-wrap events, depending on the configured policy on both peers.
@@ -79,6 +78,6 @@ In practice, this matters for:
 - the first direct server-to-client message
 - stateless operation
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/encryption.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/encryption.md)._

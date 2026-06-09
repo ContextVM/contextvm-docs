@@ -3,7 +3,6 @@ title: "RMCP Integration"
 description: "ContextVM Rust SDK documentation for RMCP Integration"
 ---
 
-
 For native Rust applications, `rmcp` is the main application layer and ContextVM is the transport layer.
 
 The Rust SDK exposes that integration behind the `rmcp` feature and re-exports the `rmcp` crate when that feature is enabled. The bridge lives in the SDK's rmcp transport layer.
@@ -47,6 +46,6 @@ The conversion pipeline is covered by the SDK test suite, which tests:
 - request id preservation through the bridge
 - event-id based routing assumptions used by the server worker
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/rmcp.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/rmcp.md)._

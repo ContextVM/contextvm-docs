@@ -3,7 +3,6 @@ title: "Proxy"
 description: "ContextVM Rust SDK documentation for Proxy"
 ---
 
-
 `NostrMCPProxy` is the simplest way to talk to a remote ContextVM server from Rust.
 
 It wraps `NostrClientTransport`, gives you a receiver for responses and notifications, and handles transport startup and shutdown.
@@ -117,6 +116,6 @@ If you are building on `rmcp`, use the associated function `NostrMCPProxy::serve
 
 That said, the preferred native architecture is still `rmcp` client first and ContextVM transport second.
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/proxy.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/proxy.md)._

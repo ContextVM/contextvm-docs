@@ -3,7 +3,6 @@ title: "Transports (Low-Level)"
 description: "ContextVM Rust SDK documentation for Transports (Low-Level)"
 ---
 
-
 Use this page when you want to understand the transport layer itself.
 
 If you are building a normal native server or client, start with the dedicated native server or native client guide first.
@@ -140,6 +139,6 @@ Incoming traffic is delivered as `IncomingRequest`, which includes:
 
 That extra metadata is what allows correct response routing and encryption mirroring.
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/transports.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/transports.md)._

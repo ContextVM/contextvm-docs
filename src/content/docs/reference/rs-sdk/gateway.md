@@ -3,7 +3,6 @@ title: "Gateway"
 description: "ContextVM Rust SDK documentation for Gateway"
 ---
 
-
 `NostrMCPGateway` is the simplest way to expose an MCP server through ContextVM.
 
 It wraps `NostrServerTransport`, receives incoming ContextVM requests from Nostr, and lets your application send responses back using the inbound event id.
@@ -134,6 +133,6 @@ If your server already uses `rmcp`, the gateway also exposes the associated func
 
 That said, the preferred native architecture is still `rmcp` service first and ContextVM transport second.
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/gateway.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/gateway.md)._

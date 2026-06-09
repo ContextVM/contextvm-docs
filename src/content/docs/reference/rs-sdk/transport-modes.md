@@ -3,7 +3,6 @@ title: "Transport Modes"
 description: "ContextVM Rust SDK documentation for Transport Modes"
 ---
 
-
 This page focuses on the transport behavior switches that are spread across the SDK APIs:
 
 - `EncryptionMode`
@@ -119,6 +118,6 @@ let stateless_client = NostrClientTransportConfig::default()
     .with_stateless(true);
 ```
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/transport-modes.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/transport-modes.md)._

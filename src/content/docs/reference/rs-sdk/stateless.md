@@ -3,7 +3,6 @@ title: "Stateless Mode"
 description: "ContextVM Rust SDK documentation for Stateless Mode"
 ---
 
-
 Stateless mode is a client-side transport behavior enabled through `NostrClientTransportConfig::with_stateless()`.
 
 It is designed for flows where the client should behave as if initialization succeeded without waiting for the server to answer over the network.
@@ -105,6 +104,6 @@ So even in stateless mode, encryption and ephemeral gift-wrap support can still 
 
 Because the initialize roundtrip is skipped, stateless mode should be treated as an optimization for compatible workflows, not as a universal replacement for normal MCP startup.
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/stateless.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/stateless.md)._

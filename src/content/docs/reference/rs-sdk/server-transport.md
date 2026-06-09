@@ -3,7 +3,6 @@ title: "Native Server Guide"
 description: "ContextVM Rust SDK documentation for Native Server Guide"
 ---
 
-
 Use this path when you are building a native ContextVM server in Rust.
 
 The recommended architecture is:
@@ -181,6 +180,6 @@ Use the gateway guide when you already have a request loop or existing local MCP
 - Encryption mirroring and announcement behavior are covered by the integration tests.
 - When `is_announced_server` is `true`, the transport auto-publishes all announcement events on `start()` via synthetic MCP requests: kind 11316 (server announcement), kinds 11317-11320 (tools, resources, templates, prompts), kind 10002 (relay list), and kind 0 (profile metadata if configured).
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/server-transport.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/server-transport.md)._

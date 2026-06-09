@@ -3,7 +3,6 @@ title: "Rust SDK Overview"
 description: "ContextVM Rust SDK documentation for Rust SDK Overview"
 ---
 
-
 The Rust SDK implements ContextVM: MCP over Nostr.
 
 In practice, it lets you transport MCP JSON-RPC messages through Nostr events, add server discovery through announcement events, and optionally encrypt direct traffic with NIP-44 plus gift wrapping.
@@ -24,14 +23,14 @@ This is the same pattern shown by the `rmcp` server and client examples. The onl
 
 Most users should start with one of these entry points:
 
-| Use case | Start with |
-|---|---|
-| Build a native ContextVM server | `NostrServerTransport` + `rmcp` `ServiceExt` |
-| Build a native ContextVM client | `NostrClientTransport` + `rmcp` `ServiceExt` |
-| Expose an already-existing MCP server on Nostr | `NostrMCPGateway` |
-| Connect to a remote ContextVM server with a simpler bridge | `NostrMCPProxy` |
-| Discover public servers and capabilities | `discover_servers()` and related helpers |
-| Work directly with the optional bridge layer | `NostrMCPGateway::serve_handler()` or `NostrMCPProxy::serve_client_handler()` |
+| Use case                                                   | Start with                                                                    |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Build a native ContextVM server                            | `NostrServerTransport` + `rmcp` `ServiceExt`                                  |
+| Build a native ContextVM client                            | `NostrClientTransport` + `rmcp` `ServiceExt`                                  |
+| Expose an already-existing MCP server on Nostr             | `NostrMCPGateway`                                                             |
+| Connect to a remote ContextVM server with a simpler bridge | `NostrMCPProxy`                                                               |
+| Discover public servers and capabilities                   | `discover_servers()` and related helpers                                      |
+| Work directly with the optional bridge layer               | `NostrMCPGateway::serve_handler()` or `NostrMCPProxy::serve_client_handler()` |
 
 ## Architecture
 
@@ -106,6 +105,6 @@ The Rust SDK already implements behavior that users should rely on:
 
 Use the task-oriented pages in this directory for those details. Start with the native server and native client guides if you are building ContextVM applications directly.
 
-
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/overview.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/docs/overview.md)._

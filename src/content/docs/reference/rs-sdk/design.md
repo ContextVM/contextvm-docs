@@ -3,22 +3,22 @@ title: "Architecture & Design"
 description: "ContextVM Rust SDK documentation for Architecture & Design"
 ---
 
-
 **Date:** 2026-03-11  
 **Status:** Implementation Complete (Phase 1-5)  
 **Reference:** [ContextVM TS SDK](https://github.com/ContextVM/sdk) · [ContextVM Draft Spec](https://contextvm.org) · [Existing Rust crate](https://github.com/k0sti/clarity/tree/main/crates/cvm)
 
 ## Verification Summary (2026-03-11)
 
-| Check | Result |
-|-------|--------|
-| `cargo check` | ✅ Clean (2 unused import warnings) |
-| `cargo test` | ✅ 8 unit + 3 doc tests pass |
-| `cargo build --examples` | ✅ All 3 examples compile |
-| Source LOC | 1,914 across 17 files |
-| Tasks complete | 22/22 |
+| Check                    | Result                              |
+| ------------------------ | ----------------------------------- |
+| `cargo check`            | ✅ Clean (2 unused import warnings) |
+| `cargo test`             | ✅ 8 unit + 3 doc tests pass        |
+| `cargo build --examples` | ✅ All 3 examples compile           |
+| Source LOC               | 1,914 across 17 files               |
+| Tasks complete           | 22/22                               |
 
 ### Remaining Polish
+
 - Fix 2 unused import warnings (`Error` in base.rs, `Instant` in server.rs)
 - Add more unit tests for transport/gateway/proxy (currently only core + encryption tested)
 - Integration tests with live relay (requires test relay setup)
@@ -74,22 +74,22 @@ rust-contextvm-sdk/
 
 ## Module Mapping: TS SDK → Rust SDK
 
-| TS SDK Module | TS LOC | Rust Module | Source | Status |
-|---------------|--------|-------------|--------|--------|
-| `core/constants.ts` | 87 | `core/constants.rs` (64 LOC) | Port from existing Rust | ✅ done |
-| `core/interfaces.ts` | 61 | `core/types.rs` (188 LOC) | Port from existing Rust | ✅ done |
-| `core/encryption.ts` | 64 | `encryption/mod.rs` (86 LOC) | Port from existing Rust | ✅ done |
-| `core/utils/serializers.ts` | ~60 | `core/serializers.rs` (74 LOC) | New | ✅ done |
-| `core/utils/utils.ts` | ~30 | `core/validation.rs` (64 LOC) | New | ✅ done |
-| `relay/simple-relay-pool.ts` | ~100 | `relay/mod.rs` (108 LOC) | Port from existing Rust | ✅ done |
-| `signer/private-key-signer.ts` | ~50 | `signer/mod.rs` (15 LOC) | Port from existing Rust | ✅ done |
-| `transport/base-nostr-transport.ts` | 355 | `transport/base.rs` (139 LOC) | New | ✅ done |
-| `transport/nostr-client-transport.ts` | 411 | `transport/client.rs` (228 LOC) | Rewrite from existing | ✅ done |
-| `transport/nostr-server-transport.ts` | 944 | `transport/server.rs` (583 LOC) | Rewrite from existing | ✅ done |
-| `gateway/index.ts` | 151 | `gateway/mod.rs` (82 LOC) | New | ✅ done |
-| `proxy/index.ts` | 96 | `proxy/mod.rs` (71 LOC) | New | ✅ done |
-| *(n/a — new)* | — | `discovery/mod.rs` (154 LOC) | New | ✅ done |
-| *(n/a — new)* | — | `core/error.rs` (40 LOC) | New | ✅ done |
+| TS SDK Module                         | TS LOC | Rust Module                     | Source                  | Status  |
+| ------------------------------------- | ------ | ------------------------------- | ----------------------- | ------- |
+| `core/constants.ts`                   | 87     | `core/constants.rs` (64 LOC)    | Port from existing Rust | ✅ done |
+| `core/interfaces.ts`                  | 61     | `core/types.rs` (188 LOC)       | Port from existing Rust | ✅ done |
+| `core/encryption.ts`                  | 64     | `encryption/mod.rs` (86 LOC)    | Port from existing Rust | ✅ done |
+| `core/utils/serializers.ts`           | ~60    | `core/serializers.rs` (74 LOC)  | New                     | ✅ done |
+| `core/utils/utils.ts`                 | ~30    | `core/validation.rs` (64 LOC)   | New                     | ✅ done |
+| `relay/simple-relay-pool.ts`          | ~100   | `relay/mod.rs` (108 LOC)        | Port from existing Rust | ✅ done |
+| `signer/private-key-signer.ts`        | ~50    | `signer/mod.rs` (15 LOC)        | Port from existing Rust | ✅ done |
+| `transport/base-nostr-transport.ts`   | 355    | `transport/base.rs` (139 LOC)   | New                     | ✅ done |
+| `transport/nostr-client-transport.ts` | 411    | `transport/client.rs` (228 LOC) | Rewrite from existing   | ✅ done |
+| `transport/nostr-server-transport.ts` | 944    | `transport/server.rs` (583 LOC) | Rewrite from existing   | ✅ done |
+| `gateway/index.ts`                    | 151    | `gateway/mod.rs` (82 LOC)       | New                     | ✅ done |
+| `proxy/index.ts`                      | 96     | `proxy/mod.rs` (71 LOC)         | New                     | ✅ done |
+| _(n/a — new)_                         | —      | `discovery/mod.rs` (154 LOC)    | New                     | ✅ done |
+| _(n/a — new)_                         | —      | `core/error.rs` (40 LOC)        | New                     | ✅ done |
 
 **TS SDK total:** ~2,169 LOC (non-test)  
 **Existing Rust (reference):** ~782 LOC  
@@ -121,11 +121,11 @@ tracing-subscriber = "0.3"
 ## Tasks
 
 ### Phase 1: Core Foundation
-*Port and enhance existing code. Establish project structure.*
+
+_Port and enhance existing code. Establish project structure._
 
 - **1.1** Initialize Cargo project with workspace structure and dependencies
   - **Verify:** `cargo check` passes with empty lib.rs
-  
 - **1.2** Port `core/constants.rs` from existing crate
   - All event kinds (25910, 1059, 11316-11320)
   - All tag constants (p, e, cap, name, website, picture, about, support_encryption)
@@ -177,7 +177,8 @@ tracing-subscriber = "0.3"
   - **Verify:** Integration test with a local relay (or mock): connect, publish, fetch
 
 ### Phase 2: Transport Layer
-*The core of the SDK. Implements MCP Transport trait over Nostr.*
+
+_The core of the SDK. Implements MCP Transport trait over Nostr._
 
 - **2.1** Define Rust `Transport` trait
   - ```rust
@@ -219,7 +220,7 @@ tracing-subscriber = "0.3"
     - Stateless mode: emulate initialize response locally
     - Process incoming: decrypt gift wrap → verify server pubkey → correlate → dispatch
     - Notification handling (no `e` tag → notification)
-  - **Verify:** 
+  - **Verify:**
     - Unit test: send request, receive correlated response
     - Unit test: stateless mode emulates initialize
     - Unit test: rejects events from wrong server pubkey
@@ -246,7 +247,8 @@ tracing-subscriber = "0.3"
     - Unit test: session cleanup removes stale sessions
 
 ### Phase 3: Gateway & Proxy
-*Higher-level components that compose transports.*
+
+_Higher-level components that compose transports._
 
 - **3.1** Implement `NostrMCPGateway`
   - Takes: local MCP transport (any `Transport`) + NostrServerTransportConfig
@@ -274,7 +276,8 @@ tracing-subscriber = "0.3"
     - Test: messages flow both directions
 
 ### Phase 4: Discovery & Announcements
-*Server discovery features from the ContextVM spec.*
+
+_Server discovery features from the ContextVM spec._
 
 - **4.1** Implement server announcement publishing
   - Publish kind 11316 (server info) with name/about/website/picture/support_encryption tags
@@ -296,7 +299,8 @@ tracing-subscriber = "0.3"
   - **Verify:** After deletion, discovery returns empty
 
 ### Phase 5: Examples & Documentation
-*Working examples and API docs.*
+
+_Working examples and API docs._
 
 - **5.1** Create `examples/gateway.rs`
   - Expose a simple MCP server (echo tool) via Nostr gateway
@@ -319,44 +323,44 @@ tracing-subscriber = "0.3"
 
 ## Key Differences from Existing Rust Crate
 
-| Aspect | Existing (clarity/crates/cvm) | New SDK |
-|--------|-------------------------------|---------|
-| MCP types | Raw JSON strings | Typed `JsonRpcMessage` enum with serde |
-| Transport trait | None | `Transport` trait matching MCP SDK pattern |
-| Base transport | None | `BaseNostrTransport` with shared logic |
-| Server dispatch | `handle_event` logs only | Full request correlation + multi-client routing |
-| Gateway | None | `NostrMCPGateway` (bidirectional bridge) |
-| Proxy | None | `NostrMCPProxy` (bidirectional bridge) |
-| Announcements | `announce` + `publish_tools` | All 5 kinds + deletion + discovery |
-| Authorization | None | Pubkey whitelist with capability exclusions |
-| Encryption negotiation | Enum defined, not enforced | Full mode enforcement per TS SDK |
-| Session management | Basic HashMap | Full session with pending requests, progress tokens, cleanup |
-| Validation | None | Size + schema validation |
-| nostr-sdk version | 0.43 | 0.43 (same) |
+| Aspect                 | Existing (clarity/crates/cvm) | New SDK                                                      |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------ |
+| MCP types              | Raw JSON strings              | Typed `JsonRpcMessage` enum with serde                       |
+| Transport trait        | None                          | `Transport` trait matching MCP SDK pattern                   |
+| Base transport         | None                          | `BaseNostrTransport` with shared logic                       |
+| Server dispatch        | `handle_event` logs only      | Full request correlation + multi-client routing              |
+| Gateway                | None                          | `NostrMCPGateway` (bidirectional bridge)                     |
+| Proxy                  | None                          | `NostrMCPProxy` (bidirectional bridge)                       |
+| Announcements          | `announce` + `publish_tools`  | All 5 kinds + deletion + discovery                           |
+| Authorization          | None                          | Pubkey whitelist with capability exclusions                  |
+| Encryption negotiation | Enum defined, not enforced    | Full mode enforcement per TS SDK                             |
+| Session management     | Basic HashMap                 | Full session with pending requests, progress tokens, cleanup |
+| Validation             | None                          | Size + schema validation                                     |
+| nostr-sdk version      | 0.43                          | 0.43 (same)                                                  |
 
 ## Key Differences from TS SDK
 
-| Aspect | TS SDK | Rust SDK |
-|--------|--------|----------|
-| MCP SDK dependency | `@modelcontextprotocol/sdk` | Own JSON-RPC types (no official Rust MCP SDK) |
-| Relay abstraction | `RelayHandler` interface, multiple implementations | `RelayPool` using nostr-sdk Client |
-| Async model | Callbacks (`onmessage`, `onerror`, `onclose`) | Callbacks + channels (tokio::mpsc for event streams) |
-| Gift wrap | Manual NIP-44 + finalize | nostr-sdk built-in gift_wrap |
-| Logging | Pino (JSON) | tracing (structured) |
+| Aspect             | TS SDK                                             | Rust SDK                                             |
+| ------------------ | -------------------------------------------------- | ---------------------------------------------------- |
+| MCP SDK dependency | `@modelcontextprotocol/sdk`                        | Own JSON-RPC types (no official Rust MCP SDK)        |
+| Relay abstraction  | `RelayHandler` interface, multiple implementations | `RelayPool` using nostr-sdk Client                   |
+| Async model        | Callbacks (`onmessage`, `onerror`, `onclose`)      | Callbacks + channels (tokio::mpsc for event streams) |
+| Gift wrap          | Manual NIP-44 + finalize                           | nostr-sdk built-in gift_wrap                         |
+| Logging            | Pino (JSON)                                        | tracing (structured)                                 |
 
 ---
 
 ## Estimation
 
-| Phase | Effort | Dependencies |
-|-------|--------|-------------|
-| Phase 1: Core | ~4h | None | ✅ Done |
-| Phase 2: Transport | ~8h | Phase 1 | ✅ Done |
-| Phase 3: Gateway & Proxy | ~3h | Phase 2 | ✅ Done |
-| Phase 4: Discovery | ~3h | Phase 2 | ✅ Done |
-| Phase 5: Examples & Docs | ~2h | Phase 3+4 | ✅ Done |
-| **Total** | **~20h** | | **Complete** |
-
+| Phase                    | Effort   | Dependencies |
+| ------------------------ | -------- | ------------ | ------------ |
+| Phase 1: Core            | ~4h      | None         | ✅ Done      |
+| Phase 2: Transport       | ~8h      | Phase 1      | ✅ Done      |
+| Phase 3: Gateway & Proxy | ~3h      | Phase 2      | ✅ Done      |
+| Phase 4: Discovery       | ~3h      | Phase 2      | ✅ Done      |
+| Phase 5: Examples & Docs | ~2h      | Phase 3+4    | ✅ Done      |
+| **Total**                | **~20h** |              | **Complete** |
 
 ---
-*This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/DESIGN.md).*
+
+_This page was ported from the [ContextVM Rust SDK repository](https://github.com/ContextVM/rs-sdk/tree/main/DESIGN.md)._
