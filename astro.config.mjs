@@ -258,15 +258,6 @@ export default defineConfig({
                 },
                 { label: "Stateless Mode", slug: "reference/rs-sdk/stateless" },
                 { label: "RMCP Integration", slug: "reference/rs-sdk/rmcp" },
-                {
-                  label: "Design",
-                  items: [
-                    {
-                      label: "Architecture & Design",
-                      slug: "reference/rs-sdk/design",
-                    },
-                  ],
-                },
               ],
             },
           ],
@@ -311,6 +302,24 @@ export default defineConfig({
                 },
               ],
             },
+            {
+              label: "Encryption",
+              items: [
+                {
+                  label: "Enable Encrypted Communication",
+                  slug: "how-to/encryption",
+                },
+              ],
+            },
+            {
+              label: "Gateway",
+              items: [
+                {
+                  label: "Bridge an Existing MCP Server",
+                  slug: "how-to/bridge-mcp-server",
+                },
+              ],
+            },
           ],
         },
         {
@@ -319,6 +328,18 @@ export default defineConfig({
             {
               label: "Client-Server Communication",
               slug: "tutorials/client-server-communication",
+            },
+            {
+              label: "Build a Public Server",
+              slug: "tutorials/build-a-public-server",
+            },
+            {
+              label: "Server & Client (Rust)",
+              slug: "tutorials/rust-server-client",
+            },
+            {
+              label: "Discover ContextVM Servers",
+              slug: "tutorials/discover-servers",
             },
           ],
         },
