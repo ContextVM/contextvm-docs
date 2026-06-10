@@ -1,9 +1,7 @@
 ---
 title: "Native Server Guide"
-description: "ContextVM Rust SDK documentation for Native Server Guide"
+description: "Learn how to build native ContextVM servers using NostrServerTransport."
 ---
-
-Use this path when you are building a native ContextVM server in Rust.
 
 The recommended architecture is:
 

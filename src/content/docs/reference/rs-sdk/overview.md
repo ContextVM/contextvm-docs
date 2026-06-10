@@ -1,6 +1,6 @@
 ---
 title: "Rust SDK Overview"
-description: "ContextVM Rust SDK documentation for Rust SDK Overview"
+description: "An overview of the ContextVM Rust SDK architecture and components."
 ---
 
 The Rust SDK implements ContextVM: MCP over Nostr.

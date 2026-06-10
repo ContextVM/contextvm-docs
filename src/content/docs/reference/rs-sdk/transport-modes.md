@@ -1,6 +1,6 @@
 ---
 title: "Transport Modes"
-description: "ContextVM Rust SDK documentation for Transport Modes"
+description: "Understand the different transport connection modes available in ContextVM."
 ---
 
 This page focuses on the transport behavior switches that are spread across the SDK APIs:

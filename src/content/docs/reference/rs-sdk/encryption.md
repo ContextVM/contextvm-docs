@@ -1,6 +1,6 @@
 ---
 title: "Encryption"
-description: "ContextVM Rust SDK documentation for Encryption"
+description: "Configure NIP-44 encryption and NIP-59 gift-wrapping in the Rust SDK."
 ---
 
 ContextVM encryption in this SDK is controlled by `EncryptionMode` and `GiftWrapMode`.

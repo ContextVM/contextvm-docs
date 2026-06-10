@@ -1,9 +1,7 @@
 ---
 title: "Native Client Guide"
-description: "ContextVM Rust SDK documentation for Native Client Guide"
+description: "Learn how to build native ContextVM clients using NostrClientTransport."
 ---
-
-Use this path when you are building a native ContextVM client in Rust.
 
 The recommended architecture is:
 

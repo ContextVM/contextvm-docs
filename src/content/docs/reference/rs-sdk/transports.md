@@ -1,6 +1,6 @@
 ---
 title: "Transports (Low-Level)"
-description: "ContextVM Rust SDK documentation for Transports (Low-Level)"
+description: "Low-level details on the core transport implementations in the Rust SDK."
 ---
 
 Use this page when you want to understand the transport layer itself.

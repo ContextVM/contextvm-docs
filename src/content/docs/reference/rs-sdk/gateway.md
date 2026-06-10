@@ -1,6 +1,6 @@
 ---
 title: "Gateway"
-description: "ContextVM Rust SDK documentation for Gateway"
+description: "Expose an existing local MCP server to the Nostr network using NostrMCPGateway."
 ---
 
 `NostrMCPGateway` is the simplest way to expose an MCP server through ContextVM.

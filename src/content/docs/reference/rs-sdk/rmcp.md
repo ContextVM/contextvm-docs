@@ -1,6 +1,6 @@
 ---
 title: "RMCP Integration"
-description: "ContextVM Rust SDK documentation for RMCP Integration"
+description: "Integrate ContextVM transports with the rmcp Rust MCP library."
 ---
 
 For native Rust applications, `rmcp` is the main application layer and ContextVM is the transport layer.

@@ -1,6 +1,6 @@
 ---
 title: "Stateless Mode"
-description: "ContextVM Rust SDK documentation for Stateless Mode"
+description: "Emulate initialization locally for faster startup using stateless client mode."
 ---
 
 Stateless mode is a client-side transport behavior enabled through `NostrClientTransportConfig::with_stateless()`.
