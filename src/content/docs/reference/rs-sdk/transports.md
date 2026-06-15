@@ -47,7 +47,7 @@ async fn main() -> contextvm_sdk::Result<()> {
     let mut transport = NostrClientTransport::new(
         keys,
         NostrClientTransportConfig::default()
-            .with_relay_urls(vec!["wss://relay.damus.io".to_string()])
+            .with_relay_urls(vec!["wss://relay.primal.net".to_string()])
             .with_server_pubkey("<server-hex-pubkey>"),
     )
     .await?;

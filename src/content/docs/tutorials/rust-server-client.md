@@ -16,7 +16,7 @@ You will create a Rust binary with two roles:
 ## Prerequisites
 
 - Rust toolchain (`cargo`, `rustc`)
-- Access to a Nostr relay (e.g., `wss://relay.damus.io`)
+- Access to a Nostr relay (e.g., `wss://relay.primal.net`)
 
 ---
 
@@ -29,18 +29,14 @@ cargo new rust-ctxvm-demo
 cd rust-ctxvm-demo
 ```
 
-Add the necessary dependencies to your `Cargo.toml`:
+Add the necessary dependencies using `cargo add`:
 
-```toml
-[dependencies]
-contextvm_sdk = { version = "0.1", features = ["rmcp"] }
-rmcp = { version = "0.1", features = ["server", "client"] }
-tokio = { version = "1", features = ["full"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-anyhow = "1"
-tracing = "0.1"
-tracing-subscriber = "0.3"
+```bash
+cargo add contextvm_sdk --features rmcp
+cargo add rmcp --features server,client
+cargo add tokio --features full
+cargo add serde --features derive
+cargo add serde_json anyhow tracing tracing-subscriber
 ```
 
 ## Step 2: Build the Server
@@ -117,7 +113,7 @@ pub async fn run_server() -> anyhow::Result<()> {
     let transport = NostrServerTransport::new(
         signer,
         NostrServerTransportConfig::default()
-            .with_relay_urls(vec!["wss://relay.damus.io".to_string()])
+            .with_relay_urls(vec!["wss://relay.primal.net".to_string()])
             .with_announced_server(false),
     ).await?;
 
@@ -153,7 +149,7 @@ pub async fn run_client(server_pubkey: String) -> anyhow::Result<()> {
     let transport = NostrClientTransport::new(
         signer,
         NostrClientTransportConfig::default()
-            .with_relay_urls(vec!["wss://relay.damus.io".to_string()])
+            .with_relay_urls(vec!["wss://relay.primal.net".to_string()])
             .with_server_pubkey(server_pubkey),
     ).await?;
 

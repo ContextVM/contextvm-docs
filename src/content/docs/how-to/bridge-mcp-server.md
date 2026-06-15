@@ -33,7 +33,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 async function main() {
   const signer = new PrivateKeySigner("your-gateway-private-key-hex");
-  const pool = new ApplesauceRelayPool(["wss://relay.damus.io"]);
+  const pool = new ApplesauceRelayPool(["wss://relay.primal.net"]);
 
   // 1. Define how to reach your existing server
   const localMcpTransport = new StdioClientTransport({

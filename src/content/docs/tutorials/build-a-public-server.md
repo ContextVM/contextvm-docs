@@ -18,7 +18,7 @@ You will create a minimal ContextVM server that:
 
 - Node.js or Bun
 - A Nostr private key (in hex format)
-- Access to Nostr relays (e.g., `wss://relay.damus.io`)
+- Access to Nostr relays (e.g., `wss://relay.primal.net`)
 - You have completed the [Client-Server Communication](/tutorials/client-server-communication) tutorial.
 
 ---
@@ -36,7 +36,7 @@ import { z } from "zod";
 
 // Configuration
 const SERVER_PRIVATE_KEY_HEX = process.env.SERVER_PRIVATE_KEY || "your-32-byte-hex-key";
-const RELAYS = ["wss://relay.damus.io"];
+const RELAYS = ["wss://relay.primal.net"];
 
 async function main() {
   const signer = new PrivateKeySigner(SERVER_PRIVATE_KEY_HEX);
@@ -106,8 +106,8 @@ When the transport starts, it performs a simulated MCP request to itself (callin
 You can verify your server is discoverable by querying the relays for a `kind: 11316` event authored by your server's public key. You can use any Nostr client or the ContextVM discovery helpers.
 
 ```bash
-# Example using an imaginary Nostr CLI
-nostr-cli query --kinds 11316 --authors <your-server-pubkey> --limit 1
+# Example using nak (the standard Nostr CLI)
+nak req -k 11316 -a <your-server-pubkey> wss://relay.primal.net
 ```
 
 ## Step 4: Remove announcements

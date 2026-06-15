@@ -31,7 +31,7 @@ use contextvm_sdk::signer;
 #[tokio::main]
 async fn main() -> contextvm_sdk::Result<()> {
     let keys = signer::generate();
-    let relays = vec!["wss://relay.damus.io".to_string()];
+    let relays = vec!["wss://relay.primal.net".to_string()];
 
     let relay_pool = RelayPool::new(keys).await?;
     relay_pool.connect(&relays).await?;
