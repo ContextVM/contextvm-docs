@@ -15,18 +15,26 @@ Our documentation is organized into several main sections:
 
 ### 📋 Specification
 
-- **[Specification](/spec/ctxvm-draft-spec)**: The official ContextVM draft specification detailing the protocol
-- **[CEP - Guidelines](/spec/cep-guidelines)**: ContextVM Enhancement Proposal guidelines for contributing to the protocol
+- **[Specification](/reference/spec/ctxvm-draft-spec)**: The official ContextVM draft specification detailing the protocol
+- **[CEP - Guidelines](/reference/spec/cep-guidelines)**: ContextVM Enhancement Proposal guidelines for contributing to the protocol
 
 ### 🛠️ ts-SDK
 
 The TypeScript SDK provides tools and libraries for building applications with ContextVM:
 
-- **[SDK Quick Overview](/ts-sdk/quick-overview)**: A comprehensive overview of the SDK's modules and core concepts
+- **[SDK Quick Overview](/reference/ts-sdk/quick-overview)**: A comprehensive overview of the SDK's modules and core concepts
 - **Core Concepts**: Fundamental definitions, constants, interfaces, and utilities
 - **Transports**: Communication modules for MCP over Nostr
 - **Components**: Gateway, Relay Handlers, Signers, and Proxy implementations
 - **Tutorials**: Practical examples and guides
+
+### 🦀 rs-SDK
+
+The Rust SDK provides a native Rust implementation of the ContextVM protocol:
+
+- **[SDK Overview](/reference/rs-sdk/overview)**: Introduction to the Rust SDK and its architecture
+- **Native Transports**: Server, client, and low-level Nostr transport guides
+- **Design & Architecture**: Detailed breakdown of components and implementation decisions
 
 ## What is ContextVM?
 
@@ -36,20 +44,20 @@ ContextVM is a protocol that bridges the Model Context Protocol (MCP) with the N
 
 - **Decentralized Communication**: Use Nostr's decentralized network for MCP communication
 - **Security First**: Leveraging Nostr's cryptographic primitives for verification, authorization, and additional features
-- **Easy Integration**: Typescript SDK to work with ContextVM
+- **Easy Integration**: TypeScript and Rust SDKs to work with ContextVM
 
 ## Getting Started
 
-1. **Read the Specification**: Start with the [ContextVM specification](/spec/ctxvm-draft-spec) to understand the protocol
-2. **Explore the SDK**: Check out the [SDK Quick Overview](/ts-sdk/quick-overview) for development guidance
+1. **Read the Specification**: Start with the [ContextVM specification](/reference/spec/ctxvm-draft-spec) to understand the protocol
+2. **Explore the SDKs**: Check out the [TypeScript SDK Quick Overview](/reference/ts-sdk/quick-overview) or [Rust SDK Overview](/reference/rs-sdk/overview) for development guidance
 3. **Follow Tutorials**: Work through practical examples to see ContextVM in action
 
 ## Next Steps
 
 Choose your path based on your interests:
 
-- **Protocol Development**: Dive into the [Specification](/spec/ctxvm-draft-spec) to understand the protocol details
-- **SDK Development**: Start with the [SDK Quick Overview](/ts-sdk/quick-overview) to begin building with ContextVM
-- **Contributing**: Learn about contributing to the protocol with [CEP Guidelines](/spec/cep-guidelines)
+- **Protocol Development**: Dive into the [Specification](/reference/spec/ctxvm-draft-spec) to understand the protocol details
+- **SDK Development**: Start with the [TypeScript SDK Quick Overview](/reference/ts-sdk/quick-overview) or [Rust SDK Overview](/reference/rs-sdk/overview) to begin building with ContextVM
+- **Contributing**: Learn about contributing to the protocol with [CEP Guidelines](/reference/spec/cep-guidelines)
 
 For the latest updates and community discussions, visit our [GitHub repository](https://github.com/contextvm/).
