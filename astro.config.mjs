@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import mermaid from "astro-mermaid";
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
 const githubPagesBase = "/contextvm-docs";
@@ -12,6 +13,10 @@ export default defineConfig({
     : "https://docs.contextvm.org",
   base: isGitHubPages ? githubPagesBase : "/",
   integrations: [
+    mermaid({
+      theme: "forest",
+      autoTheme: true,
+    }),
     starlight({
       title: "ContextVM Documentation",
       description: "Documentation for ContextVM",
