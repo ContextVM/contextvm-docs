@@ -49,6 +49,7 @@ export default defineConfig({
           items: [
             {
               label: "Specification",
+              collapsed: true,
               items: [
                 {
                   label: "Specification",
@@ -62,6 +63,7 @@ export default defineConfig({
             },
             {
               label: "CEPs",
+              collapsed: true,
               items: [
                 {
                   label: "CEP-4: Encryption Support",
@@ -106,6 +108,7 @@ export default defineConfig({
                 },
                 {
                   label: "Informational",
+                  collapsed: true,
                   items: [
                     {
                       label: "CEP-16: Client Public Key Injection",
@@ -125,6 +128,7 @@ export default defineConfig({
             },
             {
               label: "TypeScript SDK",
+              collapsed: true,
               items: [
                 {
                   label: "Quick Overview",
@@ -132,6 +136,7 @@ export default defineConfig({
                 },
                 {
                   label: "Core Concepts",
+                  collapsed: true,
                   items: [
                     {
                       label: "Constants",
@@ -162,6 +167,7 @@ export default defineConfig({
                 },
                 {
                   label: "Transports",
+                  collapsed: true,
                   items: [
                     {
                       label: "Base Nostr Transport",
@@ -187,9 +193,11 @@ export default defineConfig({
                 },
                 {
                   label: "Components",
+                  collapsed: true,
                   items: [
                     {
                       label: "Relay Handlers",
+                      collapsed: true,
                       items: [
                         {
                           label: "Applesauce Relay Pool",
@@ -203,6 +211,7 @@ export default defineConfig({
                     },
                     {
                       label: "Signers",
+                      collapsed: true,
                       items: [
                         {
                           label: "Private Key Signer",
@@ -221,6 +230,7 @@ export default defineConfig({
                     { label: "Proxy", slug: "reference/ts-sdk/proxy/overview" },
                     {
                       label: "Payments",
+                      collapsed: true,
                       items: [
                         {
                           label: "Overview",
@@ -234,6 +244,7 @@ export default defineConfig({
             },
             {
               label: "Rust SDK",
+              collapsed: true,
               items: [
                 { label: "Overview", slug: "reference/rs-sdk/overview" },
                 {
@@ -267,6 +278,7 @@ export default defineConfig({
           items: [
             {
               label: "CVMI CLI",
+              collapsed: true,
               items: [
                 { label: "Overview", slug: "how-to/cvmi/overview" },
                 { label: "Installation", slug: "how-to/cvmi/installation" },
@@ -280,6 +292,7 @@ export default defineConfig({
             },
             {
               label: "Payments",
+              collapsed: true,
               items: [
                 {
                   label: "Getting Started",
@@ -289,6 +302,7 @@ export default defineConfig({
                 { label: "Client", slug: "how-to/payments/client" },
                 {
                   label: "Rails",
+                  collapsed: true,
                   items: [
                     {
                       label: "Lightning over NWC",
@@ -304,6 +318,7 @@ export default defineConfig({
             },
             {
               label: "Encryption",
+              collapsed: true,
               items: [
                 {
                   label: "Enable Encrypted Communication",
@@ -313,6 +328,7 @@ export default defineConfig({
             },
             {
               label: "Gateway",
+              collapsed: true,
               items: [
                 {
                   label: "Bridge an Existing MCP Server",

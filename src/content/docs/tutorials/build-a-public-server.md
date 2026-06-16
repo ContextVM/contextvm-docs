@@ -10,6 +10,7 @@ This tutorial shows how to make a ContextVM server discoverable via CEP-6 public
 ## What you'll build
 
 You will create a minimal ContextVM server that:
+
 1. Exposes an MCP tool
 2. Connects to Nostr relays
 3. Publishes its metadata and capabilities (CEP-6 announcements)
@@ -18,7 +19,7 @@ You will create a minimal ContextVM server that:
 
 - Node.js or Bun
 - A Nostr private key (in hex format)
-- Access to Nostr relays (e.g., `wss://relay.primal.net`)
+- Access to Nostr relays (e.g., `wss://relay.contextvm.net`)
 - You have completed the [Client-Server Communication](/tutorials/client-server-communication) tutorial.
 
 ---
@@ -31,17 +32,22 @@ Create a file named `public-server.ts`:
 
 ```typescript
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { NostrServerTransport, PrivateKeySigner, ApplesauceRelayPool } from "@contextvm/sdk";
+import {
+  NostrServerTransport,
+  PrivateKeySigner,
+  ApplesauceRelayPool,
+} from "@contextvm/sdk";
 import { z } from "zod";
 
 // Configuration
-const SERVER_PRIVATE_KEY_HEX = process.env.SERVER_PRIVATE_KEY || "your-32-byte-hex-key";
-const RELAYS = ["wss://relay.primal.net"];
+const SERVER_PRIVATE_KEY_HEX =
+  process.env.SERVER_PRIVATE_KEY || "your-32-byte-hex-key";
+const RELAYS = ["wss://relay.contextvm.net"];
 
 async function main() {
   const signer = new PrivateKeySigner(SERVER_PRIVATE_KEY_HEX);
   const relayPool = new ApplesauceRelayPool(RELAYS);
-  
+
   // Create the MCP Server
   const mcpServer = new McpServer({
     name: "my-public-server",
@@ -75,22 +81,22 @@ When `isAnnouncedServer` is `true`, the transport automatically publishes NIP-01
 Add the transport configuration to your script:
 
 ```typescript
-  // ... inside main()
+// ... inside main()
 
-  const serverTransport = new NostrServerTransport({
-    signer,
-    relayHandler: relayPool,
-    isAnnouncedServer: true, // This enables CEP-6 announcements
-    serverInfo: {
-      name: "Greeting Server",
-      about: "A simple server that provides greeting tools.",
-      picture: "https://example.com/avatar.png", // Optional
-      website: "https://contextvm.org",         // Optional
-    },
-  });
+const serverTransport = new NostrServerTransport({
+  signer,
+  relayHandler: relayPool,
+  isAnnouncedServer: true, // This enables CEP-6 announcements
+  serverInfo: {
+    name: "Greeting Server",
+    about: "A simple server that provides greeting tools.",
+    picture: "https://example.com/avatar.png", // Optional
+    website: "https://contextvm.org", // Optional
+  },
+});
 
-  await mcpServer.connect(serverTransport);
-  console.log(`Server running. Public key: ${await signer.getPublicKey()}`);
+await mcpServer.connect(serverTransport);
+console.log(`Server running. Public key: ${await signer.getPublicKey()}`);
 ```
 
 ## Step 3: Run and verify
@@ -107,7 +113,7 @@ You can verify your server is discoverable by querying the relays for a `kind: 1
 
 ```bash
 # Example using nak (the standard Nostr CLI)
-nak req -k 11316 -a <your-server-pubkey> wss://relay.primal.net
+nak req -k 11316 -a <your-server-pubkey> wss://relay.contextvm.net
 ```
 
 ## Step 4: Remove announcements

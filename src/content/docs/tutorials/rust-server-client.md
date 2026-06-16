@@ -10,13 +10,14 @@ This tutorial walks through building a native ContextVM server and client pair u
 ## What you'll build
 
 You will create a Rust binary with two roles:
+
 1. A **Server** that exposes an `echo` tool.
 2. A **Client** that discovers tools on the server and calls `echo`.
 
 ## Prerequisites
 
 - Rust toolchain (`cargo`, `rustc`)
-- Access to a Nostr relay (e.g., `wss://relay.primal.net`)
+- Access to a Nostr relay (e.g., `wss://relay.contextvm.net`)
 
 ---
 
@@ -113,7 +114,7 @@ pub async fn run_server() -> anyhow::Result<()> {
     let transport = NostrServerTransport::new(
         signer,
         NostrServerTransportConfig::default()
-            .with_relay_urls(vec!["wss://relay.primal.net".to_string()])
+            .with_relay_urls(vec!["wss://relay.contextvm.net".to_string()])
             .with_announced_server(false),
     ).await?;
 
@@ -149,12 +150,12 @@ pub async fn run_client(server_pubkey: String) -> anyhow::Result<()> {
     let transport = NostrClientTransport::new(
         signer,
         NostrClientTransportConfig::default()
-            .with_relay_urls(vec!["wss://relay.primal.net".to_string()])
+            .with_relay_urls(vec!["wss://relay.contextvm.net".to_string()])
             .with_server_pubkey(server_pubkey),
     ).await?;
 
     let client = DemoClient.serve(transport).await?;
-    
+
     let tools = client.list_all_tools().await?;
     println!("Discovered {} tool(s).", tools.len());
 
@@ -174,7 +175,7 @@ pub async fn run_client(server_pubkey: String) -> anyhow::Result<()> {
             println!("Result: {}", text.text);
         }
     }
-    
+
     client.cancel().await?;
     Ok(())
 }
@@ -219,12 +220,15 @@ async fn main() -> anyhow::Result<()> {
 Open two terminals.
 
 In terminal 1, run the server:
+
 ```bash
 cargo run -- server
 ```
+
 Note the printed server pubkey (e.g., `a1b2c3...`).
 
 In terminal 2, run the client passing the server pubkey:
+
 ```bash
 cargo run -- client a1b2c3...
 ```

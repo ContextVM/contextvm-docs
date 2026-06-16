@@ -62,7 +62,7 @@ use contextvm_sdk::core::types::{EncryptionMode, GiftWrapMode};
 use contextvm_sdk::transport::client::NostrClientTransportConfig;
 
 let config = NostrClientTransportConfig::default()
-    .with_relay_urls(vec!["wss://relay.primal.net".to_string()])
+    .with_relay_urls(vec!["wss://relay.contextvm.net".to_string()])
     .with_server_pubkey("<server-hex-pubkey>")
     .with_encryption_mode(EncryptionMode::Optional)
     .with_gift_wrap_mode(GiftWrapMode::Optional);

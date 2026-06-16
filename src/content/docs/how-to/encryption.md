@@ -11,7 +11,7 @@ This guide explains how to enable encryption on both the server and client sides
 
 ## Encryption Overview
 
-ContextVM uses NIP-44 to encrypt payloads and NIP-59 gift-wraps to hide metadata. 
+ContextVM uses NIP-44 to encrypt payloads and NIP-59 gift-wraps to hide metadata.
 
 There are two primary configuration options you must understand:
 
@@ -28,12 +28,12 @@ import { NostrServerTransport } from "@contextvm/sdk";
 const transport = new NostrServerTransport({
   signer,
   relayHandler: relayPool,
-  
+
   // Accept both plaintext and encrypted connections
-  encryptionMode: "Optional", 
-  
+  encryptionMode: "Optional",
+
   // Prefer ephemeral wraps if the client supports them
-  giftWrapMode: "Optional", 
+  giftWrapMode: "Optional",
 });
 ```
 
@@ -54,10 +54,10 @@ const transport = new NostrClientTransport({
   signer,
   relayHandler: relayPool,
   serverPubkey: "server-hex-key",
-  
+
   // Force the client to encrypt all outbound messages
   encryptionMode: "Required",
-  
+
   // Request that relays delete the outer envelope quickly
   giftWrapMode: "Ephemeral",
 });
@@ -85,7 +85,7 @@ use contextvm_sdk::{EncryptionMode, GiftWrapMode};
 use contextvm_sdk::transport::client::NostrClientTransportConfig;
 
 let config = NostrClientTransportConfig::default()
-    .with_relay_urls(vec!["wss://relay.primal.net".to_string()])
+    .with_relay_urls(vec!["wss://relay.contextvm.net".to_string()])
     .with_server_pubkey("<server-pubkey>")
     .with_encryption_mode(EncryptionMode::Required)
     .with_gift_wrap_mode(GiftWrapMode::Ephemeral);

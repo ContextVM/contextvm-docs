@@ -12,6 +12,7 @@ Instead, you can use the `NostrMCPGateway`. The gateway acts as a bridge: it con
 ## Step 1: Identify your MCP Server Transport
 
 Determine how your existing MCP server runs:
+
 - **Stdio**: It runs as a local command-line process (e.g., `python server.py` or `node server.js`).
 - **HTTP/SSE**: It runs as a web server exposing an SSE endpoint.
 
@@ -28,12 +29,16 @@ Add the following code to `gateway.ts`, adapting the transport to match your ser
 ### Example for a Stdio Server
 
 ```typescript
-import { NostrMCPGateway, PrivateKeySigner, ApplesauceRelayPool } from "@contextvm/sdk";
+import {
+  NostrMCPGateway,
+  PrivateKeySigner,
+  ApplesauceRelayPool,
+} from "@contextvm/sdk";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 async function main() {
   const signer = new PrivateKeySigner("your-gateway-private-key-hex");
-  const pool = new ApplesauceRelayPool(["wss://relay.primal.net"]);
+  const pool = new ApplesauceRelayPool(["wss://relay.contextvm.net"]);
 
   // 1. Define how to reach your existing server
   const localMcpTransport = new StdioClientTransport({
@@ -45,16 +50,16 @@ async function main() {
   const gateway = new NostrMCPGateway({
     // The connection to your local server
     mcpClientTransport: localMcpTransport,
-    
+
     // The connection to the Nostr network
     nostrTransportOptions: {
       signer,
       relayHandler: pool,
       // Optional: allow any Nostr client to find your bridged server
-      isAnnouncedServer: true, 
+      isAnnouncedServer: true,
       serverInfo: {
-        name: "Bridged Python Server"
-      }
+        name: "Bridged Python Server",
+      },
     },
   });
 
@@ -78,7 +83,7 @@ Your existing MCP server is now accessible securely over the Nostr network. Any 
 
 ## Advanced: Per-Client Isolation
 
-In the basic example above, the Gateway uses **Single-Client Mode**. This means if 10 Nostr clients connect to your Gateway, all their requests are funneled through a *single* `StdioClientTransport` instance to your backend server.
+In the basic example above, the Gateway uses **Single-Client Mode**. This means if 10 Nostr clients connect to your Gateway, all their requests are funneled through a _single_ `StdioClientTransport` instance to your backend server.
 
 If your backend server stores state per-connection, or if you are bridging to an HTTP SSE server that expects each client to have its own session, you should use **Per-Client Mode**.
 
@@ -91,12 +96,14 @@ const gateway = new NostrMCPGateway({
   // Create a fresh transport for every unique Nostr client pubkey
   createMcpClientTransport: ({ clientPubkey }) => {
     console.log(`New Nostr client connected: ${clientPubkey}`);
-    return new StreamableHTTPClientTransport(new URL("http://localhost:3000/mcp"));
+    return new StreamableHTTPClientTransport(
+      new URL("http://localhost:3000/mcp"),
+    );
   },
-  
+
   // Optional: Prevent memory leaks from stale sessions
-  maxClientTransports: 500, 
-  
+  maxClientTransports: 500,
+
   nostrTransportOptions: {
     signer,
     relayHandler: pool,
