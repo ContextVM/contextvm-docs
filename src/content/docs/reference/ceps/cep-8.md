@@ -108,7 +108,7 @@ Where `<mode>` is one of:
 
 - `payment_interaction` is a negotiation tag, not a pricing tag.
 - Clients SHOULD send at most one `payment_interaction` tag on the first direct client-to-server message of a session. The tag expresses the requested effective lifecycle for the session, not a list of all lifecycles the client supports. Clients MUST NOT rely on the presence of multiple `payment_interaction` tags to express an ordered preference list.
-- When present on that first direct message, it participates in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35).
+- When present on that first direct message, it participates in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35).
 - If omitted, `transparent` is the default.
 - Servers MAY advertise supported interaction semantics in initialization responses or public announcements using the same tag format. Because `transparent` is the default compatibility baseline, a server that supports `explicit_gating` MAY advertise support by including a `payment_interaction=explicit_gating` tag in its public announcement, initialization response, or first direct response. Such advertisement means explicit gating is available as an opt-in mode; it does not make explicit gating the effective lifecycle unless the client requests it and the server accepts it for the session.
 
@@ -200,7 +200,7 @@ PMIs MUST follow the format defined by the [W3C Payment Method Identifiers](http
 
 This CEP maintains no in-document registry of recommended PMIs.
 
-Recommended PMIs and naming conventions are documented in the informational companion CEP, [CEP-21: Payment Method Identifier (PMI) Recommendations](/spec/ceps/informational/cep-21).
+Recommended PMIs and naming conventions are documented in the informational companion CEP, [CEP-21: Payment Method Identifier (PMI) Recommendations](/reference/ceps/informational/cep-21).
 
 ### PMI Discovery
 
@@ -214,7 +214,7 @@ Clients discover server PMI support from public announcements, initialization re
 
 In stateless operation (no prior initialization), clients that want to use paid capabilities SHOULD include one or more `pmi` tags in the request event so the server can select a compatible payment method.
 
-When sent on the first direct client-to-server message of a session, these `pmi` tags participate in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). When sent on later requests, they are interpreted in the context of those requests unless another CEP explicitly defines stronger session-update semantics.
+When sent on the first direct client-to-server message of a session, these `pmi` tags participate in the session discovery baseline described by [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35). When sent on later requests, they are interpreted in the context of those requests unless another CEP explicitly defines stronger session-update semantics.
 
 Clients that prefer `explicit_gating` SHOULD also include `payment_interaction` on that first direct request so the server can apply the session's negotiated payment interaction behavior from the start.
 
@@ -235,7 +235,7 @@ This CEP defines `payment_interaction` as a session-level negotiation tag.
 - `transparent` means payment may be handled through payment notifications without surfacing payment as the final invocation outcome.
 - `explicit_gating` means payment is surfaced as a JSON-RPC error response to the invocation. The paid result is returned only if the client later sends a matching invocation after payment authorization is available.
 
-In stateless operation, `payment_interaction` follows the first-message exchange and capability-learning rules described by [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35). Clients that want `explicit_gating` in stateless operation SHOULD request it on the first direct invocation event of the session.
+In stateless operation, `payment_interaction` follows the first-message exchange and capability-learning rules described by [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35). Clients that want `explicit_gating` in stateless operation SHOULD request it on the first direct invocation event of the session.
 
 #### Effective mode disclosure and lifecycle negotiation
 
@@ -694,8 +694,8 @@ A reference implementation of this CEP is available in the [ContextVM TypeScript
 
 ## Dependencies
 
-- [CEP-4: Encryption Support](/spec/ceps/cep-4)
-- [CEP-6: Public Server Announcements](/spec/ceps/cep-6)
-- [CEP-35: Stateless Session Discovery and Capability Learning](/spec/ceps/informational/cep-35)
+- [CEP-4: Encryption Support](/reference/ceps/cep-4)
+- [CEP-6: Public Server Announcements](/reference/ceps/cep-6)
+- [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35)
 - [RFC 8785: JSON Canonicalization Scheme](https://www.rfc-editor.org/rfc/rfc8785)
 - [W3C Payment Method Identifiers](https://www.w3.org/TR/payment-method-id/)
