@@ -104,6 +104,7 @@ await client.callTool({
 
 ## What to read next
 
-- [Server payments](./server)
-- [Client payments](./client)
-- [Lightning over NWC](./rails/lightning-nwc)
+- [Server payments](/how-to/payments/server)
+- [Client payments](/how-to/payments/client)
+- [Explicit payment gating](/how-to/payments/explicit-gating)
+- [Lightning over NWC](/how-to/payments/rails/lightning-nwc)

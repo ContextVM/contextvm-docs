@@ -13,6 +13,8 @@ When a server replies with `notifications/payment_required`, the payments layer:
 2. asks the handler to pay `pay_req`
 3. continues waiting for the original request completion
 
+This is the default **transparent** lifecycle. CEP-8 also defines an opt-in **explicit gating** lifecycle where payment is surfaced as `-32042` / `-32043` invocation errors — see [Explicit payment gating](#explicit-payment-gating).
+
 ## Handlers
 
 A `PaymentHandler` implements one PMI (one payment rail). The built-in handler supports Lightning BOLT11 over NWC.
@@ -108,3 +110,16 @@ const paidTransport = withClientPayments(baseTransport, {
 ```
 
 The first handler that matches the server-selected PMI is used.
+
+## Explicit payment gating
+
+For AI agents and applications that need payment surfaced as invocation errors (`-32042` / `-32043`) instead of notifications, request the `explicit_gating` lifecycle. **No callback is required** — the `-32042 Payment Required` error (with `instructions` + `payment_options`) reaches the caller directly, so the agent reads it, pays `pay_req`, and retries the same call.
+
+```ts
+const paidTransport = withClientPayments(baseTransport, {
+  handlers: [handler],
+  paymentInteraction: "explicit_gating",
+});
+```
+
+See [Explicit payment gating](/how-to/payments/explicit-gating) for the end-to-end agent flow (read the error, pay, retry), the optional auto-retry callback, and negotiation-failure handling.

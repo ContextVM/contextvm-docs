@@ -60,6 +60,27 @@ withServerPayments(transport, {
 });
 ```
 
+## Payment interaction policy (`paymentInteraction`)
+
+`withServerPayments` accepts a `paymentInteraction` policy of type `'optional' | 'transparent'`:
+
+- `'optional'` **(default)**: the server advertises `explicit_gating` support and mirrors each client's requested lifecycle. Clients that request `explicit_gating` are gated; transparent clients keep the notification flow.
+- `'transparent'`: transparent-only. A client that requests `explicit_gating` receives a `-32602` negotiation error.
+
+```ts
+withServerPayments(transport, {
+  processors: [processor],
+  pricedCapabilities,
+  paymentInteraction: "transparent", // restrict to the notification flow
+});
+```
+
+:::caution[Behavioral change in 0.13.0]
+The default changed from implicit transparent-only to `'optional'`. A server that accepts payments now **also accepts `explicit_gating` requests** from clients that ask for it. Pass `paymentInteraction: 'transparent'` to restore the previous behavior.
+:::
+
+Under `'optional'`, priced requests are routed to exactly one lifecycle per session based on the negotiated mode. For the explicit-gating end-to-end setup, see [Explicit payment gating](/how-to/payments/explicit-gating). For the API reference, see [Explicit Gating API](/reference/ts-sdk/payments/explicit-gating).
+
 ## Dynamic pricing: `resolvePrice`
 
 `resolvePrice` runs on every priced request and returns the final quote.
@@ -80,7 +101,7 @@ const resolvePrice: ResolvePriceFn = async ({
   return {
     amount,
     description: `Request size: ${requestSize} bytes`,
-    _meta: { requestSize },
+    meta: { requestSize },
   };
 };
 
@@ -90,6 +111,8 @@ withServerPayments(transport, {
   resolvePrice,
 });
 ```
+
+The quote object uses `meta` (not `_meta`); it is merged into the emitted payment request's `_meta`. Prefer the `quotePrice`, `rejectPrice`, and `waivePrice` helper factories over raw object literals — the `reject: true` / `waive: true` discriminants are easy to mistype.```
 
 Guidance:
 
@@ -149,3 +172,7 @@ Payment notifications are correlated to the original request using an `e` tag (t
 - `notifications/payment_rejected`
 
 This is how clients know which in-flight request a payment notification belongs to.
+
+:::note
+Notification correlation applies to the **transparent** lifecycle. In `explicit_gating` mode the server returns `-32042` / `-32043` JSON-RPC invocation errors instead of notifications. Enable it per session from the client side; see [Explicit payment gating](/how-to/payments/explicit-gating).
+:::

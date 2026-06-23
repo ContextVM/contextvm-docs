@@ -241,6 +241,10 @@ export default defineConfig({
                           label: "Overview",
                           slug: "reference/ts-sdk/payments/overview",
                         },
+                        {
+                          label: "Explicit Gating API",
+                          slug: "reference/ts-sdk/payments/explicit-gating",
+                        },
                       ],
                     },
                   ],
@@ -305,6 +309,10 @@ export default defineConfig({
                 },
                 { label: "Server", slug: "how-to/payments/server" },
                 { label: "Client", slug: "how-to/payments/client" },
+                {
+                  label: "Explicit Payment Gating",
+                  slug: "how-to/payments/explicit-gating",
+                },
                 {
                   label: "Rails",
                   collapsed: true,

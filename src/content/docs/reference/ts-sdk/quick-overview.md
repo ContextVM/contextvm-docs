@@ -84,4 +84,4 @@ These components abstract away the underlying transport complexities, making it 
 
 Now that you have a basic understanding of the SDK's modules and concepts, you are ready to dive deeper. Explore the **Core Modules** section to learn about the fundamental interfaces and data structures.
 
-To add payments to your ContextVM implementation, check out the [Payments guide](/payments/overview/).
+To add payments to your ContextVM implementation, check out the [Payments guide](/how-to/payments/getting-started).
