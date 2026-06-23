@@ -22,9 +22,9 @@ hero:
       variant: minimal
 ---
 
-import { CardGrid } from '@astrojs/starlight/components';
-import IconLinkCard from '../../components/IconLinkCard.astro';
-import HeroGetStartedCTAStyles from '../../components/HeroGetStartedCTAStyles.astro';
+import { CardGrid } from "@astrojs/starlight/components";
+import IconLinkCard from "../../components/IconLinkCard.astro";
+import HeroGetStartedCTAStyles from "../../components/HeroGetStartedCTAStyles.astro";
 
 <HeroGetStartedCTAStyles />
 
@@ -34,42 +34,49 @@ import HeroGetStartedCTAStyles from '../../components/HeroGetStartedCTAStyles.as
   <IconLinkCard
     title="Architecture"
     icon="rocket"
-    href="https://github.com/ContextVM/contextvm-docs/blob/master/src/content/docs/spec/ctxvm-draft-spec.md#complete-protocol-flow"
+    href="/reference/spec/ctxvm-draft-spec/#complete-protocol-flow"
     description="Learn the foundational concepts and architecture of ContextVM"
     target="_blank"
   />
   <IconLinkCard
-    title="SDK Documentation"
+    title="TS SDK Documentation"
     icon="add-document"
-    href="ts-sdk/quick-overview/"
-    description="Explore our comprehensive documentation and implementation examples"
+    href="reference/ts-sdk/quick-overview/"
+    description="Explore our comprehensive TypeScript SDK documentation and implementation examples"
+    target="_blank"
+  />
+  <IconLinkCard
+    title="Rust SDK Documentation"
+    icon="add-document"
+    href="reference/rs-sdk/overview/"
+    description="Explore our Rust SDK documentation, transports, and native integration guides"
     target="_blank"
   />
   <IconLinkCard
     title="Integrations"
     icon="puzzle"
-    href="ts-sdk/gateway/overview/#integration-scenarios"
+    href="reference/ts-sdk/gateway/overview/#integration-scenarios"
     description="Discover how ContextVM integrates MCP with Nostr"
     target="_blank"
   />
   <IconLinkCard
     title="Tutorials"
     icon="open-book"
-    href="ts-sdk/tutorials/client-server-communication/"
+    href="tutorials/client-server-communication/"
     description="Step-by-step guides to help you build with ContextVM"
     target="_blank"
   />
   <IconLinkCard
     title="Payments"
     icon="nostr"
-    href="ts-sdk/payments/overview/"
+    href="how-to/payments/getting-started/"
     description="Add CEP-8 payments to servers and clients with Lightning, NWC, and custom rails"
     target="_blank"
   />
   <IconLinkCard
     title="CVMI CLI"
     icon="laptop"
-    href="cvmi/overview/"
+    href="how-to/cvmi/overview/"
     description="Use the CVMI CLI tool - the swiss army knife for ContextVM development"
     target="_self"
   />
