@@ -86,7 +86,7 @@ impl ServerHandler for DemoServer {
             server_info: Implementation {
                 name: "contextvm-native-echo".to_string(),
                 title: Some("ContextVM Native Echo Server".to_string()),
-                version: "0.1.0".to_string(),
+                version: "0.2.0".to_string(),
                 description: Some("Native rmcp echo server over ContextVM/Nostr".to_string()),
                 icons: None,
                 website_url: None,

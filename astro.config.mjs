@@ -276,8 +276,26 @@ export default defineConfig({
                   label: "Transports (Low-Level)",
                   slug: "reference/rs-sdk/transports",
                 },
+                {
+                  label: "Transports",
+                  collapsed: true,
+                  items: [
+                    {
+                      label: "Oversized Transfer",
+                      slug: "reference/rs-sdk/oversized-transfer",
+                    },
+                    {
+                      label: "Open Stream",
+                      slug: "reference/rs-sdk/open-stream",
+                    },
+                  ],
+                },
                 { label: "Stateless Mode", slug: "reference/rs-sdk/stateless" },
                 { label: "RMCP Integration", slug: "reference/rs-sdk/rmcp" },
+                {
+                  label: "UniFFI Bindings",
+                  slug: "reference/rs-sdk/ffi",
+                },
               ],
             },
           ],

@@ -102,6 +102,12 @@ The Rust SDK already implements behavior that users should rely on:
 - announcement publication and deletion
 - encryption negotiation and response mirroring
 - rmcp conversion and routing flow
+- multi-stage relay resolution via NIP-65 relay lists ([CEP-17](/reference/ceps/cep-17))
+- oversized payload transfer for messages exceeding the single-event limit ([CEP-22](/reference/rs-sdk/oversized-transfer))
+- open-ended streaming from a tool while a request is in flight ([CEP-41](/reference/rs-sdk/open-stream))
+- server profile metadata published as a NIP-01 kind 0 event ([CEP-23](/reference/ceps/cep-23))
+
+For embedding the SDK in non-Rust applications, see the [UniFFI bindings](/reference/rs-sdk/ffi), which expose the SDK to Python, Kotlin, Swift, and C.
 
 Use the task-oriented pages in this directory for those details. Start with the native server and native client guides if you are building ContextVM applications directly.
 
