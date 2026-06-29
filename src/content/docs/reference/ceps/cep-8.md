@@ -471,9 +471,13 @@ In `explicit_gating` mode, successful payment verification authorizes future exe
 The server transport derives that identity from:
 
 - the requesting client's pubkey
-- the SHA-256 digest of the RFC 8785 JSON Canonicalization Scheme (JCS) serialization of a JSON object containing exactly the inner MCP request `method` and `params`
+- the SHA-256 digest of the RFC 8785 JSON Canonicalization Scheme (JCS) serialization of a JSON object containing the inner MCP request `method` and the semantic `params`
+
+The canonicalized object MUST exclude the `params._meta` field. `_meta` is MCP's reserved per-request extension namespace (carrying `progressToken`, `stream`, related-task metadata, and similar transport plumbing) and is not part of the semantic invocation. Removing it yields the semantic request as MCP defines it, so retries and re-invocations by clients, applications, or LLM agents match a paid authorization regardless of per-request transport metadata — for example, the MCP client SDK regenerates `progressToken` on every `callTool`, so without this exclusion two semantically identical invocations would hash to different identities and never match a paid grant.
 
 The JSON-RPC `id`, outer Nostr event fields, event tags, signatures, timestamps, and other transport envelope fields MUST NOT be included in the canonicalized object.
+
+`_meta` exclusion applies only to canonical-identity derivation. When a paid authorization is consumed, the server transport MUST forward the invocation's full original `params` (including `_meta`) to the underlying MCP handler, so correlation, progress, streaming, and other `_meta`-based semantics remain available at execution time.
 
 Example canonicalization input:
 
