@@ -37,7 +37,7 @@ import { z } from "zod";
 // IMPORTANT: Replace with your own private key
 const SERVER_PRIVATE_KEY_HEX =
   process.env.SERVER_PRIVATE_KEY || "your-32-byte-server-private-key-in-hex";
-const RELAYS = ["wss://relay.contextvm.net", "wss://nos.lol"];
+const RELAYS = ["wss://relay.contextvm.org", "wss://nos.lol"];
 
 // --- Main Server Logic ---
 async function main() {
@@ -124,7 +124,7 @@ const SERVER_PUBKEY = "the-public-key-printed-by-server.ts";
 // IMPORTANT: Replace with your own private key
 const CLIENT_PRIVATE_KEY_HEX =
   process.env.CLIENT_PRIVATE_KEY || "your-32-byte-client-private-key-in-hex";
-const RELAYS = ["wss://relay.contextvm.net", "wss://nos.lol"];
+const RELAYS = ["wss://relay.contextvm.org", "wss://nos.lol"];
 
 // --- Main Client Logic ---
 async function main() {

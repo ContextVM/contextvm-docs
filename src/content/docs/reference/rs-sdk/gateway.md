@@ -36,7 +36,7 @@ async fn main() -> contextvm_sdk::Result<()> {
     let keys = signer::generate();
 
     let nostr_config = NostrServerTransportConfig::default()
-        .with_relay_urls(vec!["wss://relay.contextvm.net".to_string()])
+        .with_relay_urls(vec!["wss://relay.contextvm.org".to_string()])
         .with_server_info(
             ServerInfo::default()
                 .with_name("Echo Server".to_string())

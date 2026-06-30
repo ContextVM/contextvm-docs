@@ -46,7 +46,7 @@ async fn main() -> contextvm_sdk::Result<()> {
     let keys = signer::from_sk("<hex-or-nsec-private-key>")?;
 
     let nostr_config = NostrClientTransportConfig::default()
-        .with_relay_urls(vec!["wss://relay.contextvm.net".to_string()])
+        .with_relay_urls(vec!["wss://relay.contextvm.org".to_string()])
         .with_server_pubkey("<server-hex-pubkey>");
 
     let config = ProxyConfig::new(nostr_config);

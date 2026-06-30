@@ -27,7 +27,7 @@ Create a file named `discover.ts` and add the following:
 ```typescript
 import { ApplesauceRelayPool } from "@contextvm/sdk";
 
-const RELAYS = ["wss://relay.contextvm.net"];
+const RELAYS = ["wss://relay.contextvm.org"];
 
 async function main() {
   const pool = new ApplesauceRelayPool(RELAYS);
@@ -125,7 +125,7 @@ use contextvm_sdk::discovery;
 use contextvm_sdk::relay::RelayPool;
 
 let pool = RelayPool::new(signer).await?;
-pool.connect(&["wss://relay.contextvm.net".to_string()]).await?;
+pool.connect(&["wss://relay.contextvm.org".to_string()]).await?;
 
 let servers = discovery::discover_servers(pool.client(), &relays).await?;
 

@@ -19,7 +19,7 @@ You will create a minimal ContextVM server that:
 
 - Node.js or Bun
 - A Nostr private key (in hex format)
-- Access to Nostr relays (e.g., `wss://relay.contextvm.net`)
+- Access to Nostr relays (e.g., `wss://relay.contextvm.org`)
 - You have completed the [Client-Server Communication](/tutorials/client-server-communication) tutorial.
 
 ---
@@ -42,7 +42,7 @@ import { z } from "zod";
 // Configuration
 const SERVER_PRIVATE_KEY_HEX =
   process.env.SERVER_PRIVATE_KEY || "your-32-byte-hex-key";
-const RELAYS = ["wss://relay.contextvm.net"];
+const RELAYS = ["wss://relay.contextvm.org"];
 
 async function main() {
   const signer = new PrivateKeySigner(SERVER_PRIVATE_KEY_HEX);
@@ -113,7 +113,7 @@ You can verify your server is discoverable by querying the relays for a `kind: 1
 
 ```bash
 # Example using nak (the standard Nostr CLI)
-nak req -k 11316 -a <your-server-pubkey> wss://relay.contextvm.net
+nak req -k 11316 -a <your-server-pubkey> wss://relay.contextvm.org
 ```
 
 ## Step 4: Remove announcements
