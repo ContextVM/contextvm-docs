@@ -1733,7 +1733,7 @@ import { NostrClientTransport } from "@contextvm/sdk";
 // 1. Define the list of relays you want to connect to
 const myRelays = [
   "wss://relay.damus.io",
-  "wss://relay.contextvm.net",
+  "wss://relay.contextvm.org",
   "wss://nos.lol",
 ];
 
@@ -2040,7 +2040,7 @@ import { NostrClientTransport } from "@contextvm/sdk";
 // 1. Define the list of relays you want to connect to
 const myRelays = [
   "wss://relay.damus.io",
-  "wss://relay.contextvm.net",
+  "wss://relay.contextvm.org",
   "wss://nos.lol",
 ];
 

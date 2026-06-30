@@ -17,7 +17,7 @@ You will create a Rust binary with two roles:
 ## Prerequisites
 
 - Rust toolchain (`cargo`, `rustc`)
-- Access to a Nostr relay (e.g., `wss://relay.contextvm.net`)
+- Access to a Nostr relay (e.g., `wss://relay.contextvm.org`)
 
 ---
 
@@ -114,7 +114,7 @@ pub async fn run_server() -> anyhow::Result<()> {
     let transport = NostrServerTransport::new(
         signer,
         NostrServerTransportConfig::default()
-            .with_relay_urls(vec!["wss://relay.contextvm.net".to_string()])
+            .with_relay_urls(vec!["wss://relay.contextvm.org".to_string()])
             .with_announced_server(false),
     ).await?;
 
@@ -150,7 +150,7 @@ pub async fn run_client(server_pubkey: String) -> anyhow::Result<()> {
     let transport = NostrClientTransport::new(
         signer,
         NostrClientTransportConfig::default()
-            .with_relay_urls(vec!["wss://relay.contextvm.net".to_string()])
+            .with_relay_urls(vec!["wss://relay.contextvm.org".to_string()])
             .with_server_pubkey(server_pubkey),
     ).await?;
 
