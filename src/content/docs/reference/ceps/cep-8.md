@@ -229,7 +229,7 @@ Payment interaction is a transport concern. A server transport MAY enforce payme
 This CEP defines `payment_interaction` as a session-level negotiation tag.
 
 - When a client includes `payment_interaction` on the first direct client-to-server message of a session, that value expresses the client's requested payment interaction semantic for the session.
-- After the first-message exchange, implementations SHOULD omit repeated `payment_interaction` tags unless a future CEP defines stronger update semantics.
+- After the first-message exchange, implementations SHOULD omit repeated `payment_interaction` tags on routine invocations. A client MAY include the tag on a later direct message to establish or change the session's mode, as described under [Mid-session payment-interaction update](#mid-session-payment-interaction-update).
 - `transparent` is the default and remains the compatibility baseline.
 - `explicit_gating` becomes the effective lifecycle for the session only when it is requested by the client and accepted by the server. If the client does not request `explicit_gating`, or if the server does not accept it, the effective lifecycle is `transparent`.
 - `transparent` means payment may be handled through payment notifications without surfacing payment as the final invocation outcome.
@@ -269,6 +269,23 @@ When a server rejects a `payment_interaction=explicit_gating` request, it SHOULD
 ```
 
 Returning this error is sufficient to satisfy the server's effective-mode-disclosure obligation for the first direct response; it is not a payment error.
+
+#### Mid-session payment-interaction update
+
+A client MAY include `payment_interaction` on any direct client-to-server message, not only the first direct message of a session. When present on a later message, the server treats the tag as an upsert of the session's requested mode: it applies the normal accept/reject logic defined under [Effective mode disclosure and lifecycle negotiation](#effective-mode-disclosure-and-lifecycle-negotiation) and, if accepted, updates the session's effective mode from that request onward. When the tag is absent on a later message, the session's current effective mode is inherited. (An absent tag on the first direct message of a session still means `transparent`, as specified above.)
+
+This upsert model is what makes `payment_interaction` renegotiable after a transport reset. ContextVM direct messaging is connectionless, so a server cannot observe that a client disconnected and reconnected; session state is keyed by client pubkey and persists under local policy (see [CEP-35](/reference/ceps/informational/cep-35)). A first-message-only negotiation therefore cannot be safely renegotiated after a reset, and a pure-stateless client has no `initialize` handshake or stable session identifier to reset. Treating a re-sent `payment_interaction` tag as an upsert is the only renegotiation model that works uniformly for stateful and stateless clients, and it remains backward compatible because an absent tag continues to inherit the current effective mode.
+
+On a mode change, the server's re-disclosure obligation is:
+
+- A transition of the effective mode **to `explicit_gating`** MUST trigger effective-mode re-disclosure on the next direct server-to-client response, using the same `payment_interaction` tag format defined for first-response disclosure.
+- A transition **to `transparent`** is disclosed by the absence of the tag on the next direct response, consistent with first-message semantics. The server MAY also include `payment_interaction=transparent` explicitly.
+
+An upsert to a mode the server does not support is rejected with `-32602 Invalid params` exactly as specified for first-message negotiation above; the session's effective mode is left unchanged.
+
+A mode change does not migrate paid execution authorizations across lifecycles. As specified under [Correlation, Authorization Identity, and Idempotency](#correlation-authorization-identity-and-idempotency), the transparent and explicit-gating lifecycles correlate by distinct identities by design, and a grant established under one lifecycle is not consumed by a request handled under the other.
+
+Clients SHOULD keep `payment_interaction` consistent across concurrently in-flight requests and SHOULD omit the tag on routine invocations, including it only to establish or change the session's mode.
 
 #### PMI advertisement
 
