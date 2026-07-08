@@ -1,6 +1,6 @@
 ---
-title: "Proxy"
-description: "Communicate with a remote ContextVM server using NostrMCPProxy."
+title: 'Proxy'
+description: 'Communicate with a remote ContextVM server using NostrMCPProxy.'
 ---
 
 `NostrMCPProxy` is the simplest way to talk to a remote ContextVM server from Rust.

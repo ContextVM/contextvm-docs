@@ -1,6 +1,6 @@
 ---
-title: "Discover ContextVM Servers"
-description: "How to find servers and their capabilities natively on the Nostr network."
+title: 'Discover ContextVM Servers'
+description: 'How to find servers and their capabilities natively on the Nostr network.'
 ---
 
 # Tutorial: Discover ContextVM Servers
@@ -25,15 +25,15 @@ Server announcements use event `kind: 11316`. The `content` field contains an MC
 Create a file named `discover.ts` and add the following:
 
 ```typescript
-import { ApplesauceRelayPool } from "@contextvm/sdk";
+import { ApplesauceRelayPool } from '@contextvm/sdk';
 
-const RELAYS = ["wss://relay.contextvm.org"];
+const RELAYS = ['wss://relay.contextvm.org'];
 
 async function main() {
   const pool = new ApplesauceRelayPool(RELAYS);
   await pool.connect();
 
-  console.log("Searching for ContextVM servers...");
+  console.log('Searching for ContextVM servers...');
 
   // Subscribe to server announcements (kind 11316)
   const filters = [{ kinds: [11316], limit: 10 }];
@@ -46,9 +46,9 @@ async function main() {
     const pubkey = event.pubkey;
     const metadata = getMetadataFromTags(event.tags);
 
-    console.log(`Server: ${metadata.name || "Unknown"}`);
+    console.log(`Server: ${metadata.name || 'Unknown'}`);
     console.log(`Pubkey: ${pubkey}`);
-    console.log(`About: ${metadata.about || "N/A"}\n`);
+    console.log(`About: ${metadata.about || 'N/A'}\n`);
   }
 
   // Keep the script running to do Step 2
@@ -56,8 +56,8 @@ async function main() {
 
 // Helper to extract common tags
 function getMetadataFromTags(tags: string[][]) {
-  const name = tags.find((t) => t[0] === "name")?.[1];
-  const about = tags.find((t) => t[0] === "about")?.[1];
+  const name = tags.find((t) => t[0] === 'name')?.[1];
+  const about = tags.find((t) => t[0] === 'about')?.[1];
   return { name, about };
 }
 
@@ -73,7 +73,7 @@ Extend your script by adding this code inside the `main` loop, replacing the pla
 ```typescript
 // ... inside main()
 
-const targetPubkey = "<paste-a-pubkey-from-step-1>";
+const targetPubkey = '<paste-a-pubkey-from-step-1>';
 console.log(`\nFetching tools for server ${targetPubkey}...`);
 
 const toolEvents = await pool.querySync([
@@ -82,12 +82,12 @@ const toolEvents = await pool.querySync([
 
 if (toolEvents.length > 0) {
   const toolsPayload = JSON.parse(toolEvents[0].content);
-  console.log("Available tools:");
+  console.log('Available tools:');
   for (const tool of toolsPayload.tools) {
     console.log(`- ${tool.name}: ${tool.description}`);
   }
 } else {
-  console.log("This server has not announced any tools.");
+  console.log('This server has not announced any tools.');
 }
 ```
 
@@ -98,11 +98,11 @@ Once you have identified a server and verified it has the tools you want, you ca
 Because you discovered the `targetPubkey`, you pass it directly to the `NostrClientTransport`:
 
 ```typescript
-import { NostrClientTransport, PrivateKeySigner } from "@contextvm/sdk";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { NostrClientTransport, PrivateKeySigner } from '@contextvm/sdk';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
 // You need a signer to open a direct connection
-const signer = new PrivateKeySigner("your-private-key-hex");
+const signer = new PrivateKeySigner('your-private-key-hex');
 
 const transport = new NostrClientTransport({
   signer,
@@ -110,7 +110,7 @@ const transport = new NostrClientTransport({
   serverPubkey: targetPubkey,
 });
 
-const mcpClient = new Client({ name: "my-app", version: "1.0.0" });
+const mcpClient = new Client({ name: 'my-app', version: '1.0.0' });
 await mcpClient.connect(transport);
 
 // Now you can call the tools you discovered in Step 2!

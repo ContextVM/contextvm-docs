@@ -1,6 +1,6 @@
 ---
-title: "Bridge an Existing MCP Server"
-description: "How to expose an existing local or HTTP MCP server to the Nostr network using the Gateway."
+title: 'Bridge an Existing MCP Server'
+description: 'How to expose an existing local or HTTP MCP server to the Nostr network using the Gateway.'
 ---
 
 # How-to: Bridge an Existing MCP Server
@@ -33,17 +33,17 @@ import {
   NostrMCPGateway,
   PrivateKeySigner,
   ApplesauceRelayPool,
-} from "@contextvm/sdk";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+} from '@contextvm/sdk';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 async function main() {
-  const signer = new PrivateKeySigner("your-gateway-private-key-hex");
-  const pool = new ApplesauceRelayPool(["wss://relay.contextvm.org"]);
+  const signer = new PrivateKeySigner('your-gateway-private-key-hex');
+  const pool = new ApplesauceRelayPool(['wss://relay.contextvm.org']);
 
   // 1. Define how to reach your existing server
   const localMcpTransport = new StdioClientTransport({
-    command: "python", // or "node", "bun", etc.
-    args: ["path/to/your/existing/server.py"],
+    command: 'python', // or "node", "bun", etc.
+    args: ['path/to/your/existing/server.py'],
   });
 
   // 2. Configure the gateway
@@ -58,7 +58,7 @@ async function main() {
       // Optional: allow any Nostr client to find your bridged server
       isAnnouncedServer: true,
       serverInfo: {
-        name: "Bridged Python Server",
+        name: 'Bridged Python Server',
       },
     },
   });
@@ -90,14 +90,14 @@ If your backend server stores state per-connection, or if you are bridging to an
 Instead of providing a single `mcpClientTransport`, provide a factory function using `createMcpClientTransport`:
 
 ```typescript
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
 const gateway = new NostrMCPGateway({
   // Create a fresh transport for every unique Nostr client pubkey
   createMcpClientTransport: ({ clientPubkey }) => {
     console.log(`New Nostr client connected: ${clientPubkey}`);
     return new StreamableHTTPClientTransport(
-      new URL("http://localhost:3000/mcp"),
+      new URL('http://localhost:3000/mcp'),
     );
   },
 

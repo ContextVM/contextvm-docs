@@ -1,6 +1,6 @@
 ---
-title: "Native Server Guide"
-description: "Learn how to build native ContextVM servers using NostrServerTransport."
+title: 'Native Server Guide'
+description: 'Learn how to build native ContextVM servers using NostrServerTransport.'
 ---
 
 The recommended architecture is:

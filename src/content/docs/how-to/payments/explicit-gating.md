@@ -37,11 +37,11 @@ The capability result is produced **only** on the retry that consumes a paid aut
 import {
   LnBolt11NwcPaymentProcessor,
   withServerPayments,
-} from "@contextvm/sdk/payments";
-import type { PricedCapability } from "@contextvm/sdk/payments";
+} from '@contextvm/sdk/payments';
+import type { PricedCapability } from '@contextvm/sdk/payments';
 
 const pricedCapabilities: PricedCapability[] = [
-  { method: "tools/call", name: "search", amount: 25, currencyUnit: "sats" },
+  { method: 'tools/call', name: 'search', amount: 25, currencyUnit: 'sats' },
 ];
 
 const processor = new LnBolt11NwcPaymentProcessor({
@@ -66,7 +66,7 @@ Opt into the lifecycle by setting `paymentInteraction: "explicit_gating"`. No pa
 import {
   LnBolt11NwcPaymentHandler,
   withClientPayments,
-} from "@contextvm/sdk/payments";
+} from '@contextvm/sdk/payments';
 
 const handler = new LnBolt11NwcPaymentHandler({
   nwcConnectionString: process.env.NWC_CLIENT_CONNECTION!,
@@ -74,7 +74,7 @@ const handler = new LnBolt11NwcPaymentHandler({
 
 const paidTransport = withClientPayments(baseTransport, {
   handlers: [handler],
-  paymentInteraction: "explicit_gating",
+  paymentInteraction: 'explicit_gating',
 });
 ```
 
@@ -87,8 +87,8 @@ The `-32042` error carries everything the agent needs: `instructions` (a human/a
 ```ts
 try {
   const result = await client.callTool({
-    name: "search",
-    arguments: { query: "contextvm" }, // deterministic args
+    name: 'search',
+    arguments: { query: 'contextvm' }, // deterministic args
   });
 } catch (err) {
   if (isPaymentRequired(err)) {
@@ -101,8 +101,8 @@ try {
     // Retry the exact same call. The server matches it to the paid
     // authorization by canonical invocation identity (method + params).
     return client.callTool({
-      name: "search",
-      arguments: { query: "contextvm" },
+      name: 'search',
+      arguments: { query: 'contextvm' },
     });
   }
   throw err;
@@ -132,13 +132,13 @@ For non-agent clients that want the wrapper to intercept the `-32042` and retry 
 ```ts
 const paidTransport = withClientPayments(baseTransport, {
   handlers: [handler],
-  paymentInteraction: "explicit_gating",
+  paymentInteraction: 'explicit_gating',
   onPaymentRequired: async ({ options, instructions }) => {
     const approved = await askUserToApprove({
       amount: options[0].amount,
       instructions,
     });
-    if (!approved) return { paid: false, reason: "user_cancelled" };
+    if (!approved) return { paid: false, reason: 'user_cancelled' };
     await handler.pay(options[0].pay_req);
     return { paid: true };
   },

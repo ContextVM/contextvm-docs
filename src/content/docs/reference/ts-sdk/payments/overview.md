@@ -64,11 +64,11 @@ Set `maxAmount` on a `PricedCapability` to advertise an inclusive price range. T
 ```ts
 const pricedCapabilities: PricedCapability[] = [
   {
-    method: "tools/call",
-    name: "search",
+    method: 'tools/call',
+    name: 'search',
     amount: 10,
     maxAmount: 1000, // advertises "10-1000 sats"
-    currencyUnit: "sats",
+    currencyUnit: 'sats',
   },
 ];
 ```
@@ -102,16 +102,16 @@ On the server you:
 3. attach server payment middleware
 
 ```ts
-import { withServerPayments } from "@contextvm/sdk/payments";
+import { withServerPayments } from '@contextvm/sdk/payments';
 
 const paidTransport = withServerPayments(baseTransport, {
   processors: [processor],
   pricedCapabilities: [
     {
-      method: "tools/call",
-      name: "my-tool",
+      method: 'tools/call',
+      name: 'my-tool',
       amount: 10,
-      currencyUnit: "sats",
+      currencyUnit: 'sats',
     },
   ],
 });
@@ -144,11 +144,11 @@ The default changed to `'optional'`, so a server that accepts payments now also 
 | `{ waive: true }`                 | **Waiver** — the request is forwarded immediately, no payment flow.                                                                                  |
 
 ```ts
-import type { ResolvePriceFn } from "@contextvm/sdk/payments";
+import type { ResolvePriceFn } from '@contextvm/sdk/payments';
 
 const resolvePrice: ResolvePriceFn = async ({ capability, clientPubkey }) => {
   if (await isUserBlocked(clientPubkey))
-    return { reject: true, message: "Access denied" };
+    return { reject: true, message: 'Access denied' };
   if (await hasPrepaidBalance(clientPubkey)) return { waive: true };
   return { amount: capability.amount };
 };
@@ -191,7 +191,7 @@ On the client you:
 2. attach client payment middleware
 
 ```ts
-import { withClientPayments } from "@contextvm/sdk/payments";
+import { withClientPayments } from '@contextvm/sdk/payments';
 
 const paidTransport = withClientPayments(baseTransport, {
   handlers: [handler],
@@ -209,11 +209,11 @@ When the server responds with `notifications/payment_required`, the payments lay
 For the `explicit_gating` lifecycle, payment is surfaced as `-32042` / `-32043` invocation errors instead of notifications. Set `paymentInteraction: 'explicit_gating'` — **no callback is required**. A priced invocation returns a `-32042 Payment Required` error (with `instructions` + `payment_options`) directly to the caller, so an AI agent reads the error, pays `pay_req`, and retries the same call.
 
 ```ts
-import { withClientPayments } from "@contextvm/sdk/payments";
+import { withClientPayments } from '@contextvm/sdk/payments';
 
 const paidTransport = withClientPayments(baseTransport, {
   handlers: [handler],
-  paymentInteraction: "explicit_gating",
+  paymentInteraction: 'explicit_gating',
 });
 ```
 

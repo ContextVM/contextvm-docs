@@ -1,6 +1,6 @@
 ---
-title: "Server & Client (Rust)"
-description: "A step-by-step guide to building a native ContextVM server and client pair in Rust."
+title: 'Server & Client (Rust)'
+description: 'A step-by-step guide to building a native ContextVM server and client pair in Rust.'
 ---
 
 # Tutorial: Server & Client (Rust)

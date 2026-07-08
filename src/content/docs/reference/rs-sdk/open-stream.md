@@ -1,6 +1,6 @@
 ---
-title: "Open Stream"
-description: "CEP-41 open-ended streaming support in the Rust SDK, letting a server tool emit ordered chunks while a tools/call request is still in flight."
+title: 'Open Stream'
+description: 'CEP-41 open-ended streaming support in the Rust SDK, letting a server tool emit ordered chunks while a tools/call request is still in flight.'
 ---
 
 # Open Stream

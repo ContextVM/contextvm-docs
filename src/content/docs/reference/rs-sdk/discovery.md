@@ -1,6 +1,6 @@
 ---
-title: "Discovery"
-description: "Use public discovery helpers to find announced ContextVM servers and capabilities."
+title: 'Discovery'
+description: 'Use public discovery helpers to find announced ContextVM servers and capabilities.'
 ---
 
 The Rust SDK exposes public discovery helpers for finding announced servers and their published capabilities.

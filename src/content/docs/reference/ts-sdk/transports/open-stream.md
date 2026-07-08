@@ -66,18 +66,18 @@ import {
   callToolStream,
   NostrClientTransport,
   PrivateKeySigner,
-} from "@contextvm/sdk";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+} from '@contextvm/sdk';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
 const transport = new NostrClientTransport({
-  signer: new PrivateKeySigner("your-private-key"),
-  serverPubkey: "npub1...",
-  relayHandler: ["wss://relay.example.com"],
+  signer: new PrivateKeySigner('your-private-key'),
+  serverPubkey: 'npub1...',
+  relayHandler: ['wss://relay.example.com'],
 });
 
 const client = new Client({
-  name: "streaming-client",
-  version: "1.0.0",
+  name: 'streaming-client',
+  version: '1.0.0',
 });
 
 await client.connect(transport);
@@ -85,9 +85,9 @@ await client.connect(transport);
 const call = await callToolStream({
   client,
   transport,
-  name: "streaming_tool",
+  name: 'streaming_tool',
   arguments: {
-    prompt: "Explain CEP-41 in short steps",
+    prompt: 'Explain CEP-41 in short steps',
   },
 });
 
@@ -185,13 +185,13 @@ The writer automatically:
 ### Full minimal producer example
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import {
   NostrServerTransport,
   type OpenStreamWriter,
   PrivateKeySigner,
-} from "@contextvm/sdk";
+} from '@contextvm/sdk';
 
 function getOpenStreamWriter(extra: {
   _meta?: Record<string, unknown>;
@@ -200,33 +200,33 @@ function getOpenStreamWriter(extra: {
     ?.stream;
 
   if (!stream) {
-    throw new Error("Expected open stream writer in _meta.stream");
+    throw new Error('Expected open stream writer in _meta.stream');
   }
 
   return stream;
 }
 
 const server = new McpServer({
-  name: "streaming-server",
-  version: "1.0.0",
+  name: 'streaming-server',
+  version: '1.0.0',
 });
 
 const transport = new NostrServerTransport({
-  signer: new PrivateKeySigner("your-private-key"),
-  relayHandler: ["wss://relay.example.com"],
+  signer: new PrivateKeySigner('your-private-key'),
+  relayHandler: ['wss://relay.example.com'],
   openStream: {
     enabled: true,
   },
   serverInfo: {
-    name: "streaming-server",
+    name: 'streaming-server',
   },
 });
 
 server.registerTool(
-  "streaming_tool",
+  'streaming_tool',
   {
-    title: "Streaming tool",
-    description: "Emits incremental text before the final tool result",
+    title: 'Streaming tool',
+    description: 'Emits incremental text before the final tool result',
     inputSchema: {
       prompt: z.string(),
     },
@@ -236,14 +236,14 @@ server.registerTool(
 
     await stream.start();
     await stream.write(`Starting: ${prompt}\n`);
-    await stream.write("Step 1 complete\n");
-    await stream.write("Step 2 complete\n");
+    await stream.write('Step 1 complete\n');
+    await stream.write('Step 2 complete\n');
     await stream.close();
 
     return {
       content: [
         {
-          type: "text",
+          type: 'text',
           text: `Finished processing: ${prompt}`,
         },
       ],
@@ -278,6 +278,9 @@ The pattern is the same:
 2. translate each upstream event into one or more [`write()`](src/transport/open-stream/writer.ts:66) calls
 3. call [`close()`](src/transport/open-stream/writer.ts:112) when the upstream source ends normally
 4. call [`abort()`](src/transport/open-stream/writer.ts:129) when the upstream source fails or local policy requires termination
+5. wire the writer's [`signal`](src/transport/open-stream/writer.ts) to your upstream source so it tears down when the client disappears
+
+For long-lived sources that last step matters: a client can vanish silently (crash, sleep, network drop). The writer runs a sender-side keepalive (idle timer → `ping` → `pong` → probe timeout, per CEP-41) and exposes a public `signal: AbortSignal` that aborts on any termination — explicit `close()`/`abort()`, probe timeout, or transport teardown. Pass it to your upstream source (`addEventListener(..., { signal })`, `fetch(url, { signal })`) so it closes promptly instead of leaking until the next event happens to arrive. `isActive` is the synchronous counterpart (`isActive === false` once the stream terminates).
 
 ### Example: bridging a websocket feed from a tool handler
 
@@ -289,17 +292,17 @@ function getOpenStreamWriter(extra: {
     ?.stream;
 
   if (!stream) {
-    throw new Error("Expected open stream writer in _meta.stream");
+    throw new Error('Expected open stream writer in _meta.stream');
   }
 
   return stream;
 }
 
 server.registerTool(
-  "subscribe_to_feed",
+  'subscribe_to_feed',
   {
-    title: "Subscribe to feed",
-    description: "Bridges an upstream websocket feed into CEP-41 chunks",
+    title: 'Subscribe to feed',
+    description: 'Bridges an upstream websocket feed into CEP-41 chunks',
     inputSchema: {
       url: z.string().url(),
     },
@@ -309,20 +312,26 @@ server.registerTool(
 
     const socket = new WebSocket(url);
 
-    socket.addEventListener("message", async (event) => {
+    // Tear down the upstream socket when the stream terminates for any
+    // reason — client cancel, silent disconnect (probe timeout), or
+    // transport shutdown. Without this the socket leaks if the client
+    // vanishes between events.
+    stream.signal.addEventListener('abort', () => socket.close());
+
+    socket.addEventListener('message', async (event) => {
       await stream.write(String(event.data));
     });
 
-    socket.addEventListener("close", async () => {
+    socket.addEventListener('close', async () => {
       await stream.close();
     });
 
-    socket.addEventListener("error", async () => {
-      await stream.abort("Upstream websocket failed");
+    socket.addEventListener('error', async () => {
+      await stream.abort('Upstream websocket failed');
     });
 
     return {
-      content: [{ type: "text", text: `Subscribed to ${url}` }],
+      content: [{ type: 'text', text: `Subscribed to ${url}` }],
     };
   },
 );
@@ -383,7 +392,37 @@ The SDK reference implementation includes the CEP-41 keepalive and termination r
 - streams can abort after probe timeout
 - a `close` with unresolved chunk gaps can wait briefly and then abort if the grace period expires
 
-This behavior aligns with the reference implementation tested in [`src/transport/open-stream/session.test.ts`](src/transport/open-stream/session.test.ts) and [`src/transport/open-stream/registry.test.ts`](src/transport/open-stream/registry.test.ts).
+The same rules apply on the sender side. [`OpenStreamWriter`](src/transport/open-stream/writer.ts) arms an idle timer once it starts streaming, probes the peer with `ping` on idle, and aborts with reason `'Probe timeout'` when no matching `pong` arrives within the probe window — so a server-side writer detects a silently disconnected client instead of leaking forever. The abort cascades through client-session eviction and any deferred final response. On any termination (close, abort, probe timeout, or transport teardown) the writer's public `signal` aborts and `isActive` becomes `false`.
+
+This behavior aligns with the reference implementation tested in [`src/transport/open-stream/session.test.ts`](src/transport/open-stream/session.test.ts), [`src/transport/open-stream/registry.test.ts`](src/transport/open-stream/registry.test.ts), and [`src/transport/open-stream/writer.test.ts`](src/transport/open-stream/writer.test.ts).
+
+## Observing Open Streams
+
+[`NostrServerTransport.getOpenStreams()`](src/transport/nostr-server-transport.ts) returns a read-only snapshot of currently open server-side streams, with the client context already resolved so consumers never touch the internal correlation store:
+
+```typescript
+interface ServerOpenStreamInfo {
+  eventId: string; // the tools/call event id
+  clientPubkey: string; // resolved client public key
+  progressToken: string; // CEP-41 progress token
+  startedAt: number; // epoch ms when the writer was created
+  isActive: boolean; // false once the stream terminates
+}
+```
+
+Use it for health checks, metrics, or debugging:
+
+```typescript
+for (const stream of transport.getOpenStreams()) {
+  console.log(
+    stream.eventId,
+    stream.clientPubkey,
+    Date.now() - stream.startedAt,
+  );
+}
+```
+
+`isActive` flips to `false` once a stream terminates (close, abort, probe timeout, or transport teardown), so a lingering `isActive === true` entry indicates a stream still in flight. Note: if you consume the SDK via [`NostrMCPGateway`](src/gateway/index.ts) the underlying transport is private; reach `getOpenStreams()` by holding the `NostrServerTransport` directly, or expose a passthrough on your gateway wrapper.
 
 ## Relationship to the CEP
 

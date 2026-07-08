@@ -38,7 +38,7 @@ jobs:
 
       - name: Build site
         env:
-          GITHUB_PAGES: "true"
+          GITHUB_PAGES: 'true'
         run: bun run build
 
       - name: Upload Pages artifact

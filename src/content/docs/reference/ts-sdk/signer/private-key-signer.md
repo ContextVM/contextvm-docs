@@ -26,10 +26,10 @@ When instantiated, the `PrivateKeySigner` will immediately convert the hex strin
 ## Usage Example
 
 ```typescript
-import { PrivateKeySigner } from "@contextvm/sdk";
+import { PrivateKeySigner } from '@contextvm/sdk';
 
 // Replace with a securely stored private key
-const privateKeyHex = "your-32-byte-private-key-in-hex";
+const privateKeyHex = 'your-32-byte-private-key-in-hex';
 
 const signer = new PrivateKeySigner(privateKeyHex);
 

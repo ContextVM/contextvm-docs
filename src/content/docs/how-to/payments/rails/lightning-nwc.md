@@ -24,7 +24,7 @@ In practice, both the server and the client will have an NWC connection string.
 ### Server processor
 
 ```ts
-import { LnBolt11NwcPaymentProcessor } from "@contextvm/sdk/payments";
+import { LnBolt11NwcPaymentProcessor } from '@contextvm/sdk/payments';
 
 const processor = new LnBolt11NwcPaymentProcessor({
   nwcConnectionString: process.env.NWC_SERVER_CONNECTION!,
@@ -36,7 +36,7 @@ The server-side NWC wallet must be able to **create invoices** and support whate
 ### Client handler
 
 ```ts
-import { LnBolt11NwcPaymentHandler } from "@contextvm/sdk/payments";
+import { LnBolt11NwcPaymentHandler } from '@contextvm/sdk/payments';
 
 const handler = new LnBolt11NwcPaymentHandler({
   nwcConnectionString: process.env.NWC_CLIENT_CONNECTION!,

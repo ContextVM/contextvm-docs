@@ -1,6 +1,6 @@
 ---
-title: "Build a Public Server"
-description: "Learn how to make a ContextVM server discoverable using CEP-6 public announcements"
+title: 'Build a Public Server'
+description: 'Learn how to make a ContextVM server discoverable using CEP-6 public announcements'
 ---
 
 # Tutorial: Build a Public Server
@@ -31,18 +31,18 @@ First, create a basic MCP server. We will use the `@modelcontextprotocol/sdk` an
 Create a file named `public-server.ts`:
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
   NostrServerTransport,
   PrivateKeySigner,
   ApplesauceRelayPool,
-} from "@contextvm/sdk";
-import { z } from "zod";
+} from '@contextvm/sdk';
+import { z } from 'zod';
 
 // Configuration
 const SERVER_PRIVATE_KEY_HEX =
-  process.env.SERVER_PRIVATE_KEY || "your-32-byte-hex-key";
-const RELAYS = ["wss://relay.contextvm.org"];
+  process.env.SERVER_PRIVATE_KEY || 'your-32-byte-hex-key';
+const RELAYS = ['wss://relay.contextvm.org'];
 
 async function main() {
   const signer = new PrivateKeySigner(SERVER_PRIVATE_KEY_HEX);
@@ -50,19 +50,19 @@ async function main() {
 
   // Create the MCP Server
   const mcpServer = new McpServer({
-    name: "my-public-server",
-    version: "1.0.0",
+    name: 'my-public-server',
+    version: '1.0.0',
   });
 
   // Add a simple tool
   mcpServer.registerTool(
-    "greet",
+    'greet',
     {
-      description: "Greets a user by name",
+      description: 'Greets a user by name',
       inputSchema: { name: z.string() },
     },
     async ({ name }) => ({
-      content: [{ type: "text", text: `Hello, ${name}!` }],
+      content: [{ type: 'text', text: `Hello, ${name}!` }],
     }),
   );
 
@@ -88,10 +88,10 @@ const serverTransport = new NostrServerTransport({
   relayHandler: relayPool,
   isAnnouncedServer: true, // This enables CEP-6 announcements
   serverInfo: {
-    name: "Greeting Server",
-    about: "A simple server that provides greeting tools.",
-    picture: "https://example.com/avatar.png", // Optional
-    website: "https://contextvm.org", // Optional
+    name: 'Greeting Server',
+    about: 'A simple server that provides greeting tools.',
+    picture: 'https://example.com/avatar.png', // Optional
+    website: 'https://contextvm.org', // Optional
   },
 });
 

@@ -1,6 +1,6 @@
 ---
-title: "UniFFI Bindings"
-description: "Use the ContextVM Rust SDK from Python, Kotlin, Swift, and C through the contextvm-ffi bindings, including build, code generation, and memory management."
+title: 'UniFFI Bindings'
+description: 'Use the ContextVM Rust SDK from Python, Kotlin, Swift, and C through the contextvm-ffi bindings, including build, code generation, and memory management.'
 ---
 
 # UniFFI Bindings (contextvm-ffi)
@@ -83,27 +83,27 @@ Several parity APIs use JSON strings to represent SDK values that are not portab
 
 Rust-owned values returned through the C ABI must be released by the caller:
 
-| Value                 | Release call                |
-| --------------------- | --------------------------- |
-| Strings               | `cvm_string_free`           |
-| Messages              | `cvm_message_free`          |
-| Incoming requests     | `cvm_incoming_request_free` |
-| Announcement arrays   | `cvm_announcements_free`    |
-| Discovered tool arrays | `cvm_discovered_tools_free` |
+| Value                   | Release call                 |
+| ----------------------- | ---------------------------- |
+| Strings                 | `cvm_string_free`            |
+| Messages                | `cvm_message_free`           |
+| Incoming requests       | `cvm_incoming_request_free`  |
+| Announcement arrays     | `cvm_announcements_free`     |
+| Discovered tool arrays  | `cvm_discovered_tools_free`  |
 | Provider profile arrays | `cvm_provider_profiles_free` |
-| Errors                | `cvm_error_free`            |
+| Errors                  | `cvm_error_free`             |
 
 ## Python binding surface
 
 The generated `contextvm_ffi.py` exposes these top-level helpers and objects:
 
-| Category | Names |
-| -------- | ----- |
+| Category  | Names                                                                                                                                        |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | Functions | `version()`, `pubkey_hex_to_npub(hex)`, `make_request(id, method, params)`, `make_response(id, result)`, `make_notification(method, params)` |
-| Objects | `Keys`, `RelayPool`, `Discovery`, `Server`, `Client`, `Gateway`, `Proxy` |
-| Configs | `ServerConfig(...)`, `ClientConfig(...)` (keyword-only fields) |
-| Enums | `EncryptionMode.{OPTIONAL,REQUIRED,DISABLED}`, `GiftWrapMode.{OPTIONAL,EPHEMERAL,PERSISTENT}` |
-| Records | `JsonRpcMessage`, `IncomingRequest`, `ServerAnnouncement`, `DiscoveredTool`, `ProviderProfile`, `PeerCapabilities` |
+| Objects   | `Keys`, `RelayPool`, `Discovery`, `Server`, `Client`, `Gateway`, `Proxy`                                                                     |
+| Configs   | `ServerConfig(...)`, `ClientConfig(...)` (keyword-only fields)                                                                               |
+| Enums     | `EncryptionMode.{OPTIONAL,REQUIRED,DISABLED}`, `GiftWrapMode.{OPTIONAL,EPHEMERAL,PERSISTENT}`                                                |
+| Records   | `JsonRpcMessage`, `IncomingRequest`, `ServerAnnouncement`, `DiscoveredTool`, `ProviderProfile`, `PeerCapabilities`                           |
 
 All async SDK work runs on an internal Tokio runtime, so every method is **blocking** — no `async`/`await` needed on the Python side.
 

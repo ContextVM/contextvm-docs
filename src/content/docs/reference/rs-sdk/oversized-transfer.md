@@ -1,5 +1,5 @@
 ---
-title: "Oversized Transfer"
+title: 'Oversized Transfer'
 description: "How the Rust SDK fragments and reassembles MCP messages that exceed a relay's single-event size limit, via CEP-22."
 ---
 
@@ -31,18 +31,18 @@ let config = NostrClientTransportConfig::default()
 
 `OversizedTransferConfig` is attached to both transport configs via `with_oversized_transfer(..)` (or the `with_oversized_enabled(..)` shorthand):
 
-| Field                      | Default                  | Description                                                                 |
-| -------------------------- | ------------------------ | --------------------------------------------------------------------------- |
-| `enabled`                  | `true`                   | Master gate: advertise + activate the capability                            |
-| `threshold`                | `48_000`                 | Published byte size at/above which the sender fragments                     |
-| `chunk_size`               | `48_000`                 | Upper bound on per-chunk payload bytes (shrunk automatically so every published frame stays under `threshold`) |
-| `max_transfer_bytes`       | `104_857_600` (100 MiB)  | Receiver cap on a reassembled payload                                       |
-| `max_transfer_chunks`      | `10_000`                 | Receiver cap on chunk count                                                 |
-| `max_concurrent_transfers` | `64`                     | Receiver cap on simultaneously active transfers                             |
-| `transfer_timeout_ms`      | `300_000`                | Receiver-side hard deadline per transfer, from admission; `0` disables the watchdog |
-| `max_out_of_order_window`  | `21`                     | How far ahead of the contiguous frontier a chunk may arrive and still be buffered |
-| `max_out_of_order_chunks`  | `42`                     | Cap on buffered out-of-order chunks                                         |
-| `accept_timeout_ms`        | `30_000`                 | How long an uploading client waits for the server's `accept` handshake      |
+| Field                      | Default                 | Description                                                                                                    |
+| -------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `enabled`                  | `true`                  | Master gate: advertise + activate the capability                                                               |
+| `threshold`                | `48_000`                | Published byte size at/above which the sender fragments                                                        |
+| `chunk_size`               | `48_000`                | Upper bound on per-chunk payload bytes (shrunk automatically so every published frame stays under `threshold`) |
+| `max_transfer_bytes`       | `104_857_600` (100 MiB) | Receiver cap on a reassembled payload                                                                          |
+| `max_transfer_chunks`      | `10_000`                | Receiver cap on chunk count                                                                                    |
+| `max_concurrent_transfers` | `64`                    | Receiver cap on simultaneously active transfers                                                                |
+| `transfer_timeout_ms`      | `300_000`               | Receiver-side hard deadline per transfer, from admission; `0` disables the watchdog                            |
+| `max_out_of_order_window`  | `21`                    | How far ahead of the contiguous frontier a chunk may arrive and still be buffered                              |
+| `max_out_of_order_chunks`  | `42`                    | Cap on buffered out-of-order chunks                                                                            |
+| `accept_timeout_ms`        | `30_000`                | How long an uploading client waits for the server's `accept` handshake                                         |
 
 The decision to fragment is made on the **final published event size** (signed, JSON-escaped, and gift-wrapped when encryption is on), so `threshold` is a real wire budget, not a payload-length heuristic.
 
@@ -50,7 +50,7 @@ The decision to fragment is made on the **final published event size** (signed, 
 
 Three independent timers govern a transfer; knowing who owns each one makes timeout behavior predictable:
 
-1. **Requester idle timeout** (rmcp, per request — opt-in). Fails the call if no progress arrives for `idle`. The transports forward every inbound transfer frame to the requester as a plain progress notification, so a *live* transfer resets this timer chunk by chunk while a *stalled* one fails after `idle`.
+1. **Requester idle timeout** (rmcp, per request — opt-in). Fails the call if no progress arrives for `idle`. The transports forward every inbound transfer frame to the requester as a plain progress notification, so a _live_ transfer resets this timer chunk by chunk while a _stalled_ one fails after `idle`.
 2. **Requester max-total timeout** (rmcp, per request — opt-in). Hard cap on the whole call regardless of progress — a trickling transfer cannot hold a request open forever.
 3. **Receiver watchdog** (`transfer_timeout_ms`, transport-owned). A hard memory bound on inbound reassembly state, measured from `start` admission and never refreshed by activity. Reaping is local-only — no abort frame is emitted; the requester's own timers fail the other side. A reaped token is re-admittable by a fresh `start`.
 
@@ -86,7 +86,7 @@ let response = handle.await_response().await?;
 
 ### Upload (client→server) caveat
 
-A fragmented *request* receives at most **one** inbound reset: the server's `accept` handshake frame — and it reaches the rmcp service loop only after the whole upload send returns. Size `idle` and `max_total` to cover the full upload duration, not just inter-frame gaps.
+A fragmented _request_ receives at most **one** inbound reset: the server's `accept` handshake frame — and it reaches the rmcp service loop only after the whole upload send returns. Size `idle` and `max_total` to cover the full upload duration, not just inter-frame gaps.
 
 ## Synthetic progress notifications
 

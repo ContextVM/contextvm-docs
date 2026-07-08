@@ -1,6 +1,6 @@
 ---
-title: "Enable Encrypted Communication"
-description: "How to configure your ContextVM server and client for end-to-end NIP-44 encryption."
+title: 'Enable Encrypted Communication'
+description: 'How to configure your ContextVM server and client for end-to-end NIP-44 encryption.'
 ---
 
 # How-to: Enable Encrypted Communication
@@ -23,17 +23,17 @@ There are two primary configuration options you must understand:
 By default, standard ContextVM server initialization uses plaintext. To change this, you update the `encryptionMode` in your transport configuration.
 
 ```typescript
-import { NostrServerTransport } from "@contextvm/sdk";
+import { NostrServerTransport } from '@contextvm/sdk';
 
 const transport = new NostrServerTransport({
   signer,
   relayHandler: relayPool,
 
   // Accept both plaintext and encrypted connections
-  encryptionMode: "Optional",
+  encryptionMode: 'Optional',
 
   // Prefer ephemeral wraps if the client supports them
-  giftWrapMode: "Optional",
+  giftWrapMode: 'Optional',
 });
 ```
 
@@ -48,18 +48,18 @@ const transport = new NostrServerTransport({
 The client is responsible for initiating the connection. If the client uses encryption, the server will follow suit (if its policy permits).
 
 ```typescript
-import { NostrClientTransport } from "@contextvm/sdk";
+import { NostrClientTransport } from '@contextvm/sdk';
 
 const transport = new NostrClientTransport({
   signer,
   relayHandler: relayPool,
-  serverPubkey: "server-hex-key",
+  serverPubkey: 'server-hex-key',
 
   // Force the client to encrypt all outbound messages
-  encryptionMode: "Required",
+  encryptionMode: 'Required',
 
   // Request that relays delete the outer envelope quickly
-  giftWrapMode: "Ephemeral",
+  giftWrapMode: 'Ephemeral',
 });
 ```
 

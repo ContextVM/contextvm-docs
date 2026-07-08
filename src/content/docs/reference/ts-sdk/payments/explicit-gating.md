@@ -27,7 +27,7 @@ The lifecycle is negotiated per session on the first direct client → server me
 ### `withServerPayments`
 
 ```ts
-import { withServerPayments } from "@contextvm/sdk/payments";
+import { withServerPayments } from '@contextvm/sdk/payments';
 
 withServerPayments(transport, {
   processors: [processor],
@@ -46,7 +46,7 @@ You do not normally construct the explicit-gating middleware yourself. Use it di
 ### `PaymentInteractionPolicy` (server)
 
 ```ts
-type PaymentInteractionPolicy = "optional" | "transparent";
+type PaymentInteractionPolicy = 'optional' | 'transparent';
 ```
 
 Server-side configuration concern, distinct from the wire-level [`PaymentInteractionMode`](#paymentinteractionmode-client).
@@ -84,7 +84,7 @@ The middleware self-gates: it only acts on requests whose effective session mode
 A bounded, TTL-aware store that manages both the **pending** state (waiting for payment verification) and the **granted** state (paid, ready to consume) for explicit-gating authorizations.
 
 ```ts
-import { AuthorizationStore } from "@contextvm/sdk/payments";
+import { AuthorizationStore } from '@contextvm/sdk/payments';
 
 const store = new AuthorizationStore({ maxEntries: 5000 }); // maxEntries default: 5000
 ```
@@ -128,11 +128,11 @@ Relevant options on the server payments configuration (shared by both middleware
 When `paymentInteraction` is `'explicit_gating'` and the server accepts it, a priced invocation returns a `-32042 Payment Required` JSON-RPC error to the caller — **just like any other MCP error**. No callback is required: the wrapper forwards the error unchanged, so an AI agent or application reads `error.data.instructions`, picks a `payment_option`, pays `pay_req` by its own means, and retries the same invocation.
 
 ```ts
-import { withClientPayments } from "@contextvm/sdk/payments";
+import { withClientPayments } from '@contextvm/sdk/payments';
 
 const paidTransport = withClientPayments(baseTransport, {
   handlers: [handler],
-  paymentInteraction: "explicit_gating",
+  paymentInteraction: 'explicit_gating',
   // no onPaymentRequired — the -32042 error is surfaced to the caller
 });
 ```
@@ -170,7 +170,7 @@ If you want the wrapper to intercept the `-32042` and retry automatically (for e
 ```ts
 const paidTransport = withClientPayments(baseTransport, {
   handlers: [handler],
-  paymentInteraction: "explicit_gating",
+  paymentInteraction: 'explicit_gating',
   onPaymentRequired: async ({ options }) => {
     await payInvoice(options[0].pay_req);
     return { paid: true };
@@ -211,7 +211,7 @@ A client that required `explicit_gating` **should not** auto-satisfy transparent
 ### `PaymentInteractionMode` (client)
 
 ```ts
-type PaymentInteractionMode = "transparent" | "explicit_gating";
+type PaymentInteractionMode = 'transparent' | 'explicit_gating';
 ```
 
 The wire/session-level mode. Set it via `ClientPaymentsOptions.paymentInteraction`.
@@ -230,10 +230,10 @@ import {
   computeCanonicalInvocationIdentity,
   computeCanonicalInvocationHash,
   type CanonicalInvocationIdentity,
-} from "@contextvm/sdk/payments";
+} from '@contextvm/sdk/payments';
 
 const identity: CanonicalInvocationIdentity =
-  computeCanonicalInvocationIdentity(clientPubkey, "tools/call", params);
+  computeCanonicalInvocationIdentity(clientPubkey, 'tools/call', params);
 // identity.invocationHash === hex SHA-256 of JCS({ method, params })
 ```
 
@@ -266,7 +266,7 @@ import {
   PAYMENT_REQUIRED_ERROR_CODE, // -32042
   PAYMENT_PENDING_ERROR_CODE, // -32043
   UNSUPPORTED_PAYMENT_INTERACTION_ERROR_CODE, // -32602
-} from "@contextvm/sdk/payments";
+} from '@contextvm/sdk/payments';
 ```
 
 ## Related

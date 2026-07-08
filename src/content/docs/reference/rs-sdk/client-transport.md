@@ -1,6 +1,6 @@
 ---
-title: "Native Client Guide"
-description: "Learn how to build native ContextVM clients using NostrClientTransport."
+title: 'Native Client Guide'
+description: 'Learn how to build native ContextVM clients using NostrClientTransport.'
 ---
 
 The recommended architecture is:
