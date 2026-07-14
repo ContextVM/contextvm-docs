@@ -1,5 +1,5 @@
 ---
-title: CEP-42 Server Redirect
+title: CEP-47 Server Redirect
 description: A request redirection mechanism where a server returns a JSON-RPC error pointing the client to a different public key and optional relay hints
 ---
 
