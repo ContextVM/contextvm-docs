@@ -44,9 +44,12 @@ When a server redirects a request, it MUST return a JSON-RPC error response with
     "code": -32044,
     "message": "Redirect",
     "data": {
-      "target": "<target-pubkey>",
+      "target": "<64-char-lowercase-hex-pubkey>",
       "relays": ["wss://relay1.example.com", "wss://relay2.example.com"],
-      "instructions": "Re-issue this request to the target address."
+      "instructions": "Re-issue your request to the target address.",
+      "_meta": {
+        "note": "Optional extension metadata"
+      }
     }
   }
 }
@@ -54,9 +57,12 @@ When a server redirects a request, it MUST return a JSON-RPC error response with
 
 `error.data` fields:
 
-- `target` (required): the public key of the server that should handle the request.
-- `relays` (optional): inline relay hints where the target is reachable. Absent ⇒ the client discovers relays via CEP-17 (kind `10002`) for `target`.
-- `instructions` (optional): human- or agent-readable guidance, mirroring the convention in CEP-8.
+| Field | Required | Type | Description |
+| ----- | -------- | ---- | ----------- |
+| `target` | Yes | string | 64-character lowercase hex public key of the server that should handle the request. npub/nprofile are not used: nprofile carries inline relay hints, which would duplicate the `relays` field. |
+| `relays` | No | string[] | Inline relay hints where `target` is reachable. Absent ⇒ the client discovers relays via CEP-17 (kind `10002`) for `target`. |
+| `instructions` | No | string | Human- or agent-readable guidance, mirroring the convention in CEP-8. The routing signal is the error code `-32044`; `instructions` is advisory and MUST NOT be parsed for routing logic. |
+| `_meta` | No | object | Extension namespace, mirroring CEP-8. Unknown `_meta` fields MUST be ignored. |
 
 The error is delivered in a kind `25910` event signed by the server the client addressed, with an `e` tag referencing the original request event, exactly like a normal response.
 
@@ -64,26 +70,34 @@ The error is delivered in a kind `25910` event signed by the server the client a
 
 A server emits `-32044` whenever its own policy decides to redirect. There is no capability negotiation and no branching on what the client supports: a server configured to redirect simply redirects. A server that does not redirect never emits the error.
 
+A server SHOULD NOT redirect to its own public key. A self-redirect can only produce a futile cycle that consumes the client's hop budget; clients follow the redirect directive uniformly (they do not special-case a `target` equal to the current server), so the hop cap is the only loop bound.
+
+A server MUST NOT emit a redirect for a request that has an active [CEP-41](/reference/ceps/cep-41) open-ended stream. It SHOULD terminate the stream first (with `close` or `abort`): CEP-41 requires a streamed request to conclude with exactly one final JSON-RPC response, and a redirect is itself an error response, so emitting one mid-stream would collide with that requirement and leave both peers with unreleased stream state.
+
 ### Client Behavior
 
 On receiving a `-32044` error, a client that understands it:
 
 1. Re-issues the same request (same `method` and `params`) to `target`, on `relays` if provided, otherwise on relays discovered via CEP-17.
-2. Treats `target` as the recipient for subsequent traffic in the session.
+2. Treats `target` as the server for subsequent requests in that session.
 
-A client MUST cap the length of redirect chains it follows (for example, at most 5 hops) to prevent loops or amplification. Once the cap is reached, the client MUST surface the final redirect as an error rather than follow it further.
+If `relays` is provided and `target` is not reachable on those relays, the client SHOULD fall back to CEP-17 (kind `10002`) discovery for `target` rather than treat the redirect as failed. Stricter clients MAY refuse to fall back under local policy.
+
+If `target` is unreachable, the client SHOULD surface the redirect as an error to the caller. It SHOULD NOT silently fall back to the original server, which would defeat the redirect for both load-balancing and privacy use cases.
+
+A client MUST cap the length of redirect chains it follows for a single original request (for example, at most 5 consecutive redirects for the same original request) to prevent loops or amplification. The cap is scoped per original request, not per session: independent requests that each receive one redirect do not count against each other. Once the cap is reached, the client MUST surface the final redirect as an error rather than follow it further.
 
 A client that does not recognize `-32044` surfaces it as an ordinary JSON-RPC error. This is safe degradation, not silent failure.
 
 ### Session Ownership
 
-Because a redirected request is re-issued fresh to `target`, the target establishes any session state (such as the MCP `initialize` handshake) directly with the client. Redirect therefore requires no state transfer between the original server and the target, and works uniformly at any point in an exchange.
+Because a redirected request is re-issued fresh to `target`, the target establishes any session state (such as the MCP `initialize` handshake) directly with the client. Under the session model in [CEP-35](/reference/ceps/informational/cep-35), this is a new session context keyed by the client and `target` pubkeys; no state is transferred from the original server. Redirect therefore works uniformly at any point in an exchange.
 
 ## Security Considerations
 
-- **Advisory by default.** A signed redirect is authentic from the server the client addressed, but it is not proof that `target` is safe or equivalent. Clients SHOULD verify `target` before trusting it as the same service: confirm identity via its kind `11316` announcement (CEP-6), and optionally confirm capability equivalence via common-schema hashes (CEP-15).
-- **Loops and amplification.** The mandatory client-side hop cap bounds redirect chains. Servers SHOULD avoid emitting redirect chains that cycle back to a previous address.
-- **Payments.** If a redirected request is priced under CEP-8, the client re-issues it to `target`, and `target` becomes the payment processor for it. The original server does not collect payment for work it did not perform.
+- **Advisory by default.** A signed redirect is authentic from the server the client addressed, but it is not proof that `target` is safe or equivalent. Clients SHOULD verify `target` before trusting it as the same service: confirm identity via its kind `11316` announcement ([CEP-6](/reference/ceps/cep-6)), and optionally confirm capability equivalence via common-schema hashes ([CEP-15](/reference/ceps/cep-15)).
+- **Loops and amplification.** The mandatory client-side hop cap bounds redirect chains. Servers SHOULD avoid emitting redirect chains that cycle back to a previous address, including the self-redirect case specified under [Server Behavior](#server-behavior).
+- **Payments.** If a redirected request is priced under [CEP-8](/reference/ceps/cep-8) and a redirect arrives while a payment is in flight (for example, a `notifications/payment_required` has been received and an invoice is awaiting settlement in transparent mode), the client SHOULD abandon any pending payment state for the original request and re-issue to `target`. Because CEP-8 transparent payment correlates by the original request event, re-issuing starts a fresh payment flow: `target` becomes the payment processor and prices the capability independently. The original server does not collect payment for work it did not perform.
 
 ### Privacy
 
@@ -100,7 +114,11 @@ This CEP is additive and introduces no breaking changes:
 ## Dependencies
 
 - [CEP-6: Public Server Announcements](/reference/ceps/cep-6) — target identity verification
+- [CEP-8: Capability Pricing and Payment Flow](/reference/ceps/cep-8) — payment interaction on redirect
+- [CEP-15: Common Tool Schemas](/reference/ceps/cep-15) — capability-equivalence verification of `target`
 - [CEP-17: Server Relay List Metadata](/reference/ceps/cep-17) — relay discovery fallback when `relays` is absent
+- [CEP-35: Stateless Session Discovery and Capability Learning](/reference/ceps/informational/cep-35) — session context model after redirect
+- [CEP-41: Open-Ended Streams](/reference/ceps/cep-41) — redirect is forbidden for requests with an active stream
 
 ## Reference Implementation
 
