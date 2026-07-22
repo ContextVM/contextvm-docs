@@ -72,7 +72,7 @@ A server emits `-32044` whenever its own policy decides to redirect. There is no
 
 A server SHOULD NOT redirect to its own public key. A self-redirect can only produce a futile cycle that consumes the client's hop budget; clients follow the redirect directive uniformly (they do not special-case a `target` equal to the current server), so the hop cap is the only loop bound.
 
-A server MUST NOT emit a redirect for a request that has an active [CEP-41](/reference/ceps/cep-41) open-ended stream. It SHOULD terminate the stream first (with `close` or `abort`): CEP-41 requires a streamed request to conclude with exactly one final JSON-RPC response, and a redirect is itself an error response, so emitting one mid-stream would collide with that requirement and leave both peers with unreleased stream state.
+A server MUST NOT emit a redirect for a request that has an active [CEP-41](/reference/ceps/cep-41) open-ended stream. It SHOULD terminate the stream first (with `close` or `abort`): CEP-41 requires an active stream to be terminated by a `close` or `abort` frame before the request's single final JSON-RPC response is sent, so a redirect while the stream is still active would strand it without a terminal frame, leaving both peers with unreleased stream state.
 
 ### Client Behavior
 
@@ -86,6 +86,8 @@ If `relays` is provided and `target` is not reachable on those relays, the clien
 If `target` is unreachable, the client SHOULD surface the redirect as an error to the caller. It SHOULD NOT silently fall back to the original server, which would defeat the redirect for both load-balancing and privacy use cases.
 
 A client MUST cap the length of redirect chains it follows for a single original request (for example, at most 5 consecutive redirects for the same original request) to prevent loops or amplification. The cap is scoped per original request, not per session: independent requests that each receive one redirect do not count against each other. Once the cap is reached, the client MUST surface the final redirect as an error rather than follow it further.
+
+If a client receives a `-32044` for a request that still has an active [CEP-41](/reference/ceps/cep-41) stream (the server did not terminate it first), the client SHOULD treat that stream as failed — release its local stream state (the `progressToken` and any buffered fragments) and surface the failure to the caller — then follow the redirect normally; the re-issued request starts a fresh stream on `target`. A stricter client MAY refuse to follow a redirect from a server that has just violated the protocol.
 
 A client that does not recognize `-32044` surfaces it as an ordinary JSON-RPC error. This is safe degradation, not silent failure.
 
