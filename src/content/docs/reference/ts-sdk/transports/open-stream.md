@@ -256,7 +256,7 @@ await server.connect(transport);
 
 This example shows the full producer-side shape:
 
-- an MCP server created with [`McpServer`](/reference/ts-sdk/transports/open-stream.md:144)
+- an MCP server created with `McpServer`
 - a [`NostrServerTransport`](src/transport/nostr-server-transport.ts) with `openStream.enabled`
 - a registered tool that reads the injected stream writer from `extra._meta.stream`
 - a server-managed [`OpenStreamWriter`](src/transport/open-stream/writer.ts:26) that publishes CEP-41 frames while the tool is running

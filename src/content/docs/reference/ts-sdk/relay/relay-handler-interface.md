@@ -32,7 +32,7 @@ A critical aspect of the `RelayHandler` interface is that the `subscribe` method
 
 ## Interface Definition
 
-The `RelayHandler` interface is defined in [`core/interfaces.ts`](/core/interfaces#relayhandler) and includes several key methods:
+The `RelayHandler` interface is defined in [`core/interfaces.ts`](/reference/ts-sdk/core/interfaces#relayhandler) and includes several key methods:
 
 ```typescript
 export interface RelayHandler {
@@ -63,10 +63,10 @@ export interface RelayHandler {
 
 The SDK provides multiple relay handler implementations depending on how much control and resilience you need.
 
-- **[ApplesauceRelayPool](/relay/applesauce-relay-pool)**: The preferred production-oriented implementation, with richer relay management features.
-- **[Custom Relay Handler](/relay/custom-relay-handler)**: For creating custom relay handlers that integrate with specific relay management systems, such as auth relays or custom caching.
+- **[ApplesauceRelayPool](/reference/ts-sdk/relay/applesauce-relay-pool)**: The preferred production-oriented implementation, with richer relay management features.
+- **[Custom Relay Handler](/reference/ts-sdk/relay/custom-relay-handler)**: For creating custom relay handlers that integrate with specific relay management systems, such as auth relays or custom caching.
 
 ## Next Steps
 
-- Learn about the recommended production implementation: **[ApplesauceRelayPool](/relay/applesauce-relay-pool)**
-- Learn how to create your own: **[Custom Relay Handler](/relay/custom-relay-handler)**
+- Learn about the recommended production implementation: **[ApplesauceRelayPool](/reference/ts-sdk/relay/applesauce-relay-pool)**
+- Learn how to create your own: **[Custom Relay Handler](/reference/ts-sdk/relay/custom-relay-handler)**

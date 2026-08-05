@@ -34,8 +34,8 @@ export interface NostrSigner {
 
 Any object that implements this interface can be used to sign events, allowing you to integrate with various key management systems, such as web, hardware wallets or remote signing services. The SDK provides a default implementation, `PrivateKeySigner`, which signs events using a raw private key.
 
-- **Learn more:** [`NostrSigner` Deep Dive](/signer/nostr-signer-interface/)
-- **Default Implementation:** [`PrivateKeySigner`](/signer/private-key-signer/)
+- **Learn more:** [`NostrSigner` Deep Dive](/reference/ts-sdk/signer/nostr-signer-interface)
+- **Default Implementation:** [`PrivateKeySigner`](/reference/ts-sdk/signer/private-key-signer)
 
 ## `RelayHandler`
 
@@ -63,8 +63,8 @@ export interface RelayHandler {
 
 By implementing this interface, you can create custom relay management logic, such as sophisticated relay selection strategies or custom reconnection policies. The SDK recommends `ApplesauceRelayPool` for current projects.
 
-- **Learn more:** [`RelayHandler` Deep Dive](/relay/relay-handler-interface)
-- **Recommended Implementation:** [`ApplesauceRelayPool`](/relay/applesauce-relay-pool)
+- **Learn more:** [`RelayHandler` Deep Dive](/reference/ts-sdk/relay/relay-handler-interface)
+- **Recommended Implementation:** [`ApplesauceRelayPool`](/reference/ts-sdk/relay/applesauce-relay-pool)
 
 Some concrete transports may expose more ergonomic public APIs than the base relay abstraction alone suggests. For example, the client transport can resolve operational relays through `nprofile` hints and CEP-17 discovery, so its public options allow omitting `relayHandler` even though the base transport normalizes one internally.
 
@@ -82,7 +82,7 @@ export enum EncryptionMode {
 
 This enum is used to configure the encryption behavior of the `NostrClientTransport` and `NostrServerTransport`.
 
-- **Learn more:** [Encryption](/core/encryption)
+- **Learn more:** [Encryption](/reference/ts-sdk/core/encryption)
 
 ## `ServerInfo`
 

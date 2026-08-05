@@ -5,7 +5,7 @@ description: A server-side component for exposing MCP servers over Nostr.
 
 # Nostr Server Transport
 
-The `NostrServerTransport` is the server-side counterpart to the [`NostrClientTransport`](/transports/nostr-client-transport). It allows an MCP server to expose its capabilities to the Nostr network, making them discoverable and usable by any Nostr-enabled client. Like the client transport, it implements the `Transport` interface from the `@modelcontextprotocol/sdk`.
+The `NostrServerTransport` is the server-side counterpart to the [`NostrClientTransport`](/reference/ts-sdk/transports/nostr-client-transport). It allows an MCP server to expose its capabilities to the Nostr network, making them discoverable and usable by any Nostr-enabled client. Like the client transport, it implements the `Transport` interface from the `@modelcontextprotocol/sdk`.
 
 ## Overview
 
@@ -313,7 +313,7 @@ console.log('MCP server is running and available on Nostr.');
 // To shut down: await mcpServer.close();
 ```
 
-> **Note**: The `relayHandler` option also accepts a `string[]` of relay URLs, in which case an `ApplesauceRelayPool` will be created automatically. See the [Base Nostr Transport](/transports/base-nostr-transport) documentation for details.
+> **Note**: The `relayHandler` option also accepts a `string[]` of relay URLs, in which case an `ApplesauceRelayPool` will be created automatically. See the [Base Nostr Transport](/reference/ts-sdk/transports/base-nostr-transport) documentation for details.
 
 ## CEP-15 Common Tool Schemas
 
@@ -620,4 +620,4 @@ Guidance:
 
 ## Next Steps
 
-Now that you understand how the transports work, let's dive into the **[Signer](/signer/nostr-signer-interface)**, the component responsible for cryptographic signatures.
+Now that you understand how the transports work, let's dive into the **[Signer](/reference/ts-sdk/signer/nostr-signer-interface)**, the component responsible for cryptographic signatures.

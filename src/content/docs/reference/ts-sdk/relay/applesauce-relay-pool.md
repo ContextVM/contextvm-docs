@@ -5,7 +5,7 @@ description: An advanced relay handler implementation using the applesauce-relay
 
 # `ApplesauceRelayPool`
 
-The `ApplesauceRelayPool` is an advanced implementation of the [`RelayHandler`](/relay/relay-handler-interface) interface that uses the `applesauce-relay` library. It provides sophisticated relay management with automatic reconnection, connection monitoring, and robust subscription handling.
+The `ApplesauceRelayPool` is an advanced implementation of the [`RelayHandler`](/reference/ts-sdk/relay/relay-handler-interface) interface that uses the `applesauce-relay` library. It provides sophisticated relay management with automatic reconnection, connection monitoring, and robust subscription handling.
 
 ## Overview
 
@@ -112,5 +112,5 @@ Consider using `ApplesauceRelayPool` when:
 
 ## Next Steps
 
-- Learn how to build a custom relay handler: **[Custom Relay Handler](/relay/custom-relay-handler)**
-- Understand the relay handler interface: **[Relay Handler Interface](/relay/relay-handler-interface)**
+- Learn how to build a custom relay handler: **[Custom Relay Handler](/reference/ts-sdk/relay/custom-relay-handler)**
+- Understand the relay handler interface: **[Relay Handler Interface](/reference/ts-sdk/relay/relay-handler-interface)**

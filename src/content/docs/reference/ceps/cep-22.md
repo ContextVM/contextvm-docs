@@ -35,7 +35,7 @@ This CEP is focused on **bounded** transfer only. It does not define open-ended 
 
 ### Capability Advertisement and Negotiation
 
-Support MAY be advertised through the same additive discovery surfaces used by ContextVM features, following [`src/content/docs/spec/ceps/cep-6.md`](src/content/docs/spec/ceps/cep-6.md) and [`src/content/docs/spec/ceps/cep-19.md`](src/content/docs/spec/ceps/cep-19.md).
+Support MAY be advertised through the same additive discovery surfaces used by ContextVM features, following [`CEP-6`](/reference/ceps/cep-6) and [`CEP-19`](/reference/ceps/cep-19).
 
 Peers MAY advertise support using `support_oversized_transfer` tags.
 

@@ -5,7 +5,7 @@ description: Learn how to create a custom relay handler for the @contextvm/sdk.
 
 # Custom Relay Handler Development
 
-The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandler`](/relay/relay-handler-interface) interface, allows developers to implement custom logic for managing Nostr-relay connections.
+The `@contextvm/sdk`'s-pluggable architecture, centered around the [`RelayHandler`](/reference/ts-sdk/relay/relay-handler-interface) interface, allows developers to implement custom logic for managing Nostr-relay connections.
 
 ## Why Create a Custom Relay Handler?
 
@@ -82,7 +82,7 @@ class MyRelayHandler implements RelayHandler {
 }
 ```
 
-This pattern is used by [`ApplesauceRelayPool`](/relay/applesauce-relay-pool) implementations.
+This pattern is used by [`ApplesauceRelayPool`](/reference/ts-sdk/relay/applesauce-relay-pool) implementations.
 
 ## Using Your Custom Relay Handler
 
@@ -92,5 +92,5 @@ Once your custom handler class is created, you can instantiate it and pass it to
 
 With the `Relay` component covered, we will now look at the high-level bridging components provided by the SDK.
 
-- **[Proxy](/proxy/overview)**
-- **[Gateway](/overview)**
+- **[Proxy](/reference/ts-sdk/proxy/overview)**
+- **[Gateway](/reference/ts-sdk/gateway/overview)**

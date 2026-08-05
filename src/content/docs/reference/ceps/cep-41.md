@@ -9,7 +9,7 @@ description: Open-ended streams for ContextVM using progress-notification framin
 
 This CEP defines an additive transport profile for open-ended streaming over ContextVM. It reuses MCP `notifications/progress` as the transfer envelope and uses the request `progressToken` as the stream identifier.
 
-Unlike bounded oversized-payload transfer in [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md), this CEP defines a long-lived stream model where ordered fragments may continue until the sender explicitly closes or aborts the stream. The stream payload itself is the primary incremental output, but it does not replace the final JSON-RPC response for the originating request.
+Unlike bounded oversized-payload transfer in [`CEP-22`](/reference/ceps/cep-22), this CEP defines a long-lived stream model where ordered fragments may continue until the sender explicitly closes or aborts the stream. The stream payload itself is the primary incremental output, but it does not replace the final JSON-RPC response for the originating request.
 
 This CEP is intended for cases where data is naturally incremental, long-lived, or unbounded, and where representing the result as one reassembled MCP request or response would be artificial or inefficient.
 
@@ -17,7 +17,7 @@ This CEP is intended for cases where data is naturally incremental, long-lived, 
 
 ### Overview
 
-ContextVM currently transports MCP JSON-RPC messages through Nostr events. That model fits ordinary request and response exchange well, and [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md) extends it for bounded reassembly of oversized logical messages.
+ContextVM currently transports MCP JSON-RPC messages through Nostr events. That model fits ordinary request and response exchange well, and [`CEP-22`](/reference/ceps/cep-22) extends it for bounded reassembly of oversized logical messages.
 
 Some use cases are different in nature:
 
@@ -35,11 +35,11 @@ This CEP defines an open-ended stream profile that:
 - treats the stream itself as the payload rather than a bounded reassembly artifact
 - allows receivers to process fragments incrementally as they arrive
 
-This CEP is intentionally distinct from the bounded reassembly mechanism in [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md). Implementations MUST NOT treat these two profiles as interchangeable.
+This CEP is intentionally distinct from the bounded reassembly mechanism in [`CEP-22`](/reference/ceps/cep-22). Implementations MUST NOT treat these two profiles as interchangeable.
 
 ### Capability Advertisement and Negotiation
 
-Support for open-ended stream transfer MAY be advertised through the same additive discovery surfaces already used by ContextVM capabilities and transport features, following the patterns in [`CEP-35`](/src/content/docs/spec/ceps/informational/cep-35.md).
+Support for open-ended stream transfer MAY be advertised through the same additive discovery surfaces already used by ContextVM capabilities and transport features, following the patterns in [`CEP-35`](/reference/ceps/informational/cep-35).
 
 Peers MAY advertise support using one or more `support_open_stream` tags.
 
@@ -166,7 +166,7 @@ Rules:
 
 `accept` is conditional bootstrap confirmation, not a universal requirement.
 
-This mirrors the `accept` semantics defined in [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md), so implementations can reuse the same conceptual model for conditional bootstrap confirmation and avoid semantic drift between the two transfer profiles.
+This mirrors the `accept` semantics defined in [`CEP-22`](/reference/ceps/cep-22), so implementations can reuse the same conceptual model for conditional bootstrap confirmation and avoid semantic drift between the two transfer profiles.
 
 - If the sender already knows that the receiver supports this CEP for the exchange through prior negotiation, explicit capability advertisement, or other valid context for the exchange, it MAY send `chunk` frames immediately after `start`.
 - If support is not yet known for the exchange, the sender MUST wait for `accept` before sending the first `chunk` frame.
@@ -186,7 +186,7 @@ Rules:
 - For open-stream frames, MCP `progress` is the normative stream-ordering field for all frames.
 - Each `chunk` frame MUST use a `progress` value greater than the preceding stream frame's `progress` value.
 - `chunkIndex` MUST start at `0` for the first `chunk` frame in the stream and increase contiguously by `1` for each subsequent `chunk` frame.
-- `data` carries one ordered fragment of the stream payload, following the same chunk-payload semantics as [`CEP-22`](/src/content/docs/spec/ceps/cep-22.md).
+- `data` carries one ordered fragment of the stream payload, following the same chunk-payload semantics as [`CEP-22`](/reference/ceps/cep-22).
 - Receivers MUST use `chunkIndex`, not `progress`, to validate chunk contiguity and payload completeness.
 - Receivers MAY buffer valid out-of-order `chunk` frames within bounded local limits and process them once the contiguous `chunkIndex` sequence resumes.
 - Receivers MAY track missing `chunkIndex` values as provisional gaps while the stream remains active.

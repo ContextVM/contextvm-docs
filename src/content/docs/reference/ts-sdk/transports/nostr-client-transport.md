@@ -87,13 +87,13 @@ console.log('Available tools:', tools);
 // await mcpClient.close();
 ```
 
-> **Note**: The `relayHandler` option also accepts a `string[]` of relay URLs, in which case an `ApplesauceRelayPool` will be created automatically. See the [Base Nostr Transport](/transports/base-nostr-transport) documentation for details.
+> **Note**: The `relayHandler` option also accepts a `string[]` of relay URLs, in which case an `ApplesauceRelayPool` will be created automatically. See the [Base Nostr Transport](/reference/ts-sdk/transports/base-nostr-transport) documentation for details.
 
 > **Note**: On the client transport, `relayHandler` is optional. If it is omitted, the transport can still resolve operational relays from `nprofile` relay hints or CEP-17 relay-list discovery.
 
 ### Identity input precedence
 
-[`NostrClientTransport`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:56) resolves server identity and relays conservatively:
+`NostrClientTransport` resolves server identity and relays conservatively:
 
 1. explicit operational relays from `relayHandler`
 2. relay hints embedded in `nprofile`
@@ -130,7 +130,7 @@ For requests that may receive progress notifications over a longer period, `rese
 
 ## Server Discovery and Relay Selection
 
-The client transport accepts a known [`serverPubkey`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:28) in multiple forms and can now resolve operational relays automatically when needed.
+The client transport accepts a known `serverPubkey` in multiple forms and can now resolve operational relays automatically when needed.
 
 Typical flow:
 
@@ -138,9 +138,9 @@ Typical flow:
 2. Else, if the server identity is an `nprofile` with relay hints, the transport uses those hints as the operational relay set.
 3. Else, the transport starts CEP-17 relay-list discovery and fallback operational relay probing in parallel.
 4. If CEP-17 returns a usable `kind:10002` relay list first, that authoritative result is used.
-5. If [`fallbackOperationalRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md) proves connectivity first while discovery is still unresolved, the transport proceeds with that non-authoritative relay set.
-6. If [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:31) is omitted, the transport still uses the SDK bootstrap relays for the CEP-17 lookup.
-7. The transport prefers unmarked `r` tags as the operational relay set, matching the recommended ContextVM profile in [`CEP-17`](contextvm-docs/src/content/docs/spec/ceps/cep-17.md:52).
+5. If `fallbackOperationalRelayUrls` proves connectivity first while discovery is still unresolved, the transport proceeds with that non-authoritative relay set.
+6. If `discoveryRelayUrls` is omitted, the transport still uses the SDK bootstrap relays for the CEP-17 lookup.
+7. The transport prefers unmarked `r` tags as the operational relay set, matching the recommended ContextVM profile in [`CEP-17`](/reference/ceps/cep-17).
 
 Example with discovery fallback:
 
@@ -185,9 +185,9 @@ In this case the client will attempt to resolve operational relays automatically
 
 ### Authoritative vs fallback relays
 
-- [`relayHandler`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:29) is authoritative and explicit.
-- [`discoveryRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md:31) identifies where the client should look for CEP-17 metadata.
-- [`fallbackOperationalRelayUrls`](contextvm-docs/src/content/docs/ts-sdk/transports/nostr-client-transport.md) is non-authoritative and only exists to reduce latency when discovery is slow or unresolved.
+- `relayHandler` is authoritative and explicit.
+- `discoveryRelayUrls` identifies where the client should look for CEP-17 metadata.
+- `fallbackOperationalRelayUrls` is non-authoritative and only exists to reduce latency when discovery is slow or unresolved.
 
 This separation keeps protocol correctness intact while still allowing practical connection recovery.
 
@@ -222,4 +222,4 @@ const clientNostrTransport = new NostrClientTransport({
 
 Next, we will look at the server-side counterpart to this transport:
 
-- **[Nostr Server Transport](/transports/nostr-server-transport)**: For exposing MCP servers to the Nostr network.
+- **[Nostr Server Transport](/reference/ts-sdk/transports/nostr-server-transport)**: For exposing MCP servers to the Nostr network.
