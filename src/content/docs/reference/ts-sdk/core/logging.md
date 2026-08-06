@@ -9,7 +9,7 @@ The SDK uses Pino for high-performance logging with structured JSON output. By d
 
 #### Basic Usage
 
-[`typescript`](src/content/docs/ts-sdk/core/logging.md:10)
+
 
 ```typescript
 import { createLogger } from '@contextvm/sdk/core';
@@ -23,7 +23,7 @@ logger.error('An error occurred', { error: 'details' });
 
 #### Configuration Options
 
-[`typescript`](src/content/docs/ts-sdk/core/logging.md:20)
+
 
 ```typescript
 import { createLogger, LoggerConfig } from '@contextvm/sdk/core';
@@ -53,7 +53,7 @@ The logger can be configured using environment variables, which is useful for ad
 
 ##### Configuration in Node.js
 
-[`bash`](src/content/docs/ts-sdk/core/logging.md:49)
+
 
 ```bash
 # Set log level to debug
@@ -68,7 +68,7 @@ LOG_ENABLED=false node app.js
 
 ##### Configuration in Browsers
 
-[`javascript`](src/content/docs/ts-sdk/core/logging.md:63)
+
 
 ```javascript
 // Set this in a <script> tag in your HTML or at the top of your entry point
@@ -81,7 +81,7 @@ logger.debug('This is a debug message.');
 
 #### Module-specific Loggers
 
-[`typescript`](src/content/docs/ts-sdk/core/logging.md:75)
+
 
 ```typescript
 const baseLogger = createLogger('my-app');
@@ -112,7 +112,7 @@ dbLogger.debug('Query executed', { query: 'SELECT * FROM users' });
 
 #### Examples (Best Practice)
 
-[`typescript`](src/content/docs/ts-sdk/core/logging.md:105)
+
 
 ```typescript
 logger.info('payment.processed', {
@@ -143,4 +143,4 @@ try {
 
 ---
 
-See also: [`src/content/docs/ts-sdk/core/interfaces.md`](src/content/docs/ts-sdk/core/interfaces.md:1)
+See also: [Core Interfaces](/reference/ts-sdk/core/interfaces)
