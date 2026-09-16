@@ -124,6 +124,8 @@ Some transport features are activated per request, not just per transport instan
 - [Oversized Transfer](/reference/ts-sdk/transports/oversized-transfer) uses the MCP request `progressToken` as the CEP-22 transfer identifier.
 - [Open Stream](/reference/ts-sdk/transports/open-stream) uses the MCP request `progressToken` as the CEP-41 stream identifier.
 
+Open Stream can also run **client to server**: after sending a request that carries a `progressToken`, call `await transport.startOpenStream(progressToken)` to publish the CEP-41 `start` frame (gated on the server's `accept`) and receive the paired session and payload writer. See [Client-Started Streams](/reference/ts-sdk/transports/open-stream#client-started-streams-client-to-server).
+
 When you use the MCP TypeScript SDK through high-level request APIs and provide an `onprogress` callback, the SDK usually creates that token automatically. When you construct raw requests manually, you must provide the token yourself if you want request-scoped progress-based transport features to activate.
 
 For requests that may receive progress notifications over a longer period, `resetTimeoutOnProgress: true` is the recommended client-side setting. On the MCP TypeScript SDK low-level `client.request()` path, that timeout-reset behavior is effective when `onprogress` is also provided.
