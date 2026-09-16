@@ -18,6 +18,7 @@ The transport exports the following CEP-41 building blocks:
 - [`OpenStreamReceiver`](src/transport/open-stream/receiver.ts) for routing inbound progress notifications into tracked sessions
 - [`OpenStreamRegistry`](src/transport/open-stream/registry.ts) for managing multiple active sessions by `progressToken`
 - [`callToolStream()`](src/transport/call-tool-stream.ts:28) for client-side MCP tool calls that return both the final tool result and the paired open stream handle
+- [`ClientOpenStreamHandle`](src/transport/nostr-client/open-stream-factory.ts) for client-started streams: a paired session and writer returned by [`startOpenStream()`](src/transport/nostr-client-transport.ts)
 
 These APIs are exported from [`src/transport/index.ts`](src/transport/index.ts) and re-exported from [`src/index.ts`](src/index.ts), so consumers can import them directly from `@contextvm/sdk`.
 
@@ -338,6 +339,64 @@ server.registerTool(
 ```
 
 For this style of usage, think of CEP-41 as the transport-safe envelope for incremental application events. The stream chunks are the live payload, while the final MCP response still communicates the request outcome.
+
+## Client-Started Streams (Client to Server)
+
+Everything above streams **server to client**: the tool produces, the client consumes. CEP-41 also allows the reverse direction — the client streams payload **into** a tool — and the SDK supports it through [`NostrClientTransport.startOpenStream(progressToken)`](src/transport/nostr-client-transport.ts).
+
+The flow:
+
+1. send the MCP request with a `progressToken` (e.g. via `onprogress`, or `_meta.progressToken` on a manual request)
+2. call `await transport.startOpenStream(progressToken)` — this publishes `start` as the first frame on the client's own outbound sequence and **waits for the server's `accept`** before resolving, as CEP-41 requires
+3. use the returned writer to send ordered chunks, then terminate:
+
+```typescript
+const { session, writer } =
+  await clientTransport.startOpenStream(progressToken);
+
+await writer.write('hello ');
+await writer.write('world');
+await writer.close();
+
+const result = await pendingCall; // final MCP response, as usual
+```
+
+`startOpenStream()` resolves to a `ClientOpenStreamHandle`:
+
+| Property  | Meaning                                                                       |
+| --------- | ----------------------------------------------------------------------------- |
+| `session` | The [`OpenStreamSession`](src/transport/open-stream/session.ts) receiving the server's control frames; owns keepalive |
+| `writer`  | An [`OpenStreamWriter`](src/transport/open-stream/writer.ts) whose `chunk`/`close`/`abort` frames share the session's per-sender sequence |
+
+On the server, the tool consumes the stream through the lazy iterator injected as `_meta.inputStream` — symmetric to the `_meta.stream` writer used for output:
+
+```typescript
+server.registerTool(
+  'ingestStream',
+  { inputSchema: z.object({ topic: z.string() }) },
+  async (_args, extra) => {
+    const inputStream = (
+      extra._meta as {
+        inputStream?: AsyncIterable<{ value: string; chunkIndex: number }>;
+      } | undefined
+    )?.inputStream;
+
+    let text = '';
+    for await (const chunk of inputStream ?? []) {
+      text += chunk.value;
+    }
+
+    return { content: [{ type: 'text', text: `got:${text}` }] };
+  },
+);
+```
+
+Semantics worth knowing:
+
+- **One token, one payload sender.** A given stream is either client-to-server input or server-to-client output for a given exchange; do not start a client stream on a token whose tool also writes output through `_meta.stream`. The session model rejects a second `start`, so misuse fails loudly with an abort rather than corrupting the stream.
+- **Keepalive is owned by the session.** The returned writer has no timers of its own; the session pings and answers pongs on the same shared per-sender sequence.
+- **Late reads are safe.** `_meta.inputStream` resolves when the client's `start` arrives, and streams that finish before the tool begins reading are still drained — buffered chunks survive until iterated.
+- **Bounded oversized payloads are a different profile.** For moving one bounded oversized request payload, prefer [Oversized Transfer](/reference/ts-sdk/transports/oversized-transfer) (CEP-22); the two profiles are intentionally not interchangeable.
 
 ## Receiver and Registry
 
