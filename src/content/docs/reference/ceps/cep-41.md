@@ -110,6 +110,8 @@ Example conceptual envelope:
 
 The sender MUST use `progress` values that increase monotonically across the stream, consistent with MCP progress rules. `progress` orders all stream frames, including control frames, and MUST NOT be interpreted as a chunk counter.
 
+Progress sequences are **per-sender**: each peer numbers its own outbound frames for the stream on an independent counter, beginning at `1`. A frame's `progress` MUST only be compared against frames sent by the same peer; two peers exchanging frames on the same stream do not share one sequence.
+
 ### Frame Types
 
 This CEP defines seven frame types:
@@ -159,6 +161,7 @@ This frame is primarily intended for bootstrap in stateless sender-to-receiver f
 Rules:
 
 - A receiver MAY send `accept` after `start`.
+- The accepting peer sends `accept` on its own outbound progress sequence for the stream (`progress: 1`, unless it has already sent frames on that stream).
 - A sender that is required to wait for confirmation MUST NOT send `chunk` frames before receiving `accept`.
 - `accept` SHOULD remain minimal and does not negotiate additional stream parameters in v1.
 
@@ -184,7 +187,7 @@ Required fields:
 Rules:
 
 - For open-stream frames, MCP `progress` is the normative stream-ordering field for all frames.
-- Each `chunk` frame MUST use a `progress` value greater than the preceding stream frame's `progress` value.
+- Each `chunk` frame MUST use a `progress` value greater than the `progress` value of the sender's own preceding frame for the stream.
 - `chunkIndex` MUST start at `0` for the first `chunk` frame in the stream and increase contiguously by `1` for each subsequent `chunk` frame.
 - `data` carries one ordered fragment of the stream payload, following the same chunk-payload semantics as [`CEP-22`](/reference/ceps/cep-22).
 - Receivers MUST use `chunkIndex`, not `progress`, to validate chunk contiguity and payload completeness.
@@ -219,6 +222,7 @@ Rules:
 
 - A receiver of `ping` MUST respond with `pong` for the same stream unless the stream has already terminated.
 - `pong.nonce` MUST match the triggering `ping.nonce`.
+- `pong.progress` is taken from the pong sender's own outbound progress sequence. Pongs are matched to pings by `nonce` only; receivers MUST NOT require any ordering relationship between `pong.progress` and `ping.progress`.
 - `pong` acknowledges peer responsiveness only and does not acknowledge delivery or processing of stream payload.
 - A `pong` with an unknown, duplicate, expired, or already-satisfied `nonce` is invalid for keepalive matching and MUST NOT be treated as evidence of stream liveness.
 - Receivers MAY ignore invalid `pong` frames and MAY apply local logging or anti-abuse policy to them.
@@ -260,7 +264,7 @@ Rules:
 
 #### Ordering and Lifecycle
 
-Receivers MUST validate stream ordering using MCP `progress`.
+Receivers MUST validate stream ordering using MCP `progress`, per sender.
 
 To fail a stream means to treat it as unsuccessfully terminated, release local state for it, and NOT treat it as successfully completed. A peer that fails a stream SHOULD send `abort` with an advisory `reason` when it is still able to transmit.
 
@@ -268,13 +272,13 @@ Rules:
 
 - a stream MUST begin with `start`
 - if confirmation is required for the stream, `accept` MUST be received before the first `chunk`
-- `progress` values for open-stream frames MUST increase monotonically across the stream
+- `progress` values MUST increase monotonically within each peer's outbound frames for the stream
 - receivers MUST treat `progress` as the canonical frame-ordering field, not as a chunk count
 - `chunk` frames MUST include contiguous `chunkIndex` values beginning at `0`
 - receivers MAY buffer valid out-of-order `chunk` frames within bounded local limits while awaiting missing earlier `chunkIndex` values
 - receivers MAY treat missing `chunkIndex` positions as provisional gaps while the stream remains active
 - receivers MUST NOT treat a gap alone as terminal failure while the stream remains active, except under local timeout or resource policy
-- `pong` MUST correspond to an earlier `ping` on the same stream
+- `pong` MUST correspond to an earlier `ping` on the same stream; its `progress` comes from the responder's own outbound sequence
 - a second `start` received for an already active `progressToken` MUST cause the stream to fail
 - successful completion requires `close`
 - if `close.lastChunkIndex` is present, receivers MUST treat it as the completeness bound for the stream payload
@@ -496,7 +500,7 @@ Server confirms support:
   "method": "notifications/progress",
   "params": {
     "progressToken": "req-789",
-    "progress": 2,
+    "progress": 1,
     "message": "client stream accepted",
     "cvm": {
       "type": "open-stream",
@@ -505,6 +509,8 @@ Server confirms support:
   }
 }
 ```
+
+The server's `accept` is numbered on the server's own outbound sequence, not the client's.
 
 After `accept`, the client sends `chunk` frames and eventually terminates the stream with `close` or `abort`. If the stream is associated with a JSON-RPC request, the exchange still concludes with the final JSON-RPC response for that request.
 
