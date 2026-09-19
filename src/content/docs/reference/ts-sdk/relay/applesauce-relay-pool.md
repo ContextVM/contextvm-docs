@@ -5,110 +5,110 @@ description: An advanced relay handler implementation using the applesauce-relay
 
 # `ApplesauceRelayPool`
 
-The `ApplesauceRelayPool` is an advanced implementation of the [`RelayHandler`](/reference/ts-sdk/relay/relay-handler-interface) interface that uses the `applesauce-relay` library. It provides sophisticated relay management with automatic reconnection, connection monitoring, and robust subscription handling.
+The `ApplesauceRelayPool` is an advanced implementation of the [`RelayHandler`](/reference/ts-sdk/relay/relay-handler-interface) interface that uses the `applesauce-relay` library. It provides sophisticated relay management with automatic reconnection, liveness monitoring, and robust subscription handling.
 
 ## Overview
 
-- **Automatic Connection Management**: Uses `RelayPool` for efficient connection handling
-- **Connection Monitoring**: Monitors relay connections and automatically resubscribes when connections are lost
-- **Retry Logic**: Built-in retry mechanisms for failed operations
-- **Observable-based Architecture**: Leverages RxJS-style observables for event handling
-- **Advanced Subscription Management**: Persistent subscriptions with automatic reconnection
+- **Automatic Connection Management**: Per-relay reconnect backoff, so a relay coming back online is picked up quickly.
+- **Liveness Monitoring**: A periodic `PING_FILTER` round-trip detects half-open sockets (e.g. after an app is backgrounded) and triggers a full rebuild with subscription replay. Also available on demand via [`probe()`](#probe-timeoutms-number-promise-boolean).
+- **First-Ack Publish**: `publish()` resolves on the first accepted `OK`, so one unresponsive relay cannot set the latency floor for the pool (see [Publish acknowledgement modes](#publish-acknowledgement-modes)).
+- **Advanced Subscription Management**: Subscriptions are tracked with replay intent and restored after every rebuild.
 
-This implementation is ideal for applications that require more sophisticated relay management and better resilience against network interruptions.
+This implementation is ideal for applications that require sophisticated relay management and better resilience against network interruptions.
 
-## `constructor(relayUrls: string[])`
+## `constructor(relayUrls: string[], opts?)`
 
-The constructor takes a single argument:
-
-- **`relayUrls`**: An array of strings, where each string is the URL of a Nostr relay (e.g., `wss://relay.damus.io`).
-
-## Usage Example
+The constructor takes an array of relay URLs and optional configuration:
 
 ```typescript
 import { ApplesauceRelayPool } from '@contextvm/sdk';
 import { NostrClientTransport } from '@contextvm/sdk';
 
-// 3. Pass the instance to a transport
+const pool = new ApplesauceRelayPool(
+  ['wss://relay1.com', 'wss://relay2.io'],
+  {
+    // Liveness ping cadence (default: 120_000)
+    pingFrequencyMs: 30_000,
+    // Per-relay probe timeout (default: 20_000)
+    pingTimeoutMs: 2_500,
+    // Reconnect backoff (defaults: 3_000 / 30_000)
+    reconnectBaseDelayMs: 3_000,
+    reconnectMaxDelayMs: 30_000,
+    // Publish policy (defaults: timeout 10_000, retries 1, ackMode 'first-ack')
+    publishOptions: {
+      timeout: 10_000,
+      retries: 1,
+      ackMode: 'first-ack',
+    },
+    // Options passed through to each underlying applesauce-relay Relay
+    relayOptions: {},
+  },
+);
+
+// Pass the instance to a transport
 const transport = new NostrClientTransport({
-  relayHandler: new ApplesauceRelayPool([
-    'wss://relay1.com',
-    'wss://relay2.io',
-  ]),
+  relayHandler: pool,
   // ... other options
 });
 ```
 
 ## How It Works
 
-The `ApplesauceRelayPool` implements the `RelayHandler` interface using the `applesauce-relay` library:
-
 ### Connection Management
 
-- **`connect()`**: Validates relay URLs and initializes the `RelayPool`. The pool automatically manages connections to relays as needed.
-- **`disconnect()`**: Closes all active subscriptions and clears internal state. Note that the underlying `RelayPool` manages connections automatically.
+- **`connect()`**: Validates relay URLs and initializes the relay group.
+- **`disconnect()`**: Terminal teardown — cancels in-flight publish retries, stops the liveness monitor, and closes all relays. The pool never resurrects after this.
 
 ### Event Publishing
 
-- **`publish(event, { abortSignal })`**: Uses `relayGroup.publish()` with retry logic. The method supports cancellation via `AbortSignal`.
+- **`publish(event, { abortSignal })`**: Sends the event to every relay and resolves per the configured ack mode (see below). Publishes are retried indefinitely until at least one relay accepts — MCP round-trips cannot complete otherwise. An explicit rejection (`OK: false`) from a connected relay is terminal and throws `'Relay rejected publish'`; a relay that simply never answered (half-open socket) is retried, never misclassified as a rejection.
+
+#### Publish acknowledgement modes
+
+- **`'first-ack'` (default)**: Every relay receives the `EVENT` frame up front, and the publish resolves as soon as the **first** relay accepts the event. Slower relays are never waited on — their deliveries still complete in the background, but their acknowledgements are discarded. One half-open relay can therefore no longer stall every RPC on the pool. This matches the semantics used by other Nostr clients (e.g. nostr-tools resolves on first `OK`).
+- **`'all'`**: Waits for every relay's attempt ladder to settle before resolving (pre-0.14 semantics). Use this if you depend on settled per-relay outcomes rather than latency.
 
 ### Subscription Management
 
-- **`subscribe(filters, onEvent, onEose)`**: Creates a subscription using `relayGroup.subscription()` with automatic reconnection. Returns an unsubscribe function for that specific subscription, and subscriptions are tracked internally for lifecycle management.
-- **`unsubscribe()`**: Closes all active subscriptions and clears the internal subscription tracking.
+- **`subscribe(filters, onEvent, onEose)`**: Subscribes via the relay group's raw REQ stream (no relay-layer dedup; the transport layer owns deduplication). Returns an unsubscribe function; subscription intent is preserved across rebuilds.
+- **`unsubscribe()`**: Closes all active subscriptions and clears tracking.
 
-### Advanced Features
+### Liveness Monitoring
 
-#### Connection Monitoring
+The liveness monitor starts lazily on the first subscription and stops when the last one unsubscribes (an idle pool legitimately has no live sockets). Every `pingFrequencyMs` it probes each relay that reports `connected` with a dummy `REQ` (`PING_FILTER`) and expects an `EOSE` within `pingTimeoutMs`. Any timeout triggers a **rebuild**: all relays are replaced and every stored subscription is replayed. In-flight publishes ride an "ambiguous during rebuild" retry path, so a probe is safe alongside active traffic.
 
-The pool automatically monitors relay connections and triggers resubscription when connections are lost:
+## `probe(timeoutMs?: number): Promise<boolean>`
+
+Probes pool liveness on demand using the same mechanism as the periodic monitor:
+
+- every connected relay must answer a `PING_FILTER` round-trip within `timeoutMs` (default: the configured `pingTimeoutMs`);
+- any failure triggers a rebuild (subscriptions replayed) and the rebuild **completes before `false` resolves**, so the caller's next call lands on fresh sockets;
+- resolves `true` when healthy — including the vacuous case of no active subscriptions — and `false` (never throws) otherwise, so callers can count failures;
+- always resolves `false` after `disconnect()`;
+- read-only when healthy; safe alongside in-flight calls, the periodic monitor, and concurrent probes (which share a single in-flight probe).
+
+Typical use: fire it on app "attention events" (browser `visibilitychange`, mobile resume, native `appStateChange`) to convert a post-suspend 8–20s first-RPC failure into a `pingTimeoutMs`-bounded background heal:
 
 ```typescript
-private setupConnectionMonitoring(): void {
-  this.pool.relays$.subscribe((relays) => {
-    relays.forEach((relay) => {
-      relay.connected$.subscribe((connected) => {
-        if (!connected) {
-          this.resubscribeAll();
-        }
-      });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    // ~2.5s bounded heal with pingTimeoutMs: 2_500
+    void pool.probe().then((healthy) => {
+      if (!healthy) {
+        // optional: surface degraded state / count failures
+      }
     });
-  });
-}
+  }
+});
 ```
-
-#### Automatic Resubscription
-
-When a relay connection is lost and reestablished, the pool automatically resubscribes to all active subscriptions:
-
-```typescript
-private resubscribeAll(): void {
-  this.subscriptions.forEach((sub) => {
-    if (sub.closer) sub.closer.unsubscribe();
-    sub.closer = this.createSubscription(
-      sub.filters,
-      sub.onEvent,
-      sub.onEose,
-    );
-  });
-}
-```
-
-#### Error Handling
-
-The implementation includes comprehensive error handling for both publishing and subscription operations:
-
-- **Publish Errors**: Logs warnings for failed publishes but doesn't reject the Promise unless there's a critical error
-- **Subscription Errors**: Removes failed subscriptions from tracking and logs the error
 
 ## When to Use ApplesauceRelayPool
 
 Consider using `ApplesauceRelayPool` when:
 
-- You need robust connection management and automatic reconnection
-- Your application requires high availability and resilience
-- You want advanced subscription management with automatic recovery
-- You're building a production application that needs to handle network interruptions gracefully
+- You need robust connection management with half-open socket detection (mobile/backgrounded apps).
+- Your application requires high availability and resilience across network switches and suspensions.
+- You want publish latency bounded by the healthiest relay, not the slowest one.
 
 ## Next Steps
 
