@@ -1,11 +1,13 @@
 ---
 title: Skills Overview
-description: An overview of CVMI skills - LLM-optimized guides for building with ContextVM.
+description: Install and use CVMI skills — documentation packages with templates, references, and LLM-oriented guides for building with ContextVM.
 ---
 
 # Skills Overview
 
-CVMI skills are LLM-optimized guides that help AI assistants provide accurate guidance for building with ContextVM. Unlike traditional documentation, skills are designed to give AI the right context at the right time.
+CVMI skills are documentation packages you install locally. Each skill includes code templates, reference implementations, and focused guides for a ContextVM topic. They are useful if you are reading and copying from those materials yourself, and they also give AI assistants the right context when you are working with one.
+
+Unlike the full documentation site, a skill is a small, topic-scoped bundle: install only what you are building with.
 
 ## What are Skills?
 
@@ -40,14 +42,20 @@ npx cvmi add overview
 npx cvmi add server-dev
 ```
 
+Pass more than one name to install several skills at once:
+
+```bash
+npx cvmi add overview payments deployment
+```
+
 Skills are installed to `~/.agents/` and managed through the CVMI CLI.
 
 ## When to Use Skills
 
-Use skills when:
+Install a skill when you want a compact, copyable package for a specific task:
 
-- Working with an AI assistant to build with ContextVM
-- The AI has the relevant skill installed
-- You need context-specific guidance on implementation
+- Building a server, client, payments flow, or deployment and you want the templates plus references in one place
+- Reading implementation patterns without paging through the full docs
+- Working with an AI assistant that should follow ContextVM conventions
 
-The skills provide the AI with detailed implementation knowledge that can guide you through building servers, clients, payments integration, and deployment.
+The skills give you (and any assistant you use) detailed implementation knowledge for servers, clients, payments, and deployment.

@@ -21,7 +21,7 @@ The easiest way to use CVMI is with `npx`, which downloads and runs the latest v
 npx cvmi add
 
 # Install a specific skill
-npx cvmi add --skill overview
+npx cvmi add overview
 ```
 
 Using `npx` ensures you always have the latest version without managing global installations.
@@ -39,9 +39,9 @@ npx cvmi add
 Install a specific skill directly:
 
 ```bash
-npx cvmi add --skill overview
-npx cvmi add --skill typescript-sdk
-npx cvmi add --skill server-dev
+npx cvmi add overview
+npx cvmi add typescript-sdk
+npx cvmi add server-dev
 ```
 
 ### Run a Gateway

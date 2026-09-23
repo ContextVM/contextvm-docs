@@ -14,14 +14,20 @@ Install ContextVM skills. Skills provide documentation, templates, and reference
 ### Usage
 
 ```bash
-npx cvmi add [options]
+npx cvmi add [skill...] [options]
 ```
+
+### Arguments
+
+| Argument     | Description                                      |
+| ------------ | ------------------------------------------------ |
+| `skill`      | Skill name to install. Repeat to install several. Omit to pick interactively. |
 
 ### Options
 
-| Option           | Description                      |
-| ---------------- | -------------------------------- |
-| `--skill <name>` | Install a specific skill by name |
+| Option           | Description                                      |
+| ---------------- | ------------------------------------------------ |
+| `--skill <name>` | Same as a positional skill name (repeatable)     |
 
 ### Examples
 
@@ -34,16 +40,16 @@ npx cvmi add
 **Install a specific skill**:
 
 ```bash
-npx cvmi add --skill overview
-npx cvmi add --skill typescript-sdk
-npx cvmi add --skill server-dev
-npx cvmi add --skill client-dev
+npx cvmi add overview
+npx cvmi add typescript-sdk
+npx cvmi add server-dev
+npx cvmi add client-dev
 ```
 
 **Install multiple skills**:
 
 ```bash
-npx cvmi add --skill overview --skill payments --skill deployment
+npx cvmi add overview payments deployment
 ```
 
 ## `cvmi serve`
