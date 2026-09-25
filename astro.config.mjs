@@ -112,6 +112,10 @@ export default defineConfig({
                   slug: 'reference/ceps/cep-41',
                 },
                 {
+                  label: 'CEP-47: Server Redirect',
+                  slug: 'reference/ceps/cep-47',
+                },
+                {
                   label: 'Informational',
                   collapsed: true,
                   items: [
