@@ -183,6 +183,15 @@ const clientNostrTransport = new NostrClientTransport({
 
 In this case the client will attempt to resolve operational relays automatically using the normal precedence rules.
 
+### Reading the resolved relay set
+
+Once `start()` resolves, the operational relay set is final for the transport's lifetime. `getOperationalRelayUrls()` returns the current handler's URLs — the configured set before `start()`, the resolved set (hints, discovery, or fallback, whichever won) after. Callers can persist the result and construct future transports as plain configured clients, skipping discovery entirely:
+
+```typescript
+await transport.start();
+const resolvedRelayUrls = transport.getOperationalRelayUrls(); // persist these
+```
+
 ### Authoritative vs fallback relays
 
 - `relayHandler` is authoritative and explicit.
