@@ -1,58 +1,72 @@
 ---
-title: Lightning over NWC
-description: Use Lightning BOLT11 invoices via Nostr Wallet Connect (NIP-47) for CEP-8 payments
+title: Configure Lightning Payments with NWC
+description: Set up BOLT11 invoice creation, payment, and settlement verification for ContextVM using Nostr Wallet Connect.
 ---
 
-# Lightning over NWC
+# Configure Lightning payments with NWC
 
-The SDK includes a Lightning payment rail using **BOLT11 invoices** and **Nostr Wallet Connect (NIP-47)**.
+The built-in Lightning rail uses BOLT11 invoices and Nostr Wallet Connect (NIP-47). Its payment method identifier (PMI) is `bitcoin-lightning-bolt11`.
 
-PMI: `bitcoin-lightning-bolt11`
+## Prerequisites and tested version
 
-Components:
+The examples target `@contextvm/sdk` 0.14.3. Start with [Run a Lightning-paid ContextVM tool](/how-to/payments/getting-started) if you need the complete server and client setup.
 
-- Server: `LnBolt11NwcPaymentProcessor`
-- Client: `LnBolt11NwcPaymentHandler`
+Use separate, limited NWC connections:
 
-## What is NWC?
+- the server wallet needs `make_invoice` and `lookup_invoice`; `notifications` is optional
+- the client wallet needs `pay_invoice`
 
-NWC is a standard connection mechanism for asking a wallet to perform actions (like paying invoices) via Nostr.
-In practice, both the server and the client will have an NWC connection string.
+Treat both connection strings as wallet credentials. Load them from environment variables and keep them out of source control and logs.
 
-## Configuration
-
-### Server processor
+## Server processor
 
 ```ts
-import { LnBolt11NwcPaymentProcessor } from '@contextvm/sdk/payments';
+import { LnBolt11NwcPaymentProcessor } from "@contextvm/sdk/payments";
 
 const processor = new LnBolt11NwcPaymentProcessor({
   nwcConnectionString: process.env.NWC_SERVER_CONNECTION!,
 });
 ```
 
-The server-side NWC wallet must be able to **create invoices** and support whatever verification strategy the processor uses.
+The processor creates an invoice for each priced request. On first use, it checks whether the wallet advertises `payment_received` notifications. It uses those notifications when available and falls back to `lookup_invoice` polling when they are unavailable.
 
-### Client handler
+If a wallet advertises notifications but does not deliver them reliably, force polling:
 
 ```ts
-import { LnBolt11NwcPaymentHandler } from '@contextvm/sdk/payments';
+const processor = new LnBolt11NwcPaymentProcessor({
+  nwcConnectionString: process.env.NWC_SERVER_CONNECTION!,
+  enableNotificationVerification: false,
+});
+```
+
+Do not set `enableNotificationVerification: true` unless the wallet supplies a `payment_hash` when creating the invoice and reliably sends `payment_received` notifications.
+
+## Client handler
+
+```ts
+import { LnBolt11NwcPaymentHandler } from "@contextvm/sdk/payments";
 
 const handler = new LnBolt11NwcPaymentHandler({
   nwcConnectionString: process.env.NWC_CLIENT_CONNECTION!,
 });
 ```
 
-The client-side NWC wallet must be able to **pay invoices**.
+The handler calls the wallet's `pay_invoice` method after the client policy approves a correlated payment request.
 
-## Operational notes
+## Observable outcomes
 
-- Keep NWC connection strings secret (treat them like wallet credentials).
-- Use separate wallets/permissions for server and client roles.
-- In production, tune polling/TTL options on the processor/handler only if needed for your wallet/relay setup.
+| Signal                             | Meaning                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------- |
+| `notifications/payment_required`   | The server issued an invoice and is waiting for settlement.                     |
+| `NWC pay_invoice failed: ...`      | The client wallet rejected or failed the payment request.                       |
+| `notifications/payment_accepted`   | The server verified settlement; delivery is best effort.                        |
+| Tool handler output and MCP result | The paid request was forwarded and completed. This is the final success signal. |
+| `notifications/payment_rejected`   | The server rejected the request before issuing an invoice.                      |
 
-## Troubleshooting checklist
+## Operational checks
 
-- `payment_required` never arrives: verify the capability is priced and the request matches `method` + `name`.
-- `payment_required` arrives but payment fails: check the client wallet permissions / available balance.
-- Payment happens but `payment_accepted` never arrives: verify server relay connectivity and processor verification settings.
+- Keep the processor TTL longer than the wallet and relay round trip.
+- Reuse relay handlers when the application already owns connected pools.
+- Check wallet permissions and balance before increasing timeouts.
+- Correlate payment notifications with the original request event ID.
+- Check settlement before retrying an uncertain paid request.

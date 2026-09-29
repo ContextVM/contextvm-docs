@@ -373,6 +373,10 @@ export default defineConfig({
           label: 'Tutorials',
           items: [
             {
+              label: 'Connect an MCP Host',
+              slug: 'tutorials/connect-an-mcp-host',
+            },
+            {
               label: 'Client-Server Communication',
               slug: 'tutorials/client-server-communication',
             },
