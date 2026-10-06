@@ -113,6 +113,7 @@ for (const page of pages) {
 
   const source = readFileSync(page.source, "utf8");
   for (const match of source.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+    if (source[match.index - 1] === "!") continue; // image, not a page link
     const href = match[1];
     if (/^(?:https?:|mailto:|#)/.test(href)) continue;
     assert(

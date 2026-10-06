@@ -108,6 +108,8 @@ Use `NostrMCPGateway` when the application must build the MCP transport or gatew
 bun add @contextvm/sdk@0.14.3 @contextvm/mcp-sdk@1.30.0
 ```
 
+`@contextvm/mcp-sdk` is the ContextVM-maintained build of the MCP SDK that `@contextvm/sdk` itself depends on; the official `@modelcontextprotocol/sdk` provides the same `StdioClientTransport` if you already use it.
+
 ```ts
 import { StdioClientTransport } from "@contextvm/mcp-sdk/client/stdio";
 import {
@@ -127,7 +129,7 @@ const gateway = new NostrMCPGateway({
   nostrTransportOptions: {
     signer: new PrivateKeySigner(privateKey),
     relayHandler: new ApplesauceRelayPool(["wss://relay.contextvm.org"]),
-    isPublicServer: true,
+    isAnnouncedServer: true,
     serverInfo: { name: "Bridged MCP server" },
   },
 });
