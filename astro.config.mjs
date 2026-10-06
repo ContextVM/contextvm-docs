@@ -322,7 +322,7 @@ export default defineConfig({
               collapsed: true,
               items: [
                 {
-                  label: 'Getting Started',
+                  label: 'Run a Lightning-Paid Tool',
                   slug: 'how-to/payments/getting-started',
                 },
                 { label: 'Server', slug: 'how-to/payments/server' },
@@ -362,7 +362,7 @@ export default defineConfig({
               collapsed: true,
               items: [
                 {
-                  label: 'Bridge an Existing MCP Server',
+                  label: 'Expose an MCP Server over Nostr',
                   slug: 'how-to/bridge-mcp-server',
                 },
               ],

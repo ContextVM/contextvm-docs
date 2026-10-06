@@ -40,7 +40,7 @@ Keep this process running. Its output includes these lines:
 
 ```text
 Generated new private key
-Public key: <64-character-hex-key>
+🔑 Public key: <64-character-hex-key>
 Secure MCP Filesystem Server running on stdio
 Gateway started. Press Ctrl+C to stop.
 ```
