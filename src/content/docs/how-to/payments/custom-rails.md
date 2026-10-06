@@ -1,9 +1,13 @@
 ---
-title: Build your own payment rail
-description: Implement custom PaymentProcessor and PaymentHandler integrations (new PMIs)
+title: Add a Custom ContextVM Payment Rail
+description: Implement and register matching PaymentProcessor and PaymentHandler components for a custom payment method identifier.
 ---
 
-# Build your own payment rail
+# Add a custom ContextVM payment rail
+
+## Prerequisites and tested version
+
+The interfaces shown here target `@contextvm/sdk` 0.14.3. Complete [Run a Lightning-paid ContextVM tool](/how-to/payments/getting-started) before replacing the built-in rail.
 
 The payments layer is designed so you can add new settlement methods without changing transports.
 

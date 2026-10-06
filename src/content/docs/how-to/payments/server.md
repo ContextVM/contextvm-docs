@@ -1,9 +1,13 @@
 ---
-title: Server payments
-description: Configure priced capabilities, processors, dynamic pricing, and rejection on ContextVM servers
+title: Configure ContextVM Server Payments
+description: Price ContextVM capabilities, select payment processors, and reject or waive requests before execution.
 ---
 
-# Server payments
+# Configure ContextVM server payments
+
+## Prerequisites and tested version
+
+The examples target `@contextvm/sdk` 0.14.3. Complete [Run a Lightning-paid ContextVM tool](/how-to/payments/getting-started) first if you need a working transport, processor, and client.
 
 Server payments are implemented as middleware that sits between:
 
@@ -112,7 +116,7 @@ withServerPayments(transport, {
 });
 ```
 
-The quote object uses `meta` (not `_meta`); it is merged into the emitted payment request's `_meta`. Prefer the `quotePrice`, `rejectPrice`, and `waivePrice` helper factories over raw object literals — the `reject: true` / `waive: true` discriminants are easy to mistype.```
+The quote object uses `meta` (not `_meta`); it is merged into the emitted payment request's `_meta`. Prefer the `quotePrice`, `rejectPrice`, and `waivePrice` helper factories over raw object literals — the `reject: true` / `waive: true` discriminants are easy to mistype.
 
 Guidance:
 

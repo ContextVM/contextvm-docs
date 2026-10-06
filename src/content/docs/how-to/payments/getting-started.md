@@ -1,110 +1,199 @@
 ---
-title: Getting started
-description: Quickstart for enabling CEP-8 payments on a ContextVM server and client
+title: Run a Lightning-Paid ContextVM Tool
+description: Configure a one-sat ContextVM tool, pay its BOLT11 invoice over NWC, and verify that execution begins only after settlement.
 ---
 
-# Getting started
+# Run a Lightning-paid ContextVM tool
 
-This page shows the smallest end-to-end setup:
+This quickstart runs a server and client in one Bun process. The server requests one sat before it calls the `add` tool. The client approves the request and pays the BOLT11 invoice through Nostr Wallet Connect (NWC).
 
-- a server that charges for a single tool
-- a client that can pay via Lightning BOLT11 over NWC
+## Prerequisites and tested versions
 
-If you haven’t set up Nostr transports yet, start with the transport docs first.
+This guide targets:
 
-## 1) Server: mark capabilities as priced
+- Bun 1.3.14
+- `@contextvm/sdk` 0.14.3
+- `@contextvm/mcp-sdk` 1.30.0
+- `nostr-tools` 2.25.2
+- `zod` 4.5.4
+- one NWC connection with `make_invoice` and `lookup_invoice` permissions for the server wallet
+- a separate funded NWC connection with `pay_invoice` permission for the client wallet
 
-Define what is paid using `pricedCapabilities`.
+Use wallets and NWC budgets intended for development. NWC connection strings authorize wallet actions and must remain secret.
 
-```ts
-import type { PricedCapability } from '@contextvm/sdk/payments';
+## Create the project
 
-export const pricedCapabilities: PricedCapability[] = [
-  {
-    method: 'tools/call',
-    name: 'my-tool',
-    amount: 10,
-    currencyUnit: 'sats',
-    description: 'Example paid tool',
-  },
-];
+```bash
+mkdir contextvm-paid-tool
+cd contextvm-paid-tool
+bun init -y
+bun add @contextvm/sdk@0.14.3 @contextvm/mcp-sdk@1.30.0 \
+  nostr-tools@2.25.2 zod@4.5.4
 ```
 
-## 2) Server: attach payments middleware
+Generate two Nostr private keys:
 
-Create a processor, then wrap your server transport.
-
-```ts
-import {
-  LnBolt11NwcPaymentProcessor,
-  withServerPayments,
-} from '@contextvm/sdk/payments';
-import { NostrServerTransport } from '@contextvm/sdk/transport';
-
-const baseTransport = new NostrServerTransport({
-  signer,
-  relayHandler,
-});
-
-const processor = new LnBolt11NwcPaymentProcessor({
-  nwcConnectionString: process.env.NWC_SERVER_CONNECTION!,
-});
-
-const paidTransport = withServerPayments(baseTransport, {
-  processors: [processor],
-  pricedCapabilities,
-});
+```bash
+bun -e "import { generateSecretKey } from 'nostr-tools/pure'; import { bytesToHex } from 'nostr-tools/utils'; console.log(bytesToHex(generateSecretKey())); console.log(bytesToHex(generateSecretKey()));"
 ```
 
-Server behavior for priced requests:
+Create `.env` with the generated keys and the two NWC connection strings:
 
-1. emits `notifications/payment_required` (correlated to the request)
-2. waits for settlement verification
-3. emits `notifications/payment_accepted`
-4. forwards the request to the underlying MCP server
+```dotenv
+SERVER_PRIVATE_KEY=<first-64-character-hex-key>
+CLIENT_PRIVATE_KEY=<second-64-character-hex-key>
+NWC_SERVER_CONNECTION=nostr+walletconnect://...
+NWC_CLIENT_CONNECTION=nostr+walletconnect://...
+```
 
-## 3) Client: attach payments middleware
+Do not commit `.env`.
 
-Create a handler and wrap your client transport.
+## Add the paid server and client
+
+Create `paid-demo.ts`:
 
 ```ts
+import { Client } from "@contextvm/mcp-sdk/client";
+import { McpServer } from "@contextvm/mcp-sdk/server/mcp";
 import {
+  ApplesauceRelayPool,
   LnBolt11NwcPaymentHandler,
+  LnBolt11NwcPaymentProcessor,
+  NostrClientTransport,
+  NostrServerTransport,
+  PrivateKeySigner,
   withClientPayments,
-} from '@contextvm/sdk/payments';
-import { NostrClientTransport } from '@contextvm/sdk/transport';
+  withServerPayments,
+} from "@contextvm/sdk";
+import { z } from "zod";
 
-const baseTransport = new NostrClientTransport({
-  signer,
-  relayHandler,
-  serverPubkey,
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`Set ${name}`);
+  return value;
+}
+
+const relayUrl = "wss://relay.contextvm.org";
+const serverSigner = new PrivateKeySigner(requireEnv("SERVER_PRIVATE_KEY"));
+const clientSigner = new PrivateKeySigner(requireEnv("CLIENT_PRIVATE_KEY"));
+const serverPublicKey = await serverSigner.getPublicKey();
+
+const mcpServer = new McpServer({
+  name: "paid-add-server",
+  version: "1.0.0",
 });
 
-const handler = new LnBolt11NwcPaymentHandler({
-  nwcConnectionString: process.env.NWC_CLIENT_CONNECTION!,
-});
+mcpServer.registerTool(
+  "add",
+  {
+    description: "Add two numbers",
+    inputSchema: { a: z.number(), b: z.number() },
+  },
+  async ({ a, b }) => {
+    console.log("Paid tool executed");
+    return { content: [{ type: "text", text: String(a + b) }] };
+  },
+);
 
-const paidTransport = withClientPayments(baseTransport, {
-  handlers: [handler],
-});
+const serverTransport = withServerPayments(
+  new NostrServerTransport({
+    signer: serverSigner,
+    relayHandler: new ApplesauceRelayPool([relayUrl]),
+  }),
+  {
+    processors: [
+      new LnBolt11NwcPaymentProcessor({
+        nwcConnectionString: requireEnv("NWC_SERVER_CONNECTION"),
+      }),
+    ],
+    pricedCapabilities: [
+      {
+        method: "tools/call",
+        name: "add",
+        amount: 1,
+        currencyUnit: "sats",
+        description: "One paid addition",
+      },
+    ],
+    paymentInteraction: "transparent",
+  },
+);
+
+await mcpServer.connect(serverTransport);
+
+const clientTransport = withClientPayments(
+  new NostrClientTransport({
+    signer: clientSigner,
+    relayHandler: new ApplesauceRelayPool([relayUrl]),
+    serverPubkey: serverPublicKey,
+  }),
+  {
+    handlers: [
+      new LnBolt11NwcPaymentHandler({
+        nwcConnectionString: requireEnv("NWC_CLIENT_CONNECTION"),
+      }),
+    ],
+    paymentPolicy: ({ amount, pmi }) => {
+      console.log(`Payment required: ${amount} sat via ${pmi}`);
+      return amount <= 1;
+    },
+  },
+);
+
+const client = new Client({ name: "paid-add-client", version: "1.0.0" });
+
+try {
+  await client.connect(clientTransport);
+  const result = await client.callTool({
+    name: "add",
+    arguments: { a: 1, b: 2 },
+  });
+  const typedResult = result as {
+    content: Array<{ type: string; text?: string }>;
+  };
+  const text = typedResult.content.find((item) => item.type === "text");
+  console.log(`Result: ${text?.text}`);
+} finally {
+  await client.close();
+  await mcpServer.close();
+}
 ```
 
-Now priced calls will automatically pay when required.
+## Run and verify the flow
 
-## 4) Try a paid call
-
-Any request that matches `pricedCapabilities` will trigger the payment flow.
-
-```ts
-await client.callTool({
-  name: 'my-tool',
-  arguments: { example: true },
-});
+```bash
+LOG_LEVEL=info bun run paid-demo.ts
 ```
+
+Alongside SDK logs, look for these application lines in this order:
+
+```text
+Payment required: 1 sat via bitcoin-lightning-bolt11
+Paid tool executed
+Result: 3
+```
+
+Those lines establish three separate outcomes:
+
+1. The client received a correlated `notifications/payment_required` request for one sat.
+2. The server verified settlement before it invoked the tool handler.
+3. The original MCP call completed with the tool result.
+
+The server also sends `notifications/payment_accepted` after verification. Delivery of that notification is best effort; the completed tool result is the final success signal.
+
+## Failure signals
+
+- **No payment-required line:** the request did not match `method: 'tools/call'` and `name: 'add'`, or the peers did not connect through the same relay.
+- **`NWC pay_invoice failed`:** the client NWC connection lacks permission, balance, or a usable wallet response.
+- **The invoice is paid but `Paid tool executed` never appears:** inspect the server wallet's `lookup_invoice` support. If its info event advertises `payment_received` but notifications are unreliable, set `enableNotificationVerification: false` on `LnBolt11NwcPaymentProcessor` to force settlement polling.
+- **`Payment declined by client policy`:** `paymentPolicy` returned `false`; no wallet payment was attempted.
+- **`notifications/payment_rejected`:** server pricing or authorization rejected the call before creating an invoice; the tool was not invoked.
+
+Do not retry a paid call blindly after an uncertain timeout. Check the wallet and server logs first so a new request does not create another invoice.
 
 ## What to read next
 
-- [Server payments](/how-to/payments/server)
-- [Client payments](/how-to/payments/client)
-- [Explicit payment gating](/how-to/payments/explicit-gating)
-- [Lightning over NWC](/how-to/payments/rails/lightning-nwc)
+- [Configure server payment policy](/how-to/payments/server)
+- [Control client payment behavior](/how-to/payments/client)
+- [Configure Lightning over NWC](/how-to/payments/rails/lightning-nwc)
+- [Handle payments with explicit gating](/how-to/payments/explicit-gating)

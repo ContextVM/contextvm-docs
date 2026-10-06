@@ -1,9 +1,13 @@
 ---
-title: Explicit payment gating
-description: Surface CEP-8 payment gates as invocation outcomes so agents and applications decide whether to pay
+title: Handle Payments with Explicit Gating
+description: Surface CEP-8 payment requirements as invocation errors, pay deliberately, and retry the same ContextVM capability.
 ---
 
-# Explicit payment gating
+# Handle payments with explicit gating
+
+## Prerequisites and tested version
+
+The examples target `@contextvm/sdk` 0.14.3. Read [Control ContextVM client payments](/how-to/payments/client) before changing the negotiated payment lifecycle.
 
 Explicit gating is the CEP-8 payment interaction mode where a priced invocation returns a **payment error** instead of being silently settled by middleware. Use it when payment decisions must be visible to the application or an LLM agent (budget control, interactive consent, "Code Mode" policies).
 

@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "format": "prettier --write .",
-    "gen-llmtxt": "repomix --quiet --style plain --compress --no-file-summary --no-directory-structure -o ./public/llms.txt src/content"
+    "gen-llmtxt": "repomix --quiet --style plain --compress --no-file-summary --no-directory-structure -o ./public/llms.txt src/content",
+    "check:seo": "bun run scripts/check-seo-build.ts"
   },
   "dependencies": {
     "@astrojs/starlight": "0.37.1",

@@ -1,9 +1,13 @@
 ---
-title: Client payments
-description: Configure handlers, PMI support, and client behavior for CEP-8 paid servers
+title: Control ContextVM Client Payments
+description: Configure payment handlers, spending policy, PMI selection, and explicit gating for paid ContextVM calls.
 ---
 
-# Client payments
+# Control ContextVM client payments
+
+## Prerequisites and tested version
+
+The examples target `@contextvm/sdk` 0.14.3. Complete [Run a Lightning-paid ContextVM tool](/how-to/payments/getting-started) first if you need a working paid call.
 
 Client payments are implemented as middleware around your client transport.
 

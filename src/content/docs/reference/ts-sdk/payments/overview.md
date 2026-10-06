@@ -282,9 +282,9 @@ See [Explicit Gating API](/reference/ts-sdk/payments/explicit-gating) for the au
 
 ## Next steps
 
-- [Getting started](/how-to/payments/getting-started)
-- [Server payments](/how-to/payments/server)
-- [Client payments](/how-to/payments/client)
+- [Run a Lightning-paid ContextVM tool](/how-to/payments/getting-started)
+- [Configure ContextVM server payments](/how-to/payments/server)
+- [Control ContextVM client payments](/how-to/payments/client)
 - [Explicit payment gating](/how-to/payments/explicit-gating)
 - [Lightning over NWC](/how-to/payments/rails/lightning-nwc)
 - [Build your own payment rail](/how-to/payments/custom-rails)
