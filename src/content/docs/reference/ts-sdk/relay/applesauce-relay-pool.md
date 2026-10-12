@@ -85,14 +85,20 @@ When a relay connection is lost and reestablished, the pool automatically resubs
 private resubscribeAll(): void {
   this.subscriptions.forEach((sub) => {
     if (sub.closer) sub.closer.unsubscribe();
-    sub.closer = this.createSubscription(
-      sub.filters,
-      sub.onEvent,
-      sub.onEose,
-    );
+    sub.closer = this.createSubscription(sub);
   });
 }
 ```
+
+#### Reconnect Replay Semantics
+
+NIP-01 relays replay stored events matching a subscription's filter after a reconnect. To keep a restore from re-requesting the whole session (which would re-dispatch requests the transport has already processed), restored subscriptions advance their filter's `since` to the newest sane `created_at` seen on the subscription minus `RESUBSCRIBE_SINCE_GUARD_SECONDS` (30 minutes). Filters without `since` are history-seeking and are restored unchanged.
+
+Consequences to be aware of:
+
+- Delivery stays **at least once**: duplicates inside the replay window are suppressed by the transports' `seenEventIds` cache (~20,000 encrypted requests), but suppression is best-effort and bounded — it is not exactly-once execution. Non-idempotent tools should use application-level idempotency.
+- Requests from senders whose clocks trail the newest event seen by more than the guard window may be dropped on reconnect instead of replayed.
+- Same-event retries of the CEP-8 transparent lifecycle (republishing a request event unchanged) are only re-observed while the event is younger than the guard window at restore time.
 
 #### Error Handling
 
