@@ -97,7 +97,7 @@ NIP-01 relays replay stored events matching a subscription's filter after a reco
 Consequences to be aware of:
 
 - Delivery stays **at least once**: duplicates inside the replay window are suppressed by the transports' `seenEventIds` cache (~20,000 encrypted requests), but suppression is best-effort and bounded — it is not exactly-once execution. Non-idempotent tools should use application-level idempotency.
-- Requests from senders whose clocks trail the newest event seen by more than the guard window may be dropped on reconnect instead of replayed.
+- Requests whose `created_at` trails the newest event seen on the subscription by more than the guard window may be dropped on reconnect instead of replayed — whether the delay comes from a slow sender clock or from a lagging relay still delivering older events.
 - Same-event retries of the CEP-8 transparent lifecycle (republishing a request event unchanged) are only re-observed while the event is younger than the guard window at restore time.
 
 #### Error Handling
