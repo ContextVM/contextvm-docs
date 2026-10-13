@@ -92,7 +92,7 @@ private resubscribeAll(): void {
 
 #### Reconnect Replay Semantics
 
-NIP-01 relays replay stored events matching a subscription's filter after a reconnect. To keep a restore from re-requesting the whole session (which would re-dispatch requests the transport has already processed), restored subscriptions advance their filter's `since` to the newest sane `created_at` seen on the subscription minus `RESUBSCRIBE_SINCE_GUARD_SECONDS` (30 minutes). Filters without `since` are history-seeking and are restored unchanged.
+NIP-01 relays replay stored events matching a subscription's filter after a reconnect. To keep a restore from re-requesting the whole session (which would re-dispatch requests the transport has already processed), restored subscriptions advance their filter's `since` to the newest `created_at` seen on the subscription (timestamps ahead of the local clock are ignored) minus `RESUBSCRIBE_SINCE_GUARD_SECONDS` (30 minutes). Filters without `since` are history-seeking and are restored unchanged.
 
 Consequences to be aware of:
 
