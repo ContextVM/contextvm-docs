@@ -16,6 +16,38 @@ Server payments are implemented as middleware that sits between:
 
 For priced requests, the middleware ensures **no unpaid forwarding**.
 
+## Deployment and payment state
+
+The atomic payment state API requires a build containing [SDK PR #110](https://github.com/ContextVM/sdk/pull/110) until a release includes it.
+
+**One paying server identity = one process with the default store.** `InMemoryPaymentStateStore` cannot coordinate payments across processes or preserve state after restart. Use the same `stateStore` instance for all payment middleware serving that identity within the process. The SDK bundles no database adapter or driver.
+
+Restarting loses invoice bindings, unclaimed grants, and replay records. Reconcile outstanding payments before resuming payment processing; a missing record is not evidence that an invoice was unpaid. An expired unclaimed grant remains retained and returns `error.data.reason: 'payment_expired'`; contact the server operator to reconcile it before paying again.
+
+### Inject an application-owned backend
+
+```ts
+import {
+  InMemoryPaymentStateStore,
+  withServerPayments,
+  type PaymentStateStore,
+} from '@contextvm/sdk/payments';
+
+const stateStore: PaymentStateStore = new InMemoryPaymentStateStore();
+withServerPayments(transport, { processors: [processor], pricedCapabilities, stateStore });
+```
+
+Replace the in-memory instance with your own implementation when persistence or cross-process coordination is required. Keep each paying server identity in a separate store or backend namespace. The contract requires:
+
+- `policy`: consistent capacity and replay-admission limits for that identity.
+- `admit`: one atomic admission/reservation/grant claim, including replay and capacity checks.
+- `transition`: an atomic, generation-fenced state change.
+- `read`: a snapshot that callers cannot mutate to change stored state.
+
+Initialize and close custom backends in your application; the SDK owns neither their connections nor their dependencies. Backend errors propagate without falling back to a fresh memory store. Choose persistence, atomicity, retention, and shutdown behavior explicitly when implementing the contract.
+
+Settlement and paid-result recovery in [SDK PR #112](https://github.com/ContextVM/sdk/pull/112) use the same injected store. With the default store, a replacement transport can retry a retained result while that store remains alive. A new process or a new in-memory store cannot recover the old result. Cross-process or restart recovery requires an application-provided backend that preserves the complete record and its atomic transitions. A published result is not proof of client receipt.
+
 ## Priced capability matching
 
 You price individual capabilities by `method` + `name`.
@@ -48,6 +80,8 @@ A `PaymentProcessor` is responsible for:
 
 You can configure multiple processors (multiple PMIs). The server selects a processor based on client/server PMI compatibility.
 
+In builds containing SDK PR #110, client and server validation accept non-empty PMI strings up to 2048 characters, including HTTPS method identifiers and existing custom rail names. Identifiers match exactly; the SDK does not normalize or rewrite them.
+
 ```ts
 import {
   LnBolt11NwcPaymentProcessor,
@@ -63,6 +97,8 @@ withServerPayments(transport, {
   pricedCapabilities,
 });
 ```
+
+`paymentTtlMs` bounds invoice creation and verification in milliseconds. Set it to at least the processor's invoice lifetime in seconds multiplied by 1000, with headroom for pricing and invoice creation. Align the actual wallet invoice expiry with this window: a wallet can accept a late payment after SDK verification has stopped. `authorizationTtlMs` separately controls how long a verified explicit-gating grant can be claimed.
 
 ## Payment interaction policy (`paymentInteraction`)
 
@@ -122,7 +158,7 @@ Guidance:
 
 - Keep it fast and deterministic.
 - Treat it like authorization + pricing logic.
-- If you run multiple server instances, store any usage/quota state in a durable store.
+- Keep usage/quota state shared as required by your application; a shared quota database alone does not coordinate payment admission across processes.
 
 ## Rejecting requests without charging
 
