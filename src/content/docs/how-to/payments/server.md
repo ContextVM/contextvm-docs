@@ -48,6 +48,29 @@ Initialize and close custom backends in your application; the SDK owns neither t
 
 Settlement and paid-result recovery in [SDK PR #112](https://github.com/ContextVM/sdk/pull/112) use the same injected store. With the default store, a replacement transport can retry a retained result while that store remains alive. A new process or a new in-memory store cannot recover the old result. Cross-process or restart recovery requires an application-provided backend that preserves the complete record and its atomic transitions. A published result is not proof of client receipt.
 
+### Resolve an expired, unclaimed paid grant
+
+This operation requires a build implementing [SDK issue #114](https://github.com/ContextVM/sdk/issues/114), in addition to PR #110.
+
+Resolve the payment outside the SDK using your application/operator policy, such as a confirmed refund. Then record that decision from trusted server code using the reviewed record's key and generation:
+
+```ts
+const recorded = await stateStore.transition({
+  key: reviewedRecord.key,
+  generation: reviewedRecord.generation,
+  type: 'resolve_expired_grant',
+  retentionMs: configuredRetentionMs,
+});
+```
+
+`configuredRetentionMs` is an application-selected, non-negative safe integer in milliseconds after `grantExpiresAtMs`; there is no SDK default. The resulting deadline must also be a safe integer. This command confirms your external resolution; it does not refund, verify settlement, renew authorization, or execute a handler. Do not expose it as an unauthenticated client operation.
+
+Both explicit resolution and the retention horizon are required. The store also retains the record through its invoice expiry and the last authenticated event's replay deadline. Requests continue returning `payment_expired` until the record can be collected. Collection runs on the next admission, without a background timer; subsequent fresh invocations use normal pricing and payment approval. Previously recorded signed events are then too old to be admitted.
+
+Unresolved paid grants remain retained regardless of age or capacity pressure. Resolution refuses live grants, consumed/dispatched rights, unpaid or uncertain attempts, and stale generations. The first successful resolution fixes the deadline; repeating it cannot shorten or extend that deadline. If `recorded` is false, reread the record and review its generation/state. After an uncertain backend acknowledgement, inspect `grantResolvedAtMs` before retrying; do not repeat an external refund merely because recording failed.
+
+Custom backends must implement this transition atomically and persist `grantResolvedAtMs`. Transports without authenticated event timestamps retain their replay records indefinitely, including after operator resolution, because they have no safe replay cutoff.
+
 ## Priced capability matching
 
 You price individual capabilities by `method` + `name`.
