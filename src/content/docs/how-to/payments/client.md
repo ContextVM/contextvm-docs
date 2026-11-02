@@ -100,6 +100,57 @@ The synthesized JSON-RPC error uses:
 
 Similarly, if a handler's `canHandle` returns `false`, the SDK will fail-fast with `"Payment declined by client handler"` when correlation exists.
 
+## Bound automatic payments and attempt history
+
+These controls require the client lifecycle changes in [SDK PR #108](https://github.com/ContextVM/sdk/pull/108). Use a build containing that PR until a release includes it.
+
+```ts
+const paidTransport = withClientPayments(baseTransport, {
+  handlers: [handler],
+  limits: {
+    maxAmountByPmi: { 'bitcoin-lightning-bolt11': 500 },
+    maxAttempts: 2,
+    timeoutMs: 60_000,
+  },
+  maxTrackedPaymentAttempts: 1000,
+});
+```
+
+`limits` applies to one original invocation, including automatic retries and replacement invoices:
+
+- `maxAmountByPmi` caps the cumulative advertised amount approved for each PMI, in that rail's amount unit. When provided, unlisted PMIs cannot be paid automatically. Explicit callbacks reserve the largest offered amount per PMI and must pay only one supplied option. Handlers must verify the actual invoice amount before paying.
+- `maxAttempts` caps distinct offers passed to policy or approval work. Zero refuses automatic payment. Repeated offers found in retained history do not consume another attempt.
+- `timeoutMs` starts at the first payment offer or pending response. Expiry aborts the invocation and prevents further automatic wallet work or retries.
+
+These limits require a correlated original request. Amount or attempt exhaustion returns `error.data.reason: 'payment_limit_exceeded'`; deadline expiry returns `'payment_deadline_exceeded'`. Omitted limits impose no corresponding bound.
+
+`maxTrackedPaymentAttempts` bounds payment identities across the wrapper, separately from invocation limits. The default is 1000; zero refuses new automatic payments. Each distinct PMI plus `pay_req` consumes one entry, including every option supplied to an explicit approval callback. In-flight and unknown attempts stay pinned. Under pressure, the least recently used handled or declined identities are evicted. Deduplication for those terminal identities ends when they are evicted; handler completion records a local wallet result, not receiver settlement.
+
+If unresolved pins and the new offered options cannot fit, the wrapper returns `'payment_attempt_capacity'` before invoking approval or wallet code. An unknown retained outcome returns `'payment_outcome_unknown'` on a repeated offer. Reconcile uncertain payments with the wallet and receiver before authorizing another payment; cancellation or recreating the transport does not establish that an invoice was unpaid.
+
+## Check cancellation before wallet actions
+
+`PaymentHandlerRequest.abortSignal` is aborted when the request completes, is cancelled, reaches its payment deadline, or the transport closes. The wrapper supplies it to `paymentPolicy`, `canHandle`, and `handle`. Check it after awaiting user approval and immediately before calling the wallet; pass it to wallet APIs that support cancellation.
+
+```ts
+import type { PaymentHandler } from '@contextvm/sdk/payments';
+
+const approvalHandler: PaymentHandler = {
+  pmi: handler.pmi,
+  async handle(req): Promise<void> {
+    req.abortSignal?.throwIfAborted();
+    const approved = await askUserToApprove(req);
+    req.abortSignal?.throwIfAborted();
+    if (!approved) throw new Error('Payment not approved');
+    await handler.handle(req);
+  },
+};
+```
+
+Register `approvalHandler` instead of `handler` to use this approval step. `askUserToApprove` represents your application's approval UI. Use `paymentPolicy` or `canHandle` to record a refusal before wallet work; a rejected `handle` call is treated as an unknown outcome because a wallet action might already have occurred.
+
+The explicit `onPaymentRequired` callback also receives `abortSignal`; check it after approval and before paying one option. Aborting stops future work and retries, but cannot undo a wallet action already submitted. A late callback cannot revive the completed request.
+
 ## Multiple handlers
 
 You can configure multiple handlers if you support multiple payment rails.
