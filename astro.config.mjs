@@ -245,6 +245,10 @@ export default defineConfig({
                           label: 'Explicit Gating API',
                           slug: 'reference/ts-sdk/payments/explicit-gating',
                         },
+                        {
+                          label: 'CEP-8 Conformance',
+                          slug: 'reference/ts-sdk/payments/conformance',
+                        },
                       ],
                     },
                   ],

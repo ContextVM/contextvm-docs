@@ -144,7 +144,7 @@ The error the caller receives:
   "code": -32042,
   "message": "Payment Required",
   "data": {
-    "instructions": "Pay one of the offered payment options, then retry the same request with exactly the same method and params.",
+    "instructions": "Pay one option, then retry with the same method and semantic params.",
     "payment_options": [
       {
         "amount": 25,
@@ -157,10 +157,10 @@ The error the caller receives:
 }
 ```
 
-Typical agent loop: catch the `-32042`, read `instructions` + `payment_options`, pay `pay_req`, then retry the call with the **same `method` and `params`**. While the server is still verifying payment the retry returns `-32043 Payment Pending` (`data.retry_after`); retry again. Once the paid authorization is consumed, the normal capability result is returned.
+Typical agent loop: catch the `-32042`, read `instructions` + `payment_options`, pay `pay_req`, then retry the call with the **same `method` and semantic `params`**: `params._meta`, such as a regenerated `progressToken`, may differ. While the server is still verifying payment the retry returns `-32043 Payment Pending` (`data.retry_after`); retry again. Once the paid authorization is consumed, the normal capability result is returned.
 
 :::tip
-The `instructions` field is designed to be fed directly to an LLM agent. It tells the agent exactly what to do: pay one option, then repeat the request with the same method and params. No SDK-specific knowledge is required on the agent side.
+The `instructions` field is designed to be fed directly to an LLM agent. It tells the agent exactly what to do: pay one option, then repeat the request with the same method and semantic params (everything in `params` except `params._meta`). No SDK-specific knowledge is required on the agent side.
 :::
 
 ### Optional: auto-retry with `onPaymentRequired`

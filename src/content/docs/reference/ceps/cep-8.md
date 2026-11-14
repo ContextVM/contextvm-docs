@@ -419,7 +419,7 @@ The `explicit_gating` lifecycle is:
 6. A user, application, or agent decides whether to satisfy one payment option.
 7. If payment is attempted and verification is still incomplete, repeated matching invocations SHOULD receive a JSON-RPC `Payment Pending` error response.
 8. If payment succeeds, the server transport records paid execution authorization for the client and canonical invocation identity.
-9. To obtain the capability result, the client SHOULD send a subsequent invocation with the same `method` and `params`.
+9. To obtain the capability result, the client SHOULD send a subsequent invocation with the same `method` and semantic `params` (see [Explicit gating authorization identity](#explicit-gating-authorization-identity)).
 10. When a matching authorization is available, the server transport consumes one authorization atomically, forwards the invocation to the underlying MCP handler, and returns the capability result.
 
 ##### Payment required error
@@ -436,7 +436,7 @@ Example:
     "code": -32042,
     "message": "Payment Required",
     "data": {
-      "instructions": "Pay one of the offered payment options, then repeat the same request with exactly the same method and params.",
+      "instructions": "Pay one of the offered payment options, then repeat the request with the same method and params; params._meta may differ.",
       "payment_options": [
         {
           "amount": 100,
@@ -456,7 +456,7 @@ Example:
 
 `error.data.payment_options` MUST contain one or more payment option objects. Each option contains the same payment request fields defined for `notifications/payment_required`: `amount`, `pmi`, `pay_req`, optional `description`, optional `ttl`, and optional `_meta`.
 
-`error.data.instructions` SHOULD be included and SHOULD clearly tell the client or agent to pay one option and retry the same request with the same `method` and `params`.
+`error.data.instructions` SHOULD be included and SHOULD clearly tell the client or agent to pay one option and retry with the same `method` and semantic `params`.
 
 ##### Payment pending error
 
@@ -472,7 +472,7 @@ Example:
     "code": -32043,
     "message": "Payment Pending",
     "data": {
-      "instructions": "Payment is still being processed. Retry the same request later with exactly the same method and params.",
+      "instructions": "Payment is still being processed. Retry the request later with the same method and params; params._meta may differ.",
       "retry_after": 5
     }
   }
@@ -491,6 +491,8 @@ The server transport derives that identity from:
 - the SHA-256 digest of the RFC 8785 JSON Canonicalization Scheme (JCS) serialization of a JSON object containing the inner MCP request `method` and the semantic `params`
 
 The canonicalized object MUST exclude the `params._meta` field. `_meta` is MCP's reserved per-request extension namespace (carrying `progressToken`, `stream`, related-task metadata, and similar transport plumbing) and is not part of the semantic invocation. Removing it yields the semantic request as MCP defines it, so retries and re-invocations by clients, applications, or LLM agents match a paid authorization regardless of per-request transport metadata — for example, the MCP client SDK regenerates `progressToken` on every `callTool`, so without this exclusion two semantically identical invocations would hash to different identities and never match a paid grant.
+
+The object that remains after removing only the top-level `params._meta` member is the request's _semantic `params`_. This CEP uses that term wherever a retry must match a paid authorization.
 
 The JSON-RPC `id`, outer Nostr event fields, event tags, signatures, timestamps, and other transport envelope fields MUST NOT be included in the canonicalized object.
 
@@ -690,9 +692,9 @@ Clients MAY retry publishing the same request event, with the same event id, to 
 
 #### Explicit gating lifecycle
 
-In the explicit gating lifecycle, payment authorization and retry matching are based on the explicit-gating authorization identity, not the outer request event id. For explicit gating, "the same invocation" means the same requesting client pubkey and the same canonical invocation identity, derived from the SHA-256 digest of the RFC 8785 JSON Canonicalization Scheme (JCS) serialization of a JSON object containing exactly the inner MCP request `method` and `params`.
+In the explicit gating lifecycle, payment authorization and retry matching are based on the explicit-gating authorization identity, not the outer request event id. For explicit gating, "the same invocation" means the same requesting client pubkey and the same canonical invocation identity, derived from the SHA-256 digest of the RFC 8785 JSON Canonicalization Scheme (JCS) serialization of a JSON object containing the inner MCP request `method` and its semantic `params`, exactly as specified under [Explicit gating authorization identity](#explicit-gating-authorization-identity).
 
-The JSON-RPC `id`, outer Nostr event id, timestamps, signatures, and event tags MUST NOT affect this identity. A retry MAY therefore use a different JSON-RPC `id` or a different outer event id and still match a paid authorization if `method`, `params`, and client pubkey are unchanged.
+The JSON-RPC `id`, outer Nostr event id, timestamps, signatures, and event tags MUST NOT affect this identity. A retry MAY therefore use a different JSON-RPC `id`, a different outer event id, or a different `params._meta` and still match a paid authorization if `method`, semantic `params`, and client pubkey are unchanged.
 
 Servers MUST atomically claim or consume one matching paid authorization before forwarding the invocation to the underlying MCP handler, MUST prevent concurrent double-consumption, and MUST NOT forward a priced invocation to the underlying MCP handler unless a matching paid authorization has been claimed. Server policy determines whether a failed or interrupted execution restores, expires, or consumes the claimed authorization.
 

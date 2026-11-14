@@ -113,20 +113,20 @@ try {
 }
 ```
 
-The agent never needs SDK-specific knowledge. The `instructions` field tells it exactly what to do (pay one option, then repeat the request with the same method and params), so this works with any MCP-compatible agent runtime.
+The agent never needs SDK-specific knowledge. The `instructions` field tells it exactly what to do (pay one option, then repeat the request with the same method and semantic params), so this works with any MCP-compatible agent runtime.
 
 While the server is still verifying payment, the retry returns `-32043 Payment Pending` with `data.retry_after`; wait and retry again. Once the paid authorization is consumed, the normal capability result is returned on the next matching invocation.
 
 ## 4) Retry semantics
 
-A paid authorization authorizes **one** future execution for the matching client pubkey and canonical invocation identity (SHA-256 over JCS of `method` + `params`).
+A paid authorization authorizes **one** future execution for the matching client pubkey and canonical invocation identity (SHA-256 over JCS of `method` + semantic `params`, which is `params` without `params._meta`).
 
-- Retry with the **same `method` and `params`** so the server matches the paid authorization. The JSON-RPC `id` and outer Nostr event id do **not** need to match.
+- Retry with the **same `method` and semantic `params`** so the server matches the paid authorization. `params._meta` (for example, a regenerated `progressToken`), the JSON-RPC `id`, and the outer Nostr event id do **not** need to match.
 - `-32043 Payment Pending` (`data.retry_after`) means verification is still in flight. The server suggests a short wait; honor it before retrying.
 - If the server's verification fails or times out **after** the client paid, its pending state is cleared and the retry receives a **fresh** `-32042` with a new invoice. The agent must pay again.
 
 :::warning[Params must be deterministic]
-The canonical identity is computed from `method` + `params`. Do **not** inject timestamps, UUIDs, or random nonces into `params`. Preserve the exact original `params` object on retry so the server matches the paid authorization.
+The canonical identity is computed from `method` + semantic `params` (everything in `params` except `params._meta`). Do **not** inject timestamps, UUIDs, or random nonces into the semantic `params`. Preserve them exactly on retry so the server matches the paid authorization.
 :::
 
 ## 5) Optional: auto-retry with `onPaymentRequired`
