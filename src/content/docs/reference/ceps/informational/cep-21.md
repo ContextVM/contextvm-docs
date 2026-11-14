@@ -59,6 +59,21 @@ Example (conceptual): `bitcoin-cashu-v4-direct`.
 
 This is a convention for discovery and interoperability; support is ultimately implementation-defined.
 
+## Proposed direct bearer profile: `bitcoin-cashu-v4-direct`
+
+**Status:** Proposed. This profile is not yet a recommended PMI. It is listed so implementations can review one concrete direct-settlement profile.
+
+This PMI identifies a Cashu bearer payment attached to a request with `["direct_payment", "bitcoin-cashu-v4-direct", "<payload>"]`.
+
+- **Payload:** one Cashu V4 token ([NUT-00](https://cashubtc.github.io/nuts/00/) `cashuB` serialization) from a single mint, in unit `sat`.
+- **Amount:** the client pays the capability's fixed `cap` price in `sats`, known before the request. A ranged price cannot be prepaid with a single token.
+- **Value:** the payment's value is what the receiver obtains after swapping the token's proofs at the mint, net of that mint's input fees ([NUT-02](https://cashubtc.github.io/nuts/02/)). Token face value can exceed this net value, so a client adds the fees the receiver will pay.
+- **Mint trust:** a receiver accepts tokens only from mints it trusts. This profile does not define mint discovery; client and server agree on the mint out of band.
+- **Settlement:** the receiver treats the payment as settled only after swapping the proofs into proofs it owns ([NUT-03](https://cashubtc.github.io/nuts/03/)). Decoding the token, or seeing that its proofs are spent, does not show that this receiver obtained the value.
+- **Confidentiality:** the token is bearer value. Send it only on encrypted transports ([CEP-4](/reference/ceps/cep-4)), never on a cleartext request event.
+- **Rejection and uncertainty:** as CEP-8 specifies for bearer assets, `notifications/payment_rejected` for this PMI means the token was definitely not redeemed. A receiver that cannot tell whether its swap happened (for example, because the mint's reply was lost) should not send `payment_rejected`. It keeps the attempt and reconciles it, for example with [NUT-09](https://cashubtc.github.io/nuts/09/) restore. A client that has not received a definite outcome should not reuse those proofs or pay another way for the same request.
+- **No request format:** this PMI defines no `pay_req` format. Supporting it does not mean a server can request Cashu through `notifications/payment_required` or explicit-gating `payment_options`.
+
 ## Dependencies
 
 - [CEP-8: Capability Pricing and Payment Flow](/reference/ceps/cep-8)
