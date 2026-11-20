@@ -3,8 +3,8 @@ const PAGE_TITLE_ID = '_top';
 import { getDocSourceBySlug } from '../../utils/docSource';
 
 const { entry } = Astro.locals.starlightRoute;
-const docSource = getDocSourceBySlug(entry.slug);
-const copyButtonId = `copy-markdown-${entry.slug.replace(/[^a-z0-9-]/gi, '-')}`;
+const docSource = getDocSourceBySlug(entry.id);
+const copyButtonId = `copy-markdown-${entry.id.replace(/[^a-z0-9-]/gi, '-')}`;
 ---
 
 <div class="page-title-row">
