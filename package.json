@@ -13,17 +13,18 @@
     "check:seo": "bun run scripts/check-seo-build.ts"
   },
   "dependencies": {
-    "@astrojs/starlight": "0.37.1",
-    "astro": "5.16.4",
-    "astro-mermaid": "^2.0.2",
-    "mermaid": "^11.15.0",
+    "@astrojs/starlight": "0.43.1",
+    "astro": "7.4.13",
+    "astro-mermaid": "^2.2.0",
+    "mermaid": "^12.3.0",
     "prettier": "^3.8.1",
-    "sharp": "^0.34.5"
-  },
-  "overrides": {
-    "zod": "^3.25.76"
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "repomix": "^1.11.1"
+    "repomix": "^1.19.0"
+  },
+  "engines": {
+    "node": ">=22.23.4",
+    "bun": ">=1.4.4"
   }
 }
